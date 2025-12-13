@@ -1,0 +1,389 @@
+Date,HomeTeam,AwayTeam,FTHG,FTAG
+2020-09-19,Man United,Crystal Palace,1,3
+2020-09-26,Brighton,Man United,2,3
+2020-10-04,Man United,Tottenham,1,6
+2020-10-17,Newcastle,Man United,1,4
+2020-10-24,Man United,Chelsea,0,0
+2020-11-01,Man United,Arsenal,0,1
+2020-11-07,Everton,Man United,1,3
+2020-11-21,Man United,West Brom,1,0
+2020-11-29,Southampton,Man United,2,3
+2020-12-05,West Ham,Man United,1,3
+2020-12-12,Man United,Man City,0,0
+2020-12-17,Sheffield United,Man United,2,3
+2020-12-20,Man United,Leeds,6,2
+2020-12-26,Leicester,Man United,2,2
+2020-12-29,Man United,Wolves,1,0
+2021-01-01,Man United,Aston Villa,2,1
+2021-01-12,Burnley,Man United,0,1
+2021-01-17,Liverpool,Man United,0,0
+2021-01-20,Fulham,Man United,1,2
+2021-01-27,Man United,Sheffield United,1,2
+2021-01-30,Arsenal,Man United,0,0
+2021-02-02,Man United,Southampton,9,0
+2021-02-06,Man United,Everton,3,3
+2021-02-14,West Brom,Man United,1,1
+2021-02-21,Man United,Newcastle,3,1
+2021-02-28,Chelsea,Man United,0,0
+2021-03-03,Crystal Palace,Man United,0,0
+2021-03-07,Man City,Man United,0,2
+2021-03-14,Man United,West Ham,1,0
+2021-04-04,Man United,Brighton,2,1
+2021-04-11,Tottenham,Man United,1,3
+2021-04-18,Man United,Burnley,3,1
+2021-04-25,Leeds,Man United,0,0
+2021-05-09,Aston Villa,Man United,1,3
+2021-05-11,Man United,Leicester,1,2
+2021-05-13,Man United,Liverpool,2,4
+2021-05-18,Man United,Fulham,1,1
+2021-05-23,Wolves,Man United,1,2
+2021-08-14,Man United,Leeds,5,1
+2021-08-22,Southampton,Man United,1,1
+2021-08-29,Wolves,Man United,0,1
+2021-09-11,Man United,Newcastle,4,1
+2021-09-19,West Ham,Man United,1,2
+2021-09-25,Man United,Aston Villa,0,1
+2021-10-02,Man United,Everton,1,1
+2021-10-16,Leicester,Man United,4,2
+2021-10-24,Man United,Liverpool,0,5
+2021-10-30,Tottenham,Man United,0,3
+2021-11-06,Man United,Man City,0,2
+2021-11-20,Watford,Man United,4,1
+2021-11-28,Chelsea,Man United,1,1
+2021-12-02,Man United,Arsenal,3,2
+2021-12-05,Man United,Crystal Palace,1,0
+2021-12-11,Norwich,Man United,0,1
+2021-12-27,Newcastle,Man United,1,1
+2021-12-30,Man United,Burnley,3,1
+2022-01-03,Man United,Wolves,0,1
+2022-01-15,Aston Villa,Man United,2,2
+2022-01-19,Brentford,Man United,1,3
+2022-01-22,Man United,West Ham,1,0
+2022-02-08,Burnley,Man United,1,1
+2022-02-12,Man United,Southampton,1,1
+2022-02-15,Man United,Brighton,2,0
+2022-02-20,Leeds,Man United,2,4
+2022-02-26,Man United,Watford,0,0
+2022-03-06,Man City,Man United,4,1
+2022-03-12,Man United,Tottenham,3,2
+2022-04-02,Man United,Leicester,1,1
+2022-04-09,Everton,Man United,1,0
+2022-04-16,Man United,Norwich,3,2
+2022-04-19,Liverpool,Man United,4,0
+2022-04-23,Arsenal,Man United,3,1
+2022-04-28,Man United,Chelsea,1,1
+2022-05-02,Man United,Brentford,3,0
+2022-05-07,Brighton,Man United,4,0
+2022-05-22,Crystal Palace,Man United,1,0
+2022-08-06,Newcastle,Nott'm Forest,2,0
+2022-08-07,Man United,Brighton,1,2
+2022-08-13,Brentford,Man United,4,0
+2022-08-14,Nott'm Forest,West Ham,1,0
+2022-08-20,Everton,Nott'm Forest,1,1
+2022-08-22,Man United,Liverpool,2,1
+2022-08-27,Southampton,Man United,0,1
+2022-08-28,Nott'm Forest,Tottenham,0,2
+2022-08-31,Man City,Nott'm Forest,6,0
+2022-09-01,Leicester,Man United,0,1
+2022-09-03,Nott'm Forest,Bournemouth,2,3
+2022-09-04,Man United,Arsenal,3,1
+2022-09-16,Nott'm Forest,Fulham,2,3
+2022-10-02,Man City,Man United,6,3
+2022-10-03,Leicester,Nott'm Forest,4,0
+2022-10-09,Everton,Man United,1,2
+2022-10-10,Nott'm Forest,Aston Villa,1,1
+2022-10-15,Wolves,Nott'm Forest,1,0
+2022-10-16,Man United,Newcastle,0,0
+2022-10-18,Brighton,Nott'm Forest,0,0
+2022-10-19,Man United,Tottenham,2,0
+2022-10-22,Chelsea,Man United,1,1
+2022-10-22,Nott'm Forest,Liverpool,1,0
+2022-10-30,Man United,West Ham,1,0
+2022-10-30,Arsenal,Nott'm Forest,5,0
+2022-11-05,Nott'm Forest,Brentford,2,2
+2022-11-06,Aston Villa,Man United,3,1
+2022-11-12,Nott'm Forest,Crystal Palace,1,0
+2022-11-13,Fulham,Man United,1,2
+2022-12-27,Man United,Nott'm Forest,3,0
+2022-12-31,Wolves,Man United,0,1
+2023-01-01,Nott'm Forest,Chelsea,1,1
+2023-01-03,Man United,Bournemouth,3,0
+2023-01-04,Southampton,Nott'm Forest,0,1
+2023-01-14,Man United,Man City,2,1
+2023-01-14,Nott'm Forest,Leicester,2,0
+2023-01-18,Crystal Palace,Man United,1,1
+2023-01-21,Bournemouth,Nott'm Forest,1,1
+2023-01-22,Arsenal,Man United,3,2
+2023-02-04,Man United,Crystal Palace,2,1
+2023-02-05,Nott'm Forest,Leeds,1,0
+2023-02-08,Man United,Leeds,2,2
+2023-02-11,Fulham,Nott'm Forest,2,0
+2023-02-12,Leeds,Man United,0,2
+2023-02-18,Nott'm Forest,Man City,1,1
+2023-02-19,Man United,Leicester,3,0
+2023-02-25,West Ham,Nott'm Forest,4,0
+2023-03-05,Nott'm Forest,Everton,2,2
+2023-03-05,Liverpool,Man United,7,0
+2023-03-11,Tottenham,Nott'm Forest,3,1
+2023-03-12,Man United,Southampton,0,0
+2023-03-17,Nott'm Forest,Newcastle,1,2
+2023-04-01,Nott'm Forest,Wolves,1,1
+2023-04-02,Newcastle,Man United,2,0
+2023-04-04,Leeds,Nott'm Forest,2,1
+2023-04-05,Man United,Brentford,1,0
+2023-04-08,Man United,Everton,2,0
+2023-04-08,Aston Villa,Nott'm Forest,2,0
+2023-04-16,Nott'm Forest,Man United,0,2
+2023-04-22,Liverpool,Nott'm Forest,3,2
+2023-04-26,Nott'm Forest,Brighton,3,1
+2023-04-27,Tottenham,Man United,2,2
+2023-04-29,Brentford,Nott'm Forest,2,1
+2023-04-30,Man United,Aston Villa,1,0
+2023-05-04,Brighton,Man United,1,0
+2023-05-07,West Ham,Man United,1,0
+2023-05-08,Nott'm Forest,Southampton,4,3
+2023-05-13,Chelsea,Nott'm Forest,2,2
+2023-05-13,Man United,Wolves,2,0
+2023-05-20,Nott'm Forest,Arsenal,1,0
+2023-05-20,Bournemouth,Man United,0,1
+2023-05-25,Man United,Chelsea,4,1
+2023-05-28,Man United,Fulham,2,1
+2023-05-28,Crystal Palace,Nott'm Forest,1,1
+2023-08-12,Arsenal,Nott'm Forest,2,1
+2023-08-14,Man United,Wolves,1,0
+2023-08-18,Nott'm Forest,Sheffield United,2,1
+2023-08-19,Tottenham,Man United,2,0
+2023-08-26,Man United,Nott'm Forest,3,2
+2023-09-02,Chelsea,Nott'm Forest,0,1
+2023-09-03,Arsenal,Man United,3,1
+2023-09-16,Man United,Brighton,1,3
+2023-09-18,Nott'm Forest,Burnley,1,1
+2023-09-23,Man City,Nott'm Forest,2,0
+2023-09-23,Burnley,Man United,0,1
+2023-09-30,Man United,Crystal Palace,0,1
+2023-10-01,Nott'm Forest,Brentford,1,1
+2023-10-07,Man United,Brentford,2,1
+2023-10-07,Crystal Palace,Nott'm Forest,0,0
+2023-10-21,Sheffield United,Man United,1,2
+2023-10-21,Nott'm Forest,Luton,2,2
+2023-10-29,Liverpool,Nott'm Forest,3,0
+2023-10-29,Man United,Man City,0,3
+2023-11-04,Fulham,Man United,0,1
+2023-11-05,Nott'm Forest,Aston Villa,2,0
+2023-11-11,Man United,Luton,1,0
+2023-11-12,West Ham,Nott'm Forest,3,2
+2023-11-25,Nott'm Forest,Brighton,2,3
+2023-11-26,Everton,Man United,0,3
+2023-12-02,Newcastle,Man United,1,0
+2023-12-02,Nott'm Forest,Everton,0,1
+2023-12-06,Man United,Chelsea,2,1
+2023-12-06,Fulham,Nott'm Forest,5,0
+2023-12-09,Wolves,Nott'm Forest,1,1
+2023-12-09,Man United,Bournemouth,0,3
+2023-12-15,Nott'm Forest,Tottenham,0,2
+2023-12-17,Liverpool,Man United,0,0
+2023-12-23,Nott'm Forest,Bournemouth,2,3
+2023-12-23,West Ham,Man United,2,0
+2023-12-26,Newcastle,Nott'm Forest,1,3
+2023-12-26,Man United,Aston Villa,3,2
+2023-12-30,Nott'm Forest,Man United,2,1
+2024-01-14,Man United,Tottenham,2,2
+2024-01-20,Brentford,Nott'm Forest,3,2
+2024-01-30,Nott'm Forest,Arsenal,1,2
+2024-02-01,Wolves,Man United,3,4
+2024-02-04,Man United,West Ham,3,0
+2024-02-04,Bournemouth,Nott'm Forest,1,1
+2024-02-10,Nott'm Forest,Newcastle,2,3
+2024-02-11,Aston Villa,Man United,1,2
+2024-02-17,Nott'm Forest,West Ham,2,0
+2024-02-18,Luton,Man United,1,2
+2024-02-24,Man United,Fulham,1,2
+2024-02-24,Aston Villa,Nott'm Forest,4,2
+2024-03-02,Nott'm Forest,Liverpool,0,1
+2024-03-03,Man City,Man United,3,1
+2024-03-09,Man United,Everton,2,0
+2024-03-10,Brighton,Nott'm Forest,1,0
+2024-03-16,Luton,Nott'm Forest,1,1
+2024-03-30,Brentford,Man United,1,1
+2024-03-30,Nott'm Forest,Crystal Palace,1,1
+2024-04-02,Nott'm Forest,Fulham,3,1
+2024-04-04,Chelsea,Man United,4,3
+2024-04-07,Man United,Liverpool,2,2
+2024-04-07,Tottenham,Nott'm Forest,3,1
+2024-04-13,Bournemouth,Man United,2,2
+2024-04-13,Nott'm Forest,Wolves,2,2
+2024-04-21,Everton,Nott'm Forest,2,0
+2024-04-24,Man United,Sheffield United,4,2
+2024-04-27,Man United,Burnley,1,1
+2024-04-28,Nott'm Forest,Man City,0,2
+2024-05-04,Sheffield United,Nott'm Forest,1,3
+2024-05-06,Crystal Palace,Man United,4,0
+2024-05-11,Nott'm Forest,Chelsea,2,3
+2024-05-12,Man United,Arsenal,0,1
+2024-05-15,Man United,Newcastle,3,2
+2024-05-19,Brighton,Man United,0,2
+2024-05-19,Burnley,Nott'm Forest,1,2
+2024-08-16,Man United,Fulham,1,0
+2024-08-17,Nott'm Forest,Bournemouth,1,1
+2024-08-24,Brighton,Man United,2,1
+2024-08-24,Southampton,Nott'm Forest,0,1
+2024-08-31,Nott'm Forest,Wolves,1,1
+2024-09-01,Man United,Liverpool,0,3
+2024-09-14,Liverpool,Nott'm Forest,0,1
+2024-09-14,Southampton,Man United,0,3
+2024-09-21,Crystal Palace,Man United,0,0
+2024-09-22,Brighton,Nott'm Forest,2,2
+2024-09-28,Nott'm Forest,Fulham,0,1
+2024-09-29,Man United,Tottenham,0,3
+2024-10-06,Aston Villa,Man United,0,0
+2024-10-06,Chelsea,Nott'm Forest,1,1
+2024-10-19,Man United,Brentford,2,1
+2024-10-21,Nott'm Forest,Crystal Palace,1,0
+2024-10-25,Leicester,Nott'm Forest,1,3
+2024-10-27,West Ham,Man United,2,1
+2024-11-02,Nott'm Forest,West Ham,3,0
+2024-11-03,Man United,Chelsea,1,1
+2024-11-10,Man United,Leicester,3,0
+2024-11-10,Nott'm Forest,Newcastle,1,3
+2024-11-23,Arsenal,Nott'm Forest,3,0
+2024-11-24,Ipswich,Man United,1,1
+2024-11-30,Nott'm Forest,Ipswich,1,0
+2024-12-01,Man United,Everton,4,0
+2024-12-04,Man City,Nott'm Forest,3,0
+2024-12-04,Arsenal,Man United,2,0
+2024-12-07,Man United,Nott'm Forest,2,3
+2024-12-14,Nott'm Forest,Aston Villa,2,1
+2024-12-15,Man City,Man United,1,2
+2024-12-21,Brentford,Nott'm Forest,0,2
+2024-12-22,Man United,Bournemouth,0,3
+2024-12-26,Wolves,Man United,2,0
+2024-12-26,Nott'm Forest,Tottenham,1,0
+2024-12-29,Everton,Nott'm Forest,0,2
+2024-12-30,Man United,Newcastle,0,2
+2025-01-05,Liverpool,Man United,2,2
+2025-01-06,Wolves,Nott'm Forest,0,3
+2025-01-14,Nott'm Forest,Liverpool,1,1
+2025-01-16,Man United,Southampton,3,1
+2025-01-19,Man United,Brighton,1,3
+2025-01-19,Nott'm Forest,Southampton,3,2
+2025-01-25,Bournemouth,Nott'm Forest,5,0
+2025-01-26,Fulham,Man United,0,1
+2025-02-01,Nott'm Forest,Brighton,7,0
+2025-02-02,Man United,Crystal Palace,0,2
+2025-02-15,Fulham,Nott'm Forest,2,1
+2025-02-16,Tottenham,Man United,1,0
+2025-02-22,Everton,Man United,2,2
+2025-02-23,Newcastle,Nott'm Forest,4,3
+2025-02-26,Nott'm Forest,Arsenal,0,0
+2025-02-26,Man United,Ipswich,3,2
+2025-03-08,Nott'm Forest,Man City,1,0
+2025-03-09,Man United,Arsenal,1,1
+2025-03-15,Ipswich,Nott'm Forest,2,4
+2025-03-16,Leicester,Man United,0,3
+2025-04-01,Nott'm Forest,Man United,1,0
+2025-04-05,Aston Villa,Nott'm Forest,2,1
+2025-04-06,Man United,Man City,0,0
+2025-04-12,Nott'm Forest,Everton,0,1
+2025-04-13,Newcastle,Man United,4,1
+2025-04-20,Man United,Wolves,0,1
+2025-04-21,Tottenham,Nott'm Forest,1,2
+2025-04-27,Bournemouth,Man United,1,1
+2025-05-01,Nott'm Forest,Brentford,0,2
+2025-05-04,Brentford,Man United,4,3
+2025-05-05,Crystal Palace,Nott'm Forest,1,1
+2025-05-11,Man United,West Ham,0,2
+2025-05-11,Nott'm Forest,Leicester,2,2
+2025-05-16,Chelsea,Man United,1,0
+2025-05-18,West Ham,Nott'm Forest,1,2
+2025-05-25,Nott'm Forest,Chelsea,0,1
+2025-05-25,Man United,Aston Villa,2,0
+2025-08-15,Liverpool,Bournemouth,4,2
+2025-08-16,Wolves,Man City,0,4
+2025-08-16,Tottenham,Burnley,3,0
+2025-08-16,Sunderland,West Ham,3,0
+2025-08-16,Aston Villa,Newcastle,0,0
+2025-08-16,Brighton,Fulham,1,1
+2025-08-17,Chelsea,Crystal Palace,0,0
+2025-08-17,Nott'm Forest,Brentford,3,1
+2025-08-17,Man United,Arsenal,0,1
+2025-08-18,Leeds,Everton,1,0
+2025-08-22,West Ham,Chelsea,1,5
+2025-08-23,Arsenal,Leeds,5,0
+2025-08-23,Burnley,Sunderland,2,0
+2025-08-23,Man City,Tottenham,0,2
+2025-08-23,Bournemouth,Wolves,1,0
+2025-08-23,Brentford,Aston Villa,1,0
+2025-08-24,Crystal Palace,Nott'm Forest,1,1
+2025-08-24,Everton,Brighton,2,0
+2025-08-24,Fulham,Man United,1,1
+2025-08-25,Newcastle,Liverpool,2,3
+2025-08-30,Chelsea,Fulham,2,0
+2025-08-30,Man United,Burnley,3,2
+2025-08-30,Sunderland,Brentford,2,1
+2025-08-30,Tottenham,Bournemouth,0,1
+2025-08-30,Wolves,Everton,2,3
+2025-08-30,Leeds,Newcastle,0,0
+2025-08-31,Aston Villa,Crystal Palace,0,3
+2025-08-31,Liverpool,Arsenal,1,0
+2025-08-31,Brighton,Man City,2,1
+2025-08-31,Nott'm Forest,West Ham,0,3
+2025-09-13,Arsenal,Nott'm Forest,3,0
+2025-09-13,Bournemouth,Brighton,2,1
+2025-09-13,Crystal Palace,Sunderland,0,0
+2025-09-13,Everton,Aston Villa,0,0
+2025-09-13,Fulham,Leeds,1,0
+2025-09-13,Newcastle,Wolves,1,0
+2025-09-13,West Ham,Tottenham,0,3
+2025-09-13,Brentford,Chelsea,2,2
+2025-09-14,Burnley,Liverpool,0,1
+2025-09-14,Man City,Man United,3,0
+2025-09-20,Fulham,Brentford,3,1
+2025-09-20,Man United,Chelsea,2,1
+2025-09-20,Wolves,Leeds,1,3
+2025-09-20,West Ham,Crystal Palace,1,2
+2025-09-20,Burnley,Nott'm Forest,1,1
+2025-09-20,Brighton,Tottenham,2,2
+2025-09-20,Liverpool,Everton,2,1
+2025-09-21,Bournemouth,Newcastle,0,0
+2025-09-21,Sunderland,Aston Villa,1,1
+2025-09-21,Arsenal,Man City,1,1
+2025-09-27,Brentford,Man United,3,1
+2025-09-27,Chelsea,Brighton,1,3
+2025-09-27,Crystal Palace,Liverpool,2,1
+2025-09-27,Leeds,Bournemouth,2,2
+2025-09-27,Man City,Burnley,5,1
+2025-09-27,Tottenham,Wolves,1,1
+2025-09-27,Nott'm Forest,Sunderland,0,1
+2025-09-28,Newcastle,Arsenal,1,2
+2025-09-28,Aston Villa,Fulham,3,1
+2025-09-29,Everton,West Ham,1,1
+2025-10-03,Bournemouth,Fulham,3,1
+2025-10-04,Leeds,Tottenham,1,2
+2025-10-04,Arsenal,West Ham,2,0
+2025-10-04,Man United,Sunderland,2,0
+2025-10-04,Chelsea,Liverpool,2,1
+2025-10-05,Aston Villa,Burnley,2,1
+2025-10-05,Everton,Crystal Palace,2,1
+2025-10-05,Newcastle,Nott'm Forest,2,0
+2025-10-05,Wolves,Brighton,1,1
+2025-10-05,Brentford,Man City,0,1
+2025-10-18,Fulham,Arsenal,0,1
+2025-10-18,Sunderland,Wolves,2,0
+2025-10-18,Man City,Everton,2,0
+2025-10-18,Nott'm Forest,Chelsea,0,3
+2025-10-18,Burnley,Leeds,2,0
+2025-10-18,Brighton,Newcastle,2,1
+2025-10-18,Crystal Palace,Bournemouth,3,3
+2025-10-19,Tottenham,Aston Villa,1,2
+2025-10-19,Liverpool,Man United,1,2
+2025-10-20,West Ham,Brentford,0,2
+2025-10-24,Leeds,West Ham,2,1
+2025-10-25,Man United,Brighton,4,2
+2025-10-25,Brentford,Liverpool,3,2
+2025-10-25,Chelsea,Sunderland,1,2
+2025-10-25,Newcastle,Fulham,2,1
+2025-10-26,Bournemouth,Nott'm Forest,2,0
+2025-10-26,Wolves,Burnley,2,3
+2025-10-26,Arsenal,Crystal Palace,1,0
+2025-10-26,Aston Villa,Man City,1,0
+2025-10-26,Everton,Tottenham,0,3
