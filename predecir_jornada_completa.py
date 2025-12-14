@@ -31,6 +31,12 @@ except ImportError:
     print("⚠️  Sistema EV no disponible. Ejecuta sistema_expected_value.py primero")
     EV_AVAILABLE = False
 
+#new change
+#asd
+
+#sadjashda
+#nuevas lineas para pruebas
+
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
