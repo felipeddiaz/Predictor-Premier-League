@@ -9,11 +9,103 @@ se propaga automáticamente.
 
 import pandas as pd
 import numpy as np
+import os
 import warnings
 
-from config import ROLLING_WINDOW, H2H_ULTIMOS_N
+from config import ROLLING_WINDOW, H2H_ULTIMOS_N, ARCHIVO_XG_RAW
 
 warnings.filterwarnings('ignore')
+
+
+# ============================================================================
+# XG MERGE
+# ============================================================================
+
+# Mapeo de nombres → nombre canónico usado en el dataset principal
+# Cubre tanto la columna 'team' (nombres largos) como 'opponent' (nombres cortos alternativos)
+_XG_TEAM_MAP = {
+    # Columna 'team' (nombres largos fbref)
+    'Brighton And Hove Albion': 'Brighton',
+    'Ipswich Town':             'Ipswich',
+    'Leeds United':             'Leeds',
+    'Leicester City':           'Leicester',
+    'Luton Town':               'Luton',
+    'Manchester City':          'Man City',
+    'Manchester United':        'Man United',
+    'Newcastle United':         'Newcastle',
+    'Norwich City':             'Norwich',
+    'Nottingham Forest':        "Nott'm Forest",
+    'Tottenham Hotspur':        'Tottenham',
+    'West Bromwich Albion':     'West Brom',
+    'West Ham United':          'West Ham',
+    'Wolverhampton Wanderers':  'Wolves',
+    # Columna 'opponent' (nombres cortos alternativos fbref)
+    'Manchester Utd':           'Man United',
+    'Newcastle Utd':            'Newcastle',
+    "Nott'ham Forest":          "Nott'm Forest",
+    'Sheffield Utd':            'Sheffield United',
+    'Ipswich Town':             'Ipswich',
+    'Leeds United':             'Leeds',
+    'Leicester City':           'Leicester',
+    'Luton Town':               'Luton',
+    'Norwich City':             'Norwich',
+}
+
+
+def merge_xg_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Lee final_matches_xg.csv y agrega columnas Home_xG / Away_xG al DataFrame.
+
+    El CSV tiene una fila por equipo por partido (venue = Home/Away).
+    Esta función pivota ese formato a una fila por partido y hace un merge
+    por fecha + equipos, normalizando nombres y formatos de fecha.
+
+    Si el archivo no existe o el merge falla, devuelve df sin cambios
+    (agregar_xg_rolling luego emitirá el warning de "no disponibles").
+
+    Args:
+        df: DataFrame con columnas Date (datetime o str), HomeTeam, AwayTeam.
+
+    Returns:
+        DataFrame con columnas Home_xG y Away_xG agregadas donde haya match.
+    """
+    if not os.path.exists(ARCHIVO_XG_RAW):
+        print(f"   ⚠️  No se encontró {ARCHIVO_XG_RAW} — xG no disponible")
+        return df
+
+    print("\n🔧 Cargando datos de xG...")
+    xg = pd.read_csv(ARCHIVO_XG_RAW)
+
+    # Normalizar nombres de equipos en el CSV de xG (tanto team como opponent)
+    xg['team']     = xg['team'].replace(_XG_TEAM_MAP)
+    xg['opponent'] = xg['opponent'].replace(_XG_TEAM_MAP)
+
+    # Normalizar fecha del CSV de xG (formato DD/MM/YYYY) → datetime
+    xg['date'] = pd.to_datetime(xg['date'], dayfirst=True, errors='coerce')
+    xg = xg.dropna(subset=['date', 'team', 'venue', 'xg'])
+
+    # Separar filas de local y visitante
+    # venue=Home → team=local, opponent=visitante → Home_xG
+    home_xg = xg[xg['venue'] == 'Home'][['date', 'team', 'opponent', 'xg']].copy()
+    home_xg.columns = ['Date', 'HomeTeam', 'AwayTeam', 'Home_xG']
+
+    # venue=Away → team=visitante, opponent=local → Away_xG
+    # Reordenamos opponent/team para que el merge sea por HomeTeam+AwayTeam
+    away_xg = xg[xg['venue'] == 'Away'][['date', 'opponent', 'team', 'xg']].copy()
+    away_xg.columns = ['Date', 'HomeTeam', 'AwayTeam', 'Away_xG']
+
+    # Normalizar fecha del DataFrame principal (ya viene en formato YYYY-MM-DD)
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Merge: primero agrega Home_xG, luego Away_xG
+    df = df.merge(home_xg, on=['Date', 'HomeTeam', 'AwayTeam'], how='left')
+    df = df.merge(away_xg, on=['Date', 'HomeTeam', 'AwayTeam'], how='left')
+
+    con_xg = df['Home_xG'].notna().sum()
+    total = len(df)
+    print(f"   ✅ xG mergeado: {con_xg}/{total} partidos con datos ({con_xg/total*100:.1f}%)")
+
+    return df
 
 
 # ============================================================================

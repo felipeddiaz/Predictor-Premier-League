@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Premier League Match Predictor
-02 - ENTRENAMIENTO DE MODELOS (VERSION OPTIMIZADA CON PESOS OPTUNA)
+02 - ENTRENAMIENTO DE MODELOS (VERSION OPTIMIZADA CON PESOS OPTUNA + XGBOOST)
 
-Entrena tres variantes de Random Forest (basico, balanceado, Optuna),
+Entrena cuatro variantes (RF basico, RF balanceado, RF Optuna, XGBoost),
 selecciona la mejor por F1-Score ponderado y aplica calibracion Platt
 Scaling para obtener probabilidades realistas.
 
@@ -11,7 +11,7 @@ Pipeline:
     datos/procesados/premier_league_con_features.csv
     → features en memoria (xG rolling, tabla, cuotas derivadas)
     → 80/20 split temporal
-    → RF basico + RF balanced + RF Optuna
+    → RF basico + RF balanced + RF Optuna + XGBoost (PARAMS_XGB)
     → CalibratedClassifierCV (sigmoid)
     → modelos/modelo_final_optimizado.pkl
 """
@@ -22,6 +22,8 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV, TimeSe
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.utils.class_weight import compute_sample_weight
+from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
@@ -36,6 +38,7 @@ from config import (
     ARCHIVO_METADATA,
     PESOS_OPTIMOS,
     PARAMS_OPTIMOS,
+    PARAMS_XGB,
     ALL_FEATURES,
     FEATURES_BASE,
     FEATURES_CUOTAS,
@@ -222,7 +225,54 @@ def entrenar_modelos(X_train, y_train, X_test, y_test):
     print(f"   Local: {recall_local:.2%}")
     print(f"   Empate: {recall_empate:.2%}")
     print(f"   Visitante: {recall_visitante:.2%}")
-    
+
+    # -------------------------------------------------------------------------
+    # MODELO 4: XGBoost con pesos de clase (PARAMS_XGB de config.py)
+    # -------------------------------------------------------------------------
+    print("\n" + "="*70)
+    print("MODELO 4: XGBOOST ⚡")
+    print("="*70)
+    print(f"   Hiperparámetros:")
+    print(f"   • n_estimators: {PARAMS_XGB['n_estimators']}")
+    print(f"   • max_depth: {PARAMS_XGB['max_depth']}")
+    print(f"   • learning_rate: {PARAMS_XGB['learning_rate']}")
+    print(f"   • subsample: {PARAMS_XGB['subsample']}")
+    print(f"   • colsample_bytree: {PARAMS_XGB['colsample_bytree']}")
+
+    # XGBoost multiclase no acepta class_weight dict — se usan sample_weight
+    # basados en PESOS_OPTIMOS para mantener la misma lógica que el RF Optuna
+    sample_weights_train = compute_sample_weight(
+        class_weight=PESOS_OPTIMOS, y=y_train
+    )
+
+    xgb_model = XGBClassifier(**PARAMS_XGB)
+    xgb_model.fit(X_train, y_train, sample_weight=sample_weights_train)
+    pred_xgb = xgb_model.predict(X_test)
+
+    acc = accuracy_score(y_test, pred_xgb)
+    f1 = f1_score(y_test, pred_xgb, average='weighted')
+
+    resultados['XGBoost'] = {
+        'modelo': xgb_model,
+        'predicciones': pred_xgb,
+        'accuracy': acc,
+        'f1_score': f1,
+        'nombre': 'XGBoost'
+    }
+
+    print(f"\n✅ Accuracy: {acc:.2%} | F1-Score: {f1:.4f}")
+
+    # Recall por clase
+    cm_xgb = confusion_matrix(y_test, pred_xgb)
+    recall_local = cm_xgb[0,0] / cm_xgb[0].sum() if cm_xgb[0].sum() > 0 else 0
+    recall_empate = cm_xgb[1,1] / cm_xgb[1].sum() if cm_xgb[1].sum() > 0 else 0
+    recall_visitante = cm_xgb[2,2] / cm_xgb[2].sum() if cm_xgb[2].sum() > 0 else 0
+
+    print(f"\n📊 Recall por clase:")
+    print(f"   Local: {recall_local:.2%}")
+    print(f"   Empate: {recall_empate:.2%}")
+    print(f"   Visitante: {recall_visitante:.2%}")
+
     return resultados
 
 # ============================================================================
@@ -302,12 +352,12 @@ def optimizar_modelo_adicional(mejor_key, mejor_modelo, X_train, y_train, X_test
     Solo se ejecuta si el modelo ganador NO es el de Optuna (ya está optimizado).
     """
     
-    # Si el modelo Optuna ganó, no necesita más optimización
-    if mejor_key == 'RF_Optuna':
+    # Si el modelo Optuna o XGBoost ganó, no necesita más optimización
+    if mejor_key in ('RF_Optuna', 'XGBoost'):
         print("\n" + "="*70)
         print("FASE 3: OPTIMIZACIÓN ADICIONAL")
         print("="*70)
-        print("\n✅ El modelo Optuna ya está optimizado. Saltando esta fase.")
+        print(f"\n✅ {mejor_modelo['nombre']} ya está optimizado. Saltando esta fase.")
         return mejor_modelo['modelo'], mejor_modelo['predicciones'], False
     
     print("\n" + "="*70)
@@ -414,9 +464,10 @@ def visualizar_resultados(y_test, predictions, nombre_modelo, features, modelo):
     print(f"✅ Guardado: {archivo_cm}")
     plt.close()
     
-    # Importancia de características
-    if hasattr(modelo, 'feature_importances_'):
-        importances = modelo.feature_importances_
+    # Importancia de características (RF y XGBoost ambos tienen feature_importances_)
+    modelo_base = modelo.estimator if hasattr(modelo, 'estimator') else modelo
+    if hasattr(modelo_base, 'feature_importances_'):
+        importances = modelo_base.feature_importances_
         
         df_imp = pd.DataFrame({
             'Feature': features,
@@ -466,6 +517,7 @@ def guardar_modelo_final(modelo, features, nombre_modelo):
         'features': features,
         'pesos_optuna': PESOS_OPTIMOS,
         'params_optuna': PARAMS_OPTIMOS,
+        'params_xgb': PARAMS_XGB,
     }
     joblib.dump(metadata, ARCHIVO_METADATA)
     print(f"✅ Metadata: {ARCHIVO_METADATA}")
@@ -539,9 +591,15 @@ def main():
         print(f"   Local: {PESOS_OPTIMOS[0]:.4f}")
         print(f"   Empate: {PESOS_OPTIMOS[1]:.4f}")
         print(f"   Visitante: {PESOS_OPTIMOS[2]:.4f}")
+    elif mejor_key == 'XGBoost':
+        print(f"\n⚡ Parámetros XGBoost utilizados:")
+        print(f"   n_estimators: {PARAMS_XGB['n_estimators']}")
+        print(f"   max_depth: {PARAMS_XGB['max_depth']}")
+        print(f"   learning_rate: {PARAMS_XGB['learning_rate']}")
+        print(f"   (Para tunear: ejecutar visualizar_busqueda.py con MODO_XGB = True)")
 
     print(f"\n📁 Archivos guardados en {RUTA_MODELOS}")
-    print(f"\n➡️  Siguiente: python 03_entrenar_con_cuotas.py  o  python predecir_jornada_completa.py\n")
+    print(f"\n➡️  Siguiente: python 03_entrenar_sin_cuotas.py  o  python predecir_jornada_completa.py\n")
 
     return modelo_calibrado, features
 

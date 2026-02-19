@@ -2,9 +2,10 @@
 """
 Optimización de pesos e hiperparámetros con Optuna.
 
-Modos de ejecución:
-  MODO_SIN_CUOTAS = False  →  busca PARAMS_OPTIMOS      (modelo 02, con cuotas)
-  MODO_SIN_CUOTAS = True   →  busca PARAMS_OPTIMOS_VB   (modelo 03, sin cuotas)
+Modos de ejecución (flags principales abajo):
+  MODO_SIN_CUOTAS = False, MODO_XGB = False  →  RF  PARAMS_OPTIMOS    (modelo 02, RF con cuotas)
+  MODO_SIN_CUOTAS = True,  MODO_XGB = False  →  RF  PARAMS_OPTIMOS_VB (modelo 03, RF sin cuotas)
+  MODO_SIN_CUOTAS = False, MODO_XGB = True   →  XGB PARAMS_XGB        (modelo 02, XGBoost con cuotas)
 
 Al terminar imprime el bloque listo para copiar a config.py.
 """
@@ -14,6 +15,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.utils.class_weight import compute_sample_weight
+from xgboost import XGBClassifier
 import optuna
 from optuna.samplers import TPESampler
 import warnings
@@ -34,11 +37,15 @@ from config import (
 from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas
 
 # ============================================================================
-# FLAG PRINCIPAL — cambia aquí antes de ejecutar
+# FLAGS PRINCIPALES — cambia aquí antes de ejecutar
 # ============================================================================
 
-MODO_SIN_CUOTAS = True   # False = optimiza PARAMS_OPTIMOS (02, con cuotas)
-                           # True  = optimiza PARAMS_OPTIMOS_VB (03, sin cuotas)
+MODO_SIN_CUOTAS = False   # False = datos CON cuotas (modelo 02)
+                            # True  = datos SIN cuotas (modelo 03) — solo aplica a RF
+
+MODO_XGB = False           # False = optimiza Random Forest
+                            # True  = optimiza XGBoost (solo con cuotas, modelo 02)
+                            # NOTA: MODO_XGB=True ignora MODO_SIN_CUOTAS
 
 N_TRIALS = 150             # Número de trials Optuna (5-8 min con 150)
 
@@ -46,10 +53,15 @@ N_TRIALS = 150             # Número de trials Optuna (5-8 min con 150)
 # CARGAR Y PREPARAR DATOS
 # ============================================================================
 
-modo_label = "SIN CUOTAS (modelo 03)" if MODO_SIN_CUOTAS else "CON CUOTAS (modelo 02)"
+if MODO_XGB:
+    modo_label = "XGBOOST CON CUOTAS (modelo 02)"
+elif MODO_SIN_CUOTAS:
+    modo_label = "RF SIN CUOTAS (modelo 03)"
+else:
+    modo_label = "RF CON CUOTAS (modelo 02)"
 
 print("=" * 70)
-print(f"OPTIMIZACIÓN DE PESOS CON OPTUNA")
+print(f"OPTIMIZACIÓN DE HIPERPARÁMETROS CON OPTUNA")
 print(f"Modo: {modo_label}")
 print("=" * 70)
 
@@ -60,8 +72,8 @@ print(f"\n✅ Cargados: {len(df)} partidos")
 df = agregar_xg_rolling(df)
 df = agregar_features_tabla(df)
 
-if MODO_SIN_CUOTAS:
-    # Modo sin cuotas: filtrar solo partidos con H2H disponible (igual que el 03)
+if MODO_SIN_CUOTAS and not MODO_XGB:
+    # Modo sin cuotas (RF modelo 03): filtrar solo partidos con H2H disponible
     if 'H2H_Available' in df.columns:
         antes = len(df)
         df = df[df['H2H_Available'] == 1].copy()
@@ -80,7 +92,7 @@ if MODO_SIN_CUOTAS:
     print(f"   • Tabla:         {len([f for f in FEATURES_TABLA if f in features])}")
 
 else:
-    # Modo con cuotas: incluir cuotas derivadas (igual que el 02)
+    # Modo con cuotas (RF modelo 02 o XGBoost modelo 02)
     df = agregar_features_cuotas_derivadas(df)
     features = [f for f in ALL_FEATURES if f in df.columns]
 
@@ -105,11 +117,54 @@ print(f"\n✅ Train: {len(X_train)} | Test: {len(X_test)}")
 # ============================================================================
 
 def objective(trial):
-    if MODO_SIN_CUOTAS:
-        # Rangos ajustados: dataset más pequeño (~1346 train, 34 features)
-        # - pesos más conservadores (evita saturar el empate)
-        # - max_depth más bajo (evita overfitting con pocos datos)
-        # - min_samples_leaf más alto (más regularización)
+    if MODO_XGB:
+        # ── XGBoost con cuotas (modelo 02) ──────────────────────────────────
+        # Pesos de clase como sample_weight (igual que en 02_entrenar_modelo.py)
+        w_local     = trial.suggest_float('peso_local',     0.5, 2.5)
+        w_empate    = trial.suggest_float('peso_empate',    1.0, 5.0)
+        w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.5)
+
+        n_estimators      = trial.suggest_int  ('n_estimators',    100, 500)
+        max_depth         = trial.suggest_int  ('max_depth',         3,  10)
+        learning_rate     = trial.suggest_float('learning_rate',  0.01, 0.30, log=True)
+        subsample         = trial.suggest_float('subsample',       0.5,  1.0)
+        colsample_bytree  = trial.suggest_float('colsample_bytree',0.5,  1.0)
+        reg_alpha         = trial.suggest_float('reg_alpha',       0.0,  2.0)
+        reg_lambda        = trial.suggest_float('reg_lambda',      0.5,  3.0)
+
+        sample_weights = compute_sample_weight(
+            class_weight={0: w_local, 1: w_empate, 2: w_visitante},
+            y=y_train
+        )
+
+        model = XGBClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            learning_rate=learning_rate,
+            subsample=subsample,
+            colsample_bytree=colsample_bytree,
+            reg_alpha=reg_alpha,
+            reg_lambda=reg_lambda,
+            random_state=42,
+            n_jobs=-1,
+            eval_metric='mlogloss',
+        )
+
+        # Cross-val manual para pasar sample_weight por fold
+        tscv = TimeSeriesSplit(n_splits=3)
+        fold_scores = []
+        for train_idx, val_idx in tscv.split(X_train):
+            Xf_tr, Xf_val = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            yf_tr, yf_val = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            sw_tr = sample_weights[train_idx]
+            model.fit(Xf_tr, yf_tr, sample_weight=sw_tr)
+            pred = model.predict(Xf_val)
+            fold_scores.append(f1_score(yf_val, pred, average='weighted'))
+        return np.mean(fold_scores)
+
+    elif MODO_SIN_CUOTAS:
+        # ── RF sin cuotas (modelo 03) ────────────────────────────────────────
+        # Rangos ajustados: dataset más pequeño (~1346 train)
         w_local     = trial.suggest_float('peso_local',     0.5, 2.0)
         w_empate    = trial.suggest_float('peso_empate',    1.0, 3.5)
         w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.0)
@@ -117,8 +172,21 @@ def objective(trial):
         n_estimators     = trial.suggest_int('n_estimators',     100, 400)
         max_depth        = trial.suggest_int('max_depth',          4,  12)
         min_samples_leaf = trial.suggest_int('min_samples_leaf',   5,  20)
+
+        model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            min_samples_leaf=min_samples_leaf,
+            class_weight={0: w_local, 1: w_empate, 2: w_visitante},
+            random_state=42,
+            n_jobs=-1
+        )
+        tscv = TimeSeriesSplit(n_splits=3)
+        scores = cross_val_score(model, X_train, y_train, cv=tscv, scoring='f1_weighted', n_jobs=-1)
+        return scores.mean()
+
     else:
-        # Rangos originales: dataset completo con cuotas (~1616 train)
+        # ── RF con cuotas (modelo 02) ────────────────────────────────────────
         w_local     = trial.suggest_float('peso_local',     0.5, 2.5)
         w_empate    = trial.suggest_float('peso_empate',    1.0, 5.0)
         w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.5)
@@ -127,18 +195,17 @@ def objective(trial):
         max_depth        = trial.suggest_int('max_depth',          4,  20)
         min_samples_leaf = trial.suggest_int('min_samples_leaf',   3,  15)
 
-    model = RandomForestClassifier(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-        min_samples_leaf=min_samples_leaf,
-        class_weight={0: w_local, 1: w_empate, 2: w_visitante},
-        random_state=42,
-        n_jobs=-1
-    )
-
-    tscv = TimeSeriesSplit(n_splits=3)
-    scores = cross_val_score(model, X_train, y_train, cv=tscv, scoring='f1_weighted', n_jobs=-1)
-    return scores.mean()
+        model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            min_samples_leaf=min_samples_leaf,
+            class_weight={0: w_local, 1: w_empate, 2: w_visitante},
+            random_state=42,
+            n_jobs=-1
+        )
+        tscv = TimeSeriesSplit(n_splits=3)
+        scores = cross_val_score(model, X_train, y_train, cv=tscv, scoring='f1_weighted', n_jobs=-1)
+        return scores.mean()
 
 # ============================================================================
 # EJECUTAR OPTIMIZACIÓN
@@ -161,13 +228,25 @@ print("RESULTADOS DE OPTIMIZACIÓN")
 print("=" * 70)
 
 best = study.best_params
-print(f"\n📊 MEJORES PARÁMETROS:")
-print(f"   Peso Local:        {best['peso_local']:.4f}")
-print(f"   Peso Empate:       {best['peso_empate']:.4f}")
-print(f"   Peso Visitante:    {best['peso_visitante']:.4f}")
-print(f"   n_estimators:      {best['n_estimators']}")
-print(f"   max_depth:         {best['max_depth']}")
-print(f"   min_samples_leaf:  {best['min_samples_leaf']}")
+print(f"\n📊 MEJORES PARÁMETROS ({modo_label}):")
+if MODO_XGB:
+    print(f"   Peso Local:        {best['peso_local']:.4f}")
+    print(f"   Peso Empate:       {best['peso_empate']:.4f}")
+    print(f"   Peso Visitante:    {best['peso_visitante']:.4f}")
+    print(f"   n_estimators:      {best['n_estimators']}")
+    print(f"   max_depth:         {best['max_depth']}")
+    print(f"   learning_rate:     {best['learning_rate']:.4f}")
+    print(f"   subsample:         {best['subsample']:.4f}")
+    print(f"   colsample_bytree:  {best['colsample_bytree']:.4f}")
+    print(f"   reg_alpha:         {best['reg_alpha']:.4f}")
+    print(f"   reg_lambda:        {best['reg_lambda']:.4f}")
+else:
+    print(f"   Peso Local:        {best['peso_local']:.4f}")
+    print(f"   Peso Empate:       {best['peso_empate']:.4f}")
+    print(f"   Peso Visitante:    {best['peso_visitante']:.4f}")
+    print(f"   n_estimators:      {best['n_estimators']}")
+    print(f"   max_depth:         {best['max_depth']}")
+    print(f"   min_samples_leaf:  {best['min_samples_leaf']}")
 print(f"\n   Mejor F1 en CV:    {study.best_value:.4f}")
 
 # ============================================================================
@@ -180,17 +259,33 @@ print("=" * 70)
 
 best_weights = {0: best['peso_local'], 1: best['peso_empate'], 2: best['peso_visitante']}
 
-rf_opt = RandomForestClassifier(
-    n_estimators=best['n_estimators'],
-    max_depth=best['max_depth'],
-    min_samples_leaf=best['min_samples_leaf'],
-    class_weight=best_weights,
-    random_state=42,
-    n_jobs=-1
-)
-rf_opt.fit(X_train, y_train)
-pred_opt = rf_opt.predict(X_test)
+if MODO_XGB:
+    sample_weights_test_fit = compute_sample_weight(class_weight=best_weights, y=y_train)
+    modelo_opt = XGBClassifier(
+        n_estimators=best['n_estimators'],
+        max_depth=best['max_depth'],
+        learning_rate=best['learning_rate'],
+        subsample=best['subsample'],
+        colsample_bytree=best['colsample_bytree'],
+        reg_alpha=best['reg_alpha'],
+        reg_lambda=best['reg_lambda'],
+        random_state=42,
+        n_jobs=-1,
+        eval_metric='mlogloss',
+    )
+    modelo_opt.fit(X_train, y_train, sample_weight=sample_weights_test_fit)
+else:
+    modelo_opt = RandomForestClassifier(
+        n_estimators=best['n_estimators'],
+        max_depth=best['max_depth'],
+        min_samples_leaf=best['min_samples_leaf'],
+        class_weight=best_weights,
+        random_state=42,
+        n_jobs=-1
+    )
+    modelo_opt.fit(X_train, y_train)
 
+pred_opt = modelo_opt.predict(X_test)
 acc = accuracy_score(y_test, pred_opt)
 f1  = f1_score(y_test, pred_opt, average='weighted')
 
@@ -231,27 +326,53 @@ rf_bal = RandomForestClassifier(n_estimators=100, min_samples_leaf=5, class_weig
 rf_bal.fit(X_train, y_train)
 pred_bal = rf_bal.predict(X_test)
 
+etiqueta_opt = "XGBoost Optuna ⚡" if MODO_XGB else "Optuna nuevos pesos ⭐"
+
 print(f"\n{'Modelo':<40} {'Accuracy':<12} {'F1-Score':<12}")
 print("-" * 65)
 print(f"{'Básico (sin pesos)':<40} {accuracy_score(y_test, pred_base):>10.4f}  {f1_score(y_test, pred_base, average='weighted'):>10.4f}")
 print(f"{'Balanceado (auto)':<40} {accuracy_score(y_test, pred_bal):>10.4f}  {f1_score(y_test, pred_bal, average='weighted'):>10.4f}")
-print(f"{'Optuna nuevos pesos ⭐':<40} {acc:>10.4f}  {f1:>10.4f}")
+print(f"{etiqueta_opt:<40} {acc:>10.4f}  {f1:>10.4f}")
 
 # ============================================================================
 # CÓDIGO LISTO PARA COPIAR A config.py
 # ============================================================================
 
 print("\n" + "=" * 70)
-if MODO_SIN_CUOTAS:
+if MODO_XGB:
+    print("COPIA ESTO EN config.py  →  PARAMS_XGB  y  PESOS_OPTIMOS")
+elif MODO_SIN_CUOTAS:
     print("COPIA ESTO EN config.py  →  PARAMS_OPTIMOS_VB")
 else:
     print("COPIA ESTO EN config.py  →  PARAMS_OPTIMOS y PESOS_OPTIMOS")
 print("=" * 70)
 
-nombre_params = "PARAMS_OPTIMOS_VB" if MODO_SIN_CUOTAS else "PARAMS_OPTIMOS"
-nombre_pesos  = "PESOS_OPTIMOS"     # mismo nombre en ambos modos
+if MODO_XGB:
+    print(f"""
+PESOS_OPTIMOS = {{
+    0: {best['peso_local']:.4f},   # Local
+    1: {best['peso_empate']:.4f},  # Empate
+    2: {best['peso_visitante']:.4f}   # Visitante
+}}
 
-print(f"""
+PARAMS_XGB = {{
+    'n_estimators': {best['n_estimators']},
+    'max_depth': {best['max_depth']},
+    'learning_rate': {best['learning_rate']:.4f},
+    'subsample': {best['subsample']:.4f},
+    'colsample_bytree': {best['colsample_bytree']:.4f},
+    'reg_alpha': {best['reg_alpha']:.4f},
+    'reg_lambda': {best['reg_lambda']:.4f},
+    'random_state': 42,
+    'n_jobs': -1,
+    'eval_metric': 'mlogloss',
+}}
+""")
+else:
+    nombre_params = "PARAMS_OPTIMOS_VB" if MODO_SIN_CUOTAS else "PARAMS_OPTIMOS"
+    nombre_pesos  = "PESOS_OPTIMOS"
+
+    print(f"""
 {nombre_pesos} = {{
     0: {best['peso_local']:.4f},   # Local
     1: {best['peso_empate']:.4f},  # Empate

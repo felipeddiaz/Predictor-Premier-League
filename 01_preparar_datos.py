@@ -23,7 +23,7 @@ from config import (
     MISSING_THRESHOLD,
     COLUMNAS_ESENCIALES,
 )
-from utils import calcular_h2h_features, agregar_xg_rolling
+from utils import calcular_h2h_features, agregar_xg_rolling, merge_xg_data
 
 warnings.filterwarnings('ignore')
 
@@ -352,7 +352,8 @@ def main():
     try:
         df_final_h2h = crear_features_h2h(df_con_resultados.copy())
 
-        # Paso 5 (opcional): xG rolling — importado de utils
+        # Paso 5 (opcional): merge xG raw + rolling — importados de utils
+        df_final_h2h = merge_xg_data(df_final_h2h)
         df_final_h2h = agregar_xg_rolling(df_final_h2h)
 
         # Backup del archivo anterior si existe

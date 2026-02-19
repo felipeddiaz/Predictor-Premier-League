@@ -78,6 +78,23 @@ PARAMS_OPTIMOS_VB = {
     'n_jobs': -1
 }
 
+# Hiperparámetros XGBoost para el modelo CON cuotas (02_entrenar_modelo.py)
+# Valores iniciales conservadores. Para optimizar: ejecutar visualizar_busqueda.py
+# con MODO_XGB = True y copiar aquí los valores que imprima el script.
+# scale_pos_weight no se usa aquí — XGBoost multiclase usa sample_weight por clase.
+PARAMS_XGB = {
+    'n_estimators': 300,
+    'max_depth': 5,
+    'learning_rate': 0.05,
+    'subsample': 0.8,
+    'colsample_bytree': 0.8,
+    'reg_alpha': 0.1,
+    'reg_lambda': 1.0,
+    'random_state': RANDOM_SEED,
+    'n_jobs': -1,
+    'eval_metric': 'mlogloss',
+}
+
 # ============================================================================
 # PARÁMETROS DE VALUE BETTING
 # ============================================================================

@@ -281,7 +281,7 @@ def seleccionar_mejor_modelo(resultados, y_test):
     print(f"\n📊 REPORTE DETALLADO:")
     print("-" * 65)
     print(classification_report(y_test, mejor['predicciones'],
-                                 target_names=['Local', 'Empate', 'Visitante']))
+                                target_names=['Local', 'Empate', 'Visitante']))
 
     return mejor_key, mejor
 
