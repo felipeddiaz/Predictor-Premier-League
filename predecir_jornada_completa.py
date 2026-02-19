@@ -158,12 +158,14 @@ def cargar_sistema():
     print("🔄 CARGANDO SISTEMA DE PREDICCIÓN")
     print("="*70)
     
-    # Prioridad: modelo optimizado (02) → modelo de value betting (03)
+    # Prioridad: modelo con cuotas (02) → modelo sin cuotas (03)
+    # El modelo con cuotas es más informativo; el sin cuotas es el fallback
+    # para verificar edge estructural independiente del mercado.
     if os.path.exists(ARCHIVO_MODELO):
-        modelo_file = ARCHIVO_MODELO
+        modelo_file = ARCHIVO_MODELO       # 02_entrenar_modelo.py
         features_file = ARCHIVO_FEATURES_PKL
     elif os.path.exists(ARCHIVO_MODELO_VB):
-        modelo_file = ARCHIVO_MODELO_VB
+        modelo_file = ARCHIVO_MODELO_VB    # 03_entrenar_sin_cuotas.py
         features_file = ARCHIVO_FEATURES_VB
     else:
         print("❌ No se encontró el modelo")

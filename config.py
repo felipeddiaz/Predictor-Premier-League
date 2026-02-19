@@ -55,8 +55,21 @@ PESOS_OPTIMOS = {
     2: 1.9519   # Visitante
 }
 
-# Hiperparámetros óptimos encontrados por Optuna
+# Hiperparámetros óptimos encontrados por Optuna (modelo CON cuotas)
 PARAMS_OPTIMOS = {
+    'n_estimators': 229,
+    'max_depth': 8,
+    'min_samples_leaf': 3,
+    'class_weight': PESOS_OPTIMOS,
+    'random_state': RANDOM_SEED,
+    'n_jobs': -1
+}
+
+# Hiperparámetros para el modelo SIN cuotas (03_entrenar_sin_cuotas.py)
+# Valores iniciales = mismos que PARAMS_OPTIMOS.
+# Para afinarlos: ejecutar visualizar_busqueda.py con MODO_SIN_CUOTAS = True
+# y actualizar estos valores con los que imprima el script.
+PARAMS_OPTIMOS_VB = {
     'n_estimators': 229,
     'max_depth': 8,
     'min_samples_leaf': 3,

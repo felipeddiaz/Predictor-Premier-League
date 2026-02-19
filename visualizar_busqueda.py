@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Optimización de pesos de clase con Optuna
-VERSIÓN 2: Con features derivadas de cuotas
+Optimización de pesos e hiperparámetros con Optuna.
+
+Modos de ejecución:
+  MODO_SIN_CUOTAS = False  →  busca PARAMS_OPTIMOS      (modelo 02, con cuotas)
+  MODO_SIN_CUOTAS = True   →  busca PARAMS_OPTIMOS_VB   (modelo 03, sin cuotas)
+
+Al terminar imprime el bloque listo para copiar a config.py.
 """
 
 import pandas as pd
@@ -15,78 +20,99 @@ import warnings
 warnings.filterwarnings('ignore')
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-from config import ARCHIVO_FEATURES
+from config import (
+    ARCHIVO_FEATURES,
+    FEATURES_BASE,
+    FEATURES_CUOTAS,
+    FEATURES_CUOTAS_DERIVADAS,
+    FEATURES_XG,
+    FEATURES_H2H,
+    FEATURES_H2H_DERIVADAS,
+    FEATURES_TABLA,
+    ALL_FEATURES,
+)
 from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas
+
+# ============================================================================
+# FLAG PRINCIPAL — cambia aquí antes de ejecutar
+# ============================================================================
+
+MODO_SIN_CUOTAS = False   # False = optimiza PARAMS_OPTIMOS (02, con cuotas)
+                           # True  = optimiza PARAMS_OPTIMOS_VB (03, sin cuotas)
+
+N_TRIALS = 150             # Número de trials Optuna (5-8 min con 150)
 
 # ============================================================================
 # CARGAR Y PREPARAR DATOS
 # ============================================================================
 
-print("="*70)
-print("OPTIMIZACIÓN DE PESOS CON OPTUNA v2")
-print("(Con features derivadas de cuotas)")
-print("="*70)
+modo_label = "SIN CUOTAS (modelo 03)" if MODO_SIN_CUOTAS else "CON CUOTAS (modelo 02)"
+
+print("=" * 70)
+print(f"OPTIMIZACIÓN DE PESOS CON OPTUNA")
+print(f"Modo: {modo_label}")
+print("=" * 70)
 
 df = pd.read_csv(ARCHIVO_FEATURES)
 print(f"\n✅ Cargados: {len(df)} partidos")
 
-# Aplicar todas las funciones de features
+# Features calculadas en memoria
 df = agregar_xg_rolling(df)
 df = agregar_features_tabla(df)
-df = agregar_features_cuotas_derivadas(df)
 
-# Definir features
-features_base = ['HT_AvgGoals', 'AT_AvgGoals', 'HT_AvgShotsTarget', 'AT_AvgShotsTarget',
-                 'HT_Form_W', 'HT_Form_D', 'HT_Form_L', 'AT_Form_W', 'AT_Form_D', 'AT_Form_L']
+if MODO_SIN_CUOTAS:
+    # Modo sin cuotas: filtrar solo partidos con H2H disponible (igual que el 03)
+    if 'H2H_Available' in df.columns:
+        antes = len(df)
+        df = df[df['H2H_Available'] == 1].copy()
+        print(f"✅ Filtro H2H: {antes} → {len(df)} partidos con historial")
+    df = df.reset_index(drop=True)
 
-features_cuotas = ['B365H', 'B365D', 'B365A', 'B365CH', 'B365CD', 'B365CA']
+    # Features sin cuotas ni cuotas derivadas
+    all_sin_cuotas = FEATURES_BASE + FEATURES_H2H + FEATURES_H2H_DERIVADAS + FEATURES_XG + FEATURES_TABLA
+    features = [f for f in all_sin_cuotas if f in df.columns]
 
-features_cuotas_derivadas = ['Prob_H', 'Prob_D', 'Prob_A', 'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-                              'Market_Move_Strength', 'Prob_Spread', 'Market_Confidence', 'Home_Advantage_Prob']
+    print(f"\n✅ Features totales: {len(features)} (SIN cuotas)")
+    print(f"   • Base:          {len([f for f in FEATURES_BASE if f in features])}")
+    print(f"   • H2H:           {len([f for f in FEATURES_H2H if f in features])}")
+    print(f"   • H2H derivadas: {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
+    print(f"   • xG rolling:    {len([f for f in FEATURES_XG if f in features])}")
+    print(f"   • Tabla:         {len([f for f in FEATURES_TABLA if f in features])}")
 
-features_xg = ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg', 'xG_Diff', 'xG_Total']
+else:
+    # Modo con cuotas: incluir cuotas derivadas (igual que el 02)
+    df = agregar_features_cuotas_derivadas(df)
+    features = [f for f in ALL_FEATURES if f in df.columns]
 
-features_h2h = ['H2H_Available', 'H2H_Matches', 'H2H_Home_Wins', 'H2H_Draws', 'H2H_Away_Wins',
-                'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg', 'H2H_Home_Win_Rate', 'H2H_BTTS_Rate']
-
-features_h2h_derivadas = ['H2H_Goal_Diff', 'H2H_Win_Advantage', 'H2H_Total_Goals_Avg', 'H2H_Home_Consistent']
-
-features_tabla = ['HT_Position', 'AT_Position', 'Position_Diff', 'Season_Progress', 'Position_Reliability']
-
-all_features = (features_base + features_cuotas + features_cuotas_derivadas + 
-                features_xg + features_h2h + features_h2h_derivadas + features_tabla)
-features = [f for f in all_features if f in df.columns]
+    print(f"\n✅ Features totales: {len(features)} (CON cuotas)")
+    print(f"   • Base:             {len([f for f in FEATURES_BASE if f in features])}")
+    print(f"   • Cuotas raw:       {len([f for f in FEATURES_CUOTAS if f in features])}")
+    print(f"   • Cuotas derivadas: {len([f for f in FEATURES_CUOTAS_DERIVADAS if f in features])}")
+    print(f"   • xG rolling:       {len([f for f in FEATURES_XG if f in features])}")
+    print(f"   • H2H:              {len([f for f in FEATURES_H2H if f in features])}")
+    print(f"   • H2H derivadas:    {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
+    print(f"   • Tabla:            {len([f for f in FEATURES_TABLA if f in features])}")
 
 X = df[features].fillna(0)
 y = df['FTR_numeric']
 
 # Split temporal
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-
-print(f"✅ Features totales: {len(features)}")
-print(f"   • Base: {len([f for f in features_base if f in features])}")
-print(f"   • Cuotas: {len([f for f in features_cuotas if f in features])}")
-print(f"   • Cuotas derivadas: {len([f for f in features_cuotas_derivadas if f in features])}")
-print(f"   • xG: {len([f for f in features_xg if f in features])}")
-print(f"   • H2H: {len([f for f in features_h2h if f in features])}")
-print(f"   • Tabla: {len([f for f in features_tabla if f in features])}")
 print(f"\n✅ Train: {len(X_train)} | Test: {len(X_test)}")
 
 # ============================================================================
-# OBJETIVO DE OPTUNA
+# OBJETIVO OPTUNA
 # ============================================================================
 
 def objective(trial):
-    # Pesos de clase
-    w_local = trial.suggest_float('peso_local', 0.5, 2.5)
-    w_empate = trial.suggest_float('peso_empate', 1.0, 5.0)
+    w_local     = trial.suggest_float('peso_local',     0.5, 2.5)
+    w_empate    = trial.suggest_float('peso_empate',    1.0, 5.0)
     w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.5)
-    
-    # Hiperparámetros RF
-    n_estimators = trial.suggest_int('n_estimators', 100, 400)
-    max_depth = trial.suggest_int('max_depth', 4, 20)
-    min_samples_leaf = trial.suggest_int('min_samples_leaf', 3, 15)
-    
+
+    n_estimators     = trial.suggest_int('n_estimators',     100, 400)
+    max_depth        = trial.suggest_int('max_depth',          4,  20)
+    min_samples_leaf = trial.suggest_int('min_samples_leaf',   3,  15)
+
     model = RandomForestClassifier(
         n_estimators=n_estimators,
         max_depth=max_depth,
@@ -95,49 +121,48 @@ def objective(trial):
         random_state=42,
         n_jobs=-1
     )
-    
+
     tscv = TimeSeriesSplit(n_splits=3)
     scores = cross_val_score(model, X_train, y_train, cv=tscv, scoring='f1_weighted', n_jobs=-1)
-    
     return scores.mean()
 
 # ============================================================================
 # EJECUTAR OPTIMIZACIÓN
 # ============================================================================
 
-print("\n" + "="*70)
-print("EJECUTANDO OPTIMIZACIÓN (150 trials)")
-print("="*70)
+print("\n" + "=" * 70)
+print(f"EJECUTANDO OPTIMIZACIÓN ({N_TRIALS} trials) — modo: {modo_label}")
+print("=" * 70)
 print("Esto puede tardar 5-8 minutos...\n")
 
 study = optuna.create_study(direction='maximize', sampler=TPESampler(seed=42))
-study.optimize(objective, n_trials=150, show_progress_bar=True)
+study.optimize(objective, n_trials=N_TRIALS, show_progress_bar=True)
 
 # ============================================================================
 # RESULTADOS
 # ============================================================================
 
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("RESULTADOS DE OPTIMIZACIÓN")
-print("="*70)
+print("=" * 70)
 
 best = study.best_params
 print(f"\n📊 MEJORES PARÁMETROS:")
-print(f"   Peso Local: {best['peso_local']:.4f}")
-print(f"   Peso Empate: {best['peso_empate']:.4f}")
-print(f"   Peso Visitante: {best['peso_visitante']:.4f}")
-print(f"   n_estimators: {best['n_estimators']}")
-print(f"   max_depth: {best['max_depth']}")
-print(f"   min_samples_leaf: {best['min_samples_leaf']}")
-print(f"\n   Mejor F1 en CV: {study.best_value:.4f}")
+print(f"   Peso Local:        {best['peso_local']:.4f}")
+print(f"   Peso Empate:       {best['peso_empate']:.4f}")
+print(f"   Peso Visitante:    {best['peso_visitante']:.4f}")
+print(f"   n_estimators:      {best['n_estimators']}")
+print(f"   max_depth:         {best['max_depth']}")
+print(f"   min_samples_leaf:  {best['min_samples_leaf']}")
+print(f"\n   Mejor F1 en CV:    {study.best_value:.4f}")
 
 # ============================================================================
 # EVALUAR EN TEST
 # ============================================================================
 
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("EVALUACIÓN EN TEST SET")
-print("="*70)
+print("=" * 70)
 
 best_weights = {0: best['peso_local'], 1: best['peso_empate'], 2: best['peso_visitante']}
 
@@ -153,9 +178,9 @@ rf_opt.fit(X_train, y_train)
 pred_opt = rf_opt.predict(X_test)
 
 acc = accuracy_score(y_test, pred_opt)
-f1 = f1_score(y_test, pred_opt, average='weighted')
+f1  = f1_score(y_test, pred_opt, average='weighted')
 
-print(f"\n📊 MODELO OPTIMIZADO v2:")
+print(f"\n📊 MODELO OPTIMIZADO ({modo_label}):")
 print(f"   Accuracy: {acc:.4f} ({acc:.2%})")
 print(f"   F1-Score: {f1:.4f}")
 
@@ -172,65 +197,58 @@ recall_e = cm[1,1] / cm[1].sum() if cm[1].sum() > 0 else 0
 recall_v = cm[2,2] / cm[2].sum() if cm[2].sum() > 0 else 0
 
 print(f"\n   Recall por clase:")
-print(f"   Local: {recall_l:.2%}")
-print(f"   Empate: {recall_e:.2%}")
+print(f"   Local:     {recall_l:.2%}")
+print(f"   Empate:    {recall_e:.2%}")
 print(f"   Visitante: {recall_v:.2%}")
 
 # ============================================================================
 # COMPARACIÓN CON BASELINES
 # ============================================================================
 
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("COMPARACIÓN CON BASELINES")
-print("="*70)
+print("=" * 70)
 
-# Básico
 rf_base = RandomForestClassifier(n_estimators=100, min_samples_leaf=5, random_state=42, n_jobs=-1)
 rf_base.fit(X_train, y_train)
 pred_base = rf_base.predict(X_test)
 
-# Balanceado
 rf_bal = RandomForestClassifier(n_estimators=100, min_samples_leaf=5, class_weight='balanced', random_state=42, n_jobs=-1)
 rf_bal.fit(X_train, y_train)
 pred_bal = rf_bal.predict(X_test)
 
-# Pesos anteriores (v1)
-pesos_v1 = {0: 1.1957, 1: 2.8155, 2: 1.8358}
-rf_v1 = RandomForestClassifier(n_estimators=219, max_depth=6, min_samples_leaf=8, class_weight=pesos_v1, random_state=42, n_jobs=-1)
-rf_v1.fit(X_train, y_train)
-pred_v1 = rf_v1.predict(X_test)
-
-print(f"\n{'Modelo':<35} {'Accuracy':<12} {'F1-Score':<12}")
-print("-" * 60)
-print(f"{'Básico (sin pesos)':<35} {accuracy_score(y_test, pred_base):>10.4f}  {f1_score(y_test, pred_base, average='weighted'):>10.4f}")
-print(f"{'Balanceado (auto)':<35} {accuracy_score(y_test, pred_bal):>10.4f}  {f1_score(y_test, pred_bal, average='weighted'):>10.4f}")
-print(f"{'Optuna v1 (pesos anteriores)':<35} {accuracy_score(y_test, pred_v1):>10.4f}  {f1_score(y_test, pred_v1, average='weighted'):>10.4f}")
-print(f"{'Optuna v2 (nuevos pesos) ⭐':<35} {acc:>10.4f}  {f1:>10.4f}")
-
-mejora = (f1 - f1_score(y_test, pred_v1, average='weighted')) / f1_score(y_test, pred_v1, average='weighted') * 100
-print(f"\n📈 Mejora vs Optuna v1: {mejora:+.2f}%")
+print(f"\n{'Modelo':<40} {'Accuracy':<12} {'F1-Score':<12}")
+print("-" * 65)
+print(f"{'Básico (sin pesos)':<40} {accuracy_score(y_test, pred_base):>10.4f}  {f1_score(y_test, pred_base, average='weighted'):>10.4f}")
+print(f"{'Balanceado (auto)':<40} {accuracy_score(y_test, pred_bal):>10.4f}  {f1_score(y_test, pred_bal, average='weighted'):>10.4f}")
+print(f"{'Optuna nuevos pesos ⭐':<40} {acc:>10.4f}  {f1:>10.4f}")
 
 # ============================================================================
-# CÓDIGO PARA COPIAR
+# CÓDIGO LISTO PARA COPIAR A config.py
 # ============================================================================
 
-print("\n" + "="*70)
-print("CÓDIGO PARA TU MODELO")
-print("="*70)
+print("\n" + "=" * 70)
+if MODO_SIN_CUOTAS:
+    print("COPIA ESTO EN config.py  →  PARAMS_OPTIMOS_VB")
+else:
+    print("COPIA ESTO EN config.py  →  PARAMS_OPTIMOS y PESOS_OPTIMOS")
+print("=" * 70)
+
+nombre_params = "PARAMS_OPTIMOS_VB" if MODO_SIN_CUOTAS else "PARAMS_OPTIMOS"
+nombre_pesos  = "PESOS_OPTIMOS"     # mismo nombre en ambos modos
 
 print(f"""
-# Pesos óptimos v2 (con features derivadas de cuotas)
-PESOS_OPTIMOS = {{
-    0: {best['peso_local']:.4f},  # Local
+{nombre_pesos} = {{
+    0: {best['peso_local']:.4f},   # Local
     1: {best['peso_empate']:.4f},  # Empate
     2: {best['peso_visitante']:.4f}   # Visitante
 }}
 
-PARAMS_OPTIMOS = {{
+{nombre_params} = {{
     'n_estimators': {best['n_estimators']},
     'max_depth': {best['max_depth']},
     'min_samples_leaf': {best['min_samples_leaf']},
-    'class_weight': PESOS_OPTIMOS,
+    'class_weight': {nombre_pesos},
     'random_state': 42,
     'n_jobs': -1
 }}
