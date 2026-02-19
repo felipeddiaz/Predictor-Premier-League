@@ -167,11 +167,8 @@ FEATURES_H2H_DERIVADAS = [
 
 FEATURES_TABLA = [
     'HT_Position', 'AT_Position',
-    'Position_Diff', 'Position_Diff_Weighted',
-    'HT_Points', 'AT_Points',
-    'Season_Progress', 'Position_Reliability',
-    'Match_Type',
-    'HT_Pressure', 'AT_Pressure',
+    'Position_Diff',
+    'Season_Progress', 'Position_Reliability'
 ]
 
 ALL_FEATURES = (

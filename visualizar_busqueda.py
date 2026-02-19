@@ -43,7 +43,7 @@ from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_c
 MODO_SIN_CUOTAS = False   # False = datos CON cuotas (modelo 02)
                             # True  = datos SIN cuotas (modelo 03) — solo aplica a RF
 
-MODO_XGB = False           # False = optimiza Random Forest
+MODO_XGB =  True           # False = optimiza Random Forest
                             # True  = optimiza XGBoost (solo con cuotas, modelo 02)
                             # NOTA: MODO_XGB=True ignora MODO_SIN_CUOTAS
 
