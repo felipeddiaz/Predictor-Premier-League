@@ -37,7 +37,7 @@ from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_c
 # FLAG PRINCIPAL — cambia aquí antes de ejecutar
 # ============================================================================
 
-MODO_SIN_CUOTAS = False   # False = optimiza PARAMS_OPTIMOS (02, con cuotas)
+MODO_SIN_CUOTAS = True   # False = optimiza PARAMS_OPTIMOS (02, con cuotas)
                            # True  = optimiza PARAMS_OPTIMOS_VB (03, sin cuotas)
 
 N_TRIALS = 150             # Número de trials Optuna (5-8 min con 150)
@@ -105,13 +105,27 @@ print(f"\n✅ Train: {len(X_train)} | Test: {len(X_test)}")
 # ============================================================================
 
 def objective(trial):
-    w_local     = trial.suggest_float('peso_local',     0.5, 2.5)
-    w_empate    = trial.suggest_float('peso_empate',    1.0, 5.0)
-    w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.5)
+    if MODO_SIN_CUOTAS:
+        # Rangos ajustados: dataset más pequeño (~1346 train, 34 features)
+        # - pesos más conservadores (evita saturar el empate)
+        # - max_depth más bajo (evita overfitting con pocos datos)
+        # - min_samples_leaf más alto (más regularización)
+        w_local     = trial.suggest_float('peso_local',     0.5, 2.0)
+        w_empate    = trial.suggest_float('peso_empate',    1.0, 3.5)
+        w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.0)
 
-    n_estimators     = trial.suggest_int('n_estimators',     100, 400)
-    max_depth        = trial.suggest_int('max_depth',          4,  20)
-    min_samples_leaf = trial.suggest_int('min_samples_leaf',   3,  15)
+        n_estimators     = trial.suggest_int('n_estimators',     100, 400)
+        max_depth        = trial.suggest_int('max_depth',          4,  12)
+        min_samples_leaf = trial.suggest_int('min_samples_leaf',   5,  20)
+    else:
+        # Rangos originales: dataset completo con cuotas (~1616 train)
+        w_local     = trial.suggest_float('peso_local',     0.5, 2.5)
+        w_empate    = trial.suggest_float('peso_empate',    1.0, 5.0)
+        w_visitante = trial.suggest_float('peso_visitante', 0.5, 2.5)
+
+        n_estimators     = trial.suggest_int('n_estimators',     100, 400)
+        max_depth        = trial.suggest_int('max_depth',          4,  20)
+        min_samples_leaf = trial.suggest_int('min_samples_leaf',   3,  15)
 
     model = RandomForestClassifier(
         n_estimators=n_estimators,
