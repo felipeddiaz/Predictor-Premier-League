@@ -91,7 +91,8 @@ def cargar_datos():
     df = df.reset_index(drop=True)
 
     # Features disponibles (SIN cuotas ni cuotas derivadas)
-    all_sin_cuotas = FEATURES_BASE + FEATURES_H2H + FEATURES_H2H_DERIVADAS + FEATURES_XG + FEATURES_TABLA
+    # FEATURES_TABLA comentadas — descomentar cuando se quiera incluir posición en tabla
+    all_sin_cuotas = FEATURES_BASE + FEATURES_H2H + FEATURES_H2H_DERIVADAS + FEATURES_XG  # + FEATURES_TABLA
     features = [f for f in all_sin_cuotas if f in df.columns]
 
     print(f"\n📊 Features totales: {len(features)} (SIN cuotas)")
@@ -99,7 +100,7 @@ def cargar_datos():
     print(f"   • H2H:           {len([f for f in FEATURES_H2H if f in features])}")
     print(f"   • H2H derivadas: {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
     print(f"   • xG rolling:    {len([f for f in FEATURES_XG if f in features])}")
-    print(f"   • Tabla:         {len([f for f in FEATURES_TABLA if f in features])}")
+    #print(f"   • Tabla:         {len([f for f in FEATURES_TABLA if f in features])}")
 
     X = df[features].fillna(0)
     y = df['FTR_numeric']
