@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 Premier League Match Predictor
-02 - ENTRENAMIENTO DE MODELOS (VERSIÓN OPTIMIZADA CON PESOS OPTUNA)
-Entrena modelos RF con pesos de clase optimizados por Optuna
+02 - ENTRENAMIENTO DE MODELOS (VERSION OPTIMIZADA CON PESOS OPTUNA)
+
+Entrena tres variantes de Random Forest (basico, balanceado, Optuna),
+selecciona la mejor por F1-Score ponderado y aplica calibracion Platt
+Scaling para obtener probabilidades realistas.
+
+Pipeline:
+    datos/procesados/premier_league_con_features.csv
+    → features en memoria (xG rolling, tabla, cuotas derivadas)
+    → 80/20 split temporal
+    → RF basico + RF balanced + RF Optuna
+    → CalibratedClassifierCV (sigmoid)
+    → modelos/modelo_final_optimizado.pkl
 """
 
 import pandas as pd
@@ -16,44 +27,41 @@ import seaborn as sns
 import joblib
 import os
 import warnings
+
+from config import (
+    ARCHIVO_FEATURES,
+    RUTA_MODELOS,
+    ARCHIVO_MODELO,
+    ARCHIVO_FEATURES_PKL,
+    ARCHIVO_METADATA,
+    PESOS_OPTIMOS,
+    PARAMS_OPTIMOS,
+    ALL_FEATURES,
+    FEATURES_BASE,
+    FEATURES_CUOTAS,
+    FEATURES_CUOTAS_DERIVADAS,
+    FEATURES_XG,
+    FEATURES_H2H,
+    FEATURES_H2H_DERIVADAS,
+    FEATURES_TABLA,
+    TEST_SIZE,
+    RANDOM_SEED,
+)
+from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas
+
 warnings.filterwarnings('ignore')
-
-# ============================================================================
-# CONFIGURACIÓN
-# ============================================================================
-
-RUTA_DATOS = './datos/procesados/premier_league_RESTAURADO.csv'
-RUTA_MODELOS = './modelos/'
 
 os.makedirs(RUTA_MODELOS, exist_ok=True)
 
-# ============================================================================
-# PESOS OPTIMIZADOS POR OPTUNA
-# ============================================================================
-
-# Estos pesos fueron encontrados mediante 100 trials de optimización
-# maximizando F1-Score con TimeSeriesSplit cross-validation
-PESOS_OPTIMOS = {
-    0: 1.2486,  # Local
-    1: 3.3228,  # Empate (subió de 2.8 a 3.3)
-    2: 1.9519   # Visitante
-}
-
-# Hiperparámetros óptimos encontrados por Optuna
-PARAMS_OPTIMOS = {
-    'n_estimators': 229,
-    'max_depth': 8,        # Subió de 6 a 8
-    'min_samples_leaf': 3, # Bajó de 8 a 3
-    'class_weight': PESOS_OPTIMOS,
-    'random_state': 42,
-    'n_jobs': -1
-}
+# Alias locales para retro-compatibilidad con la variable de ruta
+RUTA_DATOS = ARCHIVO_FEATURES
 
 # ============================================================================
 # FUNCIÓN PARA AGREGAR FEATURES DERIVADAS DE CUOTAS
+# (Delegada a utils.py — se mantiene aqui solo el wrapper para compatibilidad)
 # ============================================================================
 
-def agregar_features_cuotas_derivadas(df):
+def _agregar_features_cuotas_derivadas_deprecated(df):
     """
     Agrega features derivadas de las cuotas de apuestas.
     Incluye probabilidades implícitas, movimiento de mercado y confianza.
@@ -140,85 +148,11 @@ def agregar_features_cuotas_derivadas(df):
     
     return df
 
-# ============================================================================
-# FUNCIÓN PARA AGREGAR xG ROLLING
-# ============================================================================
+# agregar_xg_rolling esta en utils.py (version canonica)
 
-def agregar_xg_rolling(df, window=5):
-    """
-    Agrega features xG rolling (promedios históricos).
-    Se calcula en memoria, no modifica el CSV original.
-    """
-    print("\n🔧 Calculando xG rolling...")
-    
-    if 'Home_xG' not in df.columns or 'Away_xG' not in df.columns:
-        print("   ⚠️ No hay datos de xG disponibles")
-        return df
-    
-    # Ordenar de forma determinística
-    df = df.sort_values(['Date', 'HomeTeam', 'AwayTeam']).reset_index(drop=True)
-    
-    # Inicializar columnas
-    df['HT_xG_Avg'] = np.nan
-    df['AT_xG_Avg'] = np.nan
-    df['HT_xGA_Avg'] = np.nan
-    df['AT_xGA_Avg'] = np.nan
-    
-    # Iterar en orden alfabético para determinismo
-    for team in sorted(df['HomeTeam'].unique()):
-        mask_home = df['HomeTeam'] == team
-        mask_away = df['AwayTeam'] == team
-        
-        # xG creado por el equipo (shift para evitar leakage)
-        df.loc[mask_home, 'HT_xG_Avg'] = (
-            df.loc[mask_home, 'Home_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-        df.loc[mask_away, 'AT_xG_Avg'] = (
-            df.loc[mask_away, 'Away_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-        
-        # xG concedido por el equipo
-        df.loc[mask_home, 'HT_xGA_Avg'] = (
-            df.loc[mask_home, 'Away_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-        df.loc[mask_away, 'AT_xGA_Avg'] = (
-            df.loc[mask_away, 'Home_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-    
-    # Features derivadas
-    df['xG_Diff'] = df['HT_xG_Avg'] - df['AT_xG_Avg']
-    df['xG_Total'] = df['HT_xG_Avg'] + df['AT_xG_Avg']
-    
-    # Rellenar NaN
-    xg_cols = ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg', 'xG_Diff', 'xG_Total']
-    df[xg_cols] = df[xg_cols].fillna(0)
-    
-    con_xg = (df['HT_xG_Avg'] > 0).sum()
-    print(f"   ✅ xG rolling agregado: {con_xg} partidos con datos históricos")
-    
-    return df
+# agregar_features_tabla y agregar_features_cuotas_derivadas estan en utils.py
 
-# ============================================================================
-# FUNCIÓN PARA AGREGAR FEATURES DE POSICIÓN EN TABLA
-# ============================================================================
-
-def agregar_features_tabla(df):
+def _agregar_features_tabla_deprecated(df):
     """
     Calcula features basadas en la posición en la tabla.
     Se calcula de forma temporal (solo partidos anteriores) para evitar leakage.
@@ -436,90 +370,23 @@ def cargar_datos():
     df = pd.read_csv(RUTA_DATOS)
     print(f"✅ Cargados: {len(df)} partidos")
     
-    # Agregar features calculadas en memoria
+    # Agregar features calculadas en memoria (funciones canonicas de utils.py)
     df = agregar_xg_rolling(df)
     df = agregar_features_tabla(df)
     df = agregar_features_cuotas_derivadas(df)
-    
-    # ========================================================================
-    # DEFINIR FEATURES (Base + Cuotas + H2H + xG + Tabla)
-    # ========================================================================
-    
-    # Features base (forma reciente)
-    features_base = [
-        'HT_AvgGoals', 'AT_AvgGoals',
-        'HT_AvgShotsTarget', 'AT_AvgShotsTarget',
-        'HT_Form_W', 'HT_Form_D', 'HT_Form_L',
-        'AT_Form_W', 'AT_Form_D', 'AT_Form_L'
-    ]
-    
-    # Features de cuotas
-    features_cuotas = ['B365H', 'B365D', 'B365A', 'B365CH', 'B365CD', 'B365CA']
-    
-    # Features xG rolling (calculadas en memoria)
-    features_xg = [
-        'HT_xG_Avg', 'AT_xG_Avg',
-        'HT_xGA_Avg', 'AT_xGA_Avg',
-        'xG_Diff', 'xG_Total'
-    ]
-    
-    # Features H2H
-    features_h2h = [
-        'H2H_Available',
-        'H2H_Matches', 'H2H_Home_Wins', 'H2H_Draws', 'H2H_Away_Wins',
-        'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg',
-        'H2H_Home_Win_Rate', 'H2H_BTTS_Rate'
-    ]
-    
-    # Features derivadas H2H
-    features_h2h_derivadas = [
-        'H2H_Goal_Diff',
-        'H2H_Win_Advantage',
-        'H2H_Total_Goals_Avg',
-        'H2H_Home_Consistent'
-    ]
-    
-    # Features de tabla (calculadas en memoria)
-    features_tabla = [
-        'HT_Position', 'AT_Position',
-        'Position_Diff', 'Position_Diff_Weighted',
-        'HT_Points', 'AT_Points',
-        'Season_Progress', 'Position_Reliability',
-        'Match_Type',
-        'HT_Pressure', 'AT_Pressure'
-    ]
-
-    features_cuotas_derivadas = [
-    # Probabilidades implícitas base
-    'Prob_H', 'Prob_D', 'Prob_A',
-    
-    # Movimiento de mercado
-    'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-    'Market_Move_Strength',
-    
-    # Estructura del mercado
-    'Prob_Spread',
-    'Market_Confidence',
-    'Home_Advantage_Prob'
-]
-
-# Nota: Prob_Max y Prob_Min se calculan pero no se usan como features
-# porque son redundantes con Prob_H/D/A. Solo sirven para calcular Prob_Spread.
-
-    # Combinar todas las features
-    all_features = (features_base + features_cuotas + features_cuotas_derivadas +  features_xg + features_h2h + features_h2h_derivadas + features_tabla)
 
     # Filtrar solo las que existen en el DataFrame
-    features = [f for f in all_features if f in df.columns]
+    # Usa ALL_FEATURES de config.py como lista canonica unica
+    features = [f for f in ALL_FEATURES if f in df.columns]
     
     print(f"\n📊 Features totales: {len(features)}")
-    print(f"   • Base: {len([f for f in features_base if f in features])}")
-    print(f"   • Cuotas: {len([f for f in features_cuotas if f in features])}")
-    print(f"   • xG rolling: {len([f for f in features_xg if f in features])}")
-    print(f"   • H2H: {len([f for f in features_h2h if f in features])}")
-    print(f"   • H2H derivadas: {len([f for f in features_h2h_derivadas if f in features])}")
-    print(f"   • Tabla: {len([f for f in features_tabla if f in features])}")
-    print(f"   • Cuotas derivadas: {len([f for f in features_cuotas_derivadas if f in features])}")
+    print(f"   • Base: {len([f for f in FEATURES_BASE if f in features])}")
+    print(f"   • Cuotas: {len([f for f in FEATURES_CUOTAS if f in features])}")
+    print(f"   • xG rolling: {len([f for f in FEATURES_XG if f in features])}")
+    print(f"   • H2H: {len([f for f in FEATURES_H2H if f in features])}")
+    print(f"   • H2H derivadas: {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
+    print(f"   • Tabla: {len([f for f in FEATURES_TABLA if f in features])}")
+    print(f"   • Cuotas derivadas: {len([f for f in FEATURES_CUOTAS_DERIVADAS if f in features])}")
     
     # Info de H2H
     if 'H2H_Available' in features:
@@ -883,27 +750,22 @@ def guardar_modelo_final(modelo, features, nombre_modelo):
     print("FASE 5: GUARDANDO MODELO")
     print("="*70)
     
-    # Modelo
-    archivo_modelo = os.path.join(RUTA_MODELOS, 'modelo_final_optimizado.pkl')
-    joblib.dump(modelo, archivo_modelo)
-    print(f"✅ Modelo: {archivo_modelo}")
-    
-    # Features
-    archivo_features = os.path.join(RUTA_MODELOS, 'features.pkl')
-    joblib.dump(features, archivo_features)
-    print(f"✅ Features: {archivo_features}")
-    
-    # Metadata incluyendo pesos Optuna
+    # Usar rutas de config.py (unica fuente de verdad)
+    joblib.dump(modelo, ARCHIVO_MODELO)
+    print(f"✅ Modelo: {ARCHIVO_MODELO}")
+
+    joblib.dump(features, ARCHIVO_FEATURES_PKL)
+    print(f"✅ Features: {ARCHIVO_FEATURES_PKL}")
+
     metadata = {
         'nombre_modelo': nombre_modelo,
         'n_features': len(features),
         'features': features,
         'pesos_optuna': PESOS_OPTIMOS,
-        'params_optuna': PARAMS_OPTIMOS
+        'params_optuna': PARAMS_OPTIMOS,
     }
-    archivo_meta = os.path.join(RUTA_MODELOS, 'metadata.pkl')
-    joblib.dump(metadata, archivo_meta)
-    print(f"✅ Metadata: {archivo_meta}")
+    joblib.dump(metadata, ARCHIVO_METADATA)
+    print(f"✅ Metadata: {ARCHIVO_METADATA}")
 
 
 # ============================================================================
@@ -948,41 +810,37 @@ def main():
     modelo_calibrado, probs_calibradas = calibrar_modelo(
         modelo_final, X_train, y_train, X_test, y_test
     )
-    
+
     nombre_final = f"{mejor_modelo['nombre']} {'(Calibrado)' if mejor_key == 'RF_Optuna' else '(Opt+Cal)'}"
-    
-    # Visualizaciones
+
+    # Visualizaciones (usa modelo base para feature_importances_)
     visualizar_resultados(y_test, pred_final, nombre_final, features, modelo_final)
-    
-    # Guardar modelo calibrado
+
+    # Guardar modelo calibrado (el que realmente se usa en prediccion)
     guardar_modelo_final(modelo_calibrado, features, nombre_final)
-    
-    # Resumen
-    acc_final = accuracy_score(y_test, pred_final)
-    f1_final = f1_score(y_test, pred_final, average='weighted')
-    
+
+    # Resumen — se reportan las metricas del modelo calibrado (consistente con lo guardado)
+    pred_calibrado = modelo_calibrado.predict(X_test)
+    acc_final = accuracy_score(y_test, pred_calibrado)
+    f1_final = f1_score(y_test, pred_calibrado, average='weighted')
+
     print("\n" + "="*70)
-    print("✅ ¡ENTRENAMIENTO COMPLETADO!")
+    print("✅ ENTRENAMIENTO COMPLETADO")
     print("="*70)
-    print(f"\n🏆 Modelo: {nombre_final}")
-    print(f"📊 Accuracy: {acc_final:.2%}")
-    print(f"📊 F1-Score: {f1_final:.4f}")
-    
+    print(f"\n🏆 Modelo guardado: {nombre_final}")
+    print(f"📊 Accuracy (calibrado): {acc_final:.2%}")
+    print(f"📊 F1-Score (calibrado): {f1_final:.4f}")
+
     if mejor_key == 'RF_Optuna':
         print(f"\n⭐ Pesos Optuna utilizados:")
         print(f"   Local: {PESOS_OPTIMOS[0]:.4f}")
         print(f"   Empate: {PESOS_OPTIMOS[1]:.4f}")
         print(f"   Visitante: {PESOS_OPTIMOS[2]:.4f}")
-    
-    print(f"\n📁 Archivos:")
-    print(f"   • modelos/modelo_final_optimizado.pkl")
-    print(f"   • modelos/features.pkl")
-    print(f"   • modelos/metadata.pkl")
-    print(f"   • modelos/confusion_matrix_final.png")
-    print(f"   • modelos/feature_importance_final.png")
-    print(f"\n➡️  Siguiente: python 03_predecir_partidos.py\n")
-    
-    return modelo_final, features
+
+    print(f"\n📁 Archivos guardados en {RUTA_MODELOS}")
+    print(f"\n➡️  Siguiente: python 03_entrenar_con_cuotas.py  o  python predecir_jornada_completa.py\n")
+
+    return modelo_calibrado, features
 
 
 if __name__ == "__main__":

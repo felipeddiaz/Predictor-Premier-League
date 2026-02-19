@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 Premier League Match Predictor
-ENTRENAMIENTO CON VALUE BETTING
+03 - ENTRENAMIENTO CON VALUE BETTING
 
-Modelo SIN cuotas + Filtro de cuotas para value betting
+Modelo SIN cuotas como features + evaluacion de value betting usando cuotas
+como filtro post-prediccion. Incluye soporte opcional para XGBoost y SMOTE.
+
+Pipeline:
+    datos/procesados/premier_league_con_features.csv
+    → features sin cuotas (base + H2H + xG)
+    → 80/20 split temporal (sin shuffle)
+    → RF basico + RF balanceado + XGBoost con SMOTE (si disponible)
+    → Evaluacion ROI por umbral de edge
+    → modelos/modelo_value_betting.pkl
 """
 
 import pandas as pd
@@ -16,90 +25,38 @@ import seaborn as sns
 import joblib
 import os
 import warnings
+
+from config import (
+    ARCHIVO_FEATURES,
+    RUTA_MODELOS,
+    ARCHIVO_MODELO_VB,
+    ARCHIVO_FEATURES_VB,
+    FEATURES_BASE,
+    FEATURES_H2H,
+    FEATURES_H2H_DERIVADAS,
+    FEATURES_XG,
+    FEATURES_TABLA,
+)
+from utils import agregar_xg_rolling, agregar_features_tabla
+
 warnings.filterwarnings('ignore')
 
 try:
     from xgboost import XGBClassifier
-    from imblearn.over_sampling import SMOTE
-    ADVANCED_LIBS = True
+    XGBOOST_AVAILABLE = True
 except ImportError:
-    ADVANCED_LIBS = False
+    XGBOOST_AVAILABLE = False
 
-RUTA_DATOS = './datos/procesados/premier_league_RESTAURADO.csv'
-RUTA_MODELOS = './modelos/'
+try:
+    from imblearn.over_sampling import SMOTE
+    SMOTE_AVAILABLE = True
+except ImportError:
+    SMOTE_AVAILABLE = False
+
+ADVANCED_LIBS = XGBOOST_AVAILABLE and SMOTE_AVAILABLE
+
+RUTA_DATOS = ARCHIVO_FEATURES
 os.makedirs(RUTA_MODELOS, exist_ok=True)
-
-# ============================================================================
-# FUNCIÓN PARA AGREGAR xG ROLLING (NUEVA)
-# ============================================================================
-
-def agregar_xg_rolling(df, window=5):
-    """
-    Agrega features xG rolling (promedios históricos).
-    Se calcula en memoria, no modifica el CSV original.
-    """
-    print("\n🔧 Calculando xG rolling...")
-    
-    if 'Home_xG' not in df.columns:
-        print("   ⚠️ No hay datos de xG disponibles")
-        return df
-    
-    df = df.sort_values('Date').reset_index(drop=True)
-    
-    # Inicializar columnas
-    df['HT_xG_Avg'] = np.nan
-    df['AT_xG_Avg'] = np.nan
-    df['HT_xGA_Avg'] = np.nan
-    df['AT_xGA_Avg'] = np.nan
-    
-    for team in df['HomeTeam'].unique():
-        mask_home = df['HomeTeam'] == team
-        mask_away = df['AwayTeam'] == team
-        
-        # xG creado por el equipo (shift para evitar leakage)
-        df.loc[mask_home, 'HT_xG_Avg'] = (
-            df.loc[mask_home, 'Home_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-        df.loc[mask_away, 'AT_xG_Avg'] = (
-            df.loc[mask_away, 'Away_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-        
-        # xG concedido por el equipo
-        df.loc[mask_home, 'HT_xGA_Avg'] = (
-            df.loc[mask_home, 'Away_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-        df.loc[mask_away, 'AT_xGA_Avg'] = (
-            df.loc[mask_away, 'Home_xG']
-            .shift(1)
-            .rolling(window, min_periods=1)
-            .mean()
-            .values
-        )
-    
-    # Features derivadas
-    df['xG_Diff'] = df['HT_xG_Avg'] - df['AT_xG_Avg']
-    df['xG_Total'] = df['HT_xG_Avg'] + df['AT_xG_Avg']
-    
-    # Rellenar NaN
-    xg_cols = ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg', 'xG_Diff', 'xG_Total']
-    df[xg_cols] = df[xg_cols].fillna(0)
-    
-    con_xg = (df['HT_xG_Avg'] > 0).sum()
-    print(f"   ✅ xG rolling agregado: {con_xg} partidos con datos históricos")
-    
-    return df
 
 # ============================================================================
 # CARGA Y PREPARACIÓN
@@ -191,33 +148,6 @@ def cargar_datos_hibridos():
     X_full = df[features].fillna(0)
     y = df['FTR_numeric']
 
-    # Feature selection: Top 15
-    usar_top_features = True
-    top_n = 15
-    
-    if usar_top_features:
-        print(f"\n🔝 Seleccionando top {top_n} features...")
-        rf_temp = RandomForestClassifier(
-            n_estimators=100, 
-            min_samples_leaf=5, 
-            random_state=42, 
-            n_jobs=-1
-        )
-        rf_temp.fit(X_full, y)
-        
-        importancias = rf_temp.feature_importances_
-        top_idx = np.argsort(importancias)[::-1][:top_n]
-        top_features = [features[i] for i in top_idx]
-        
-        print(f"\nTop {top_n} features seleccionadas:")
-        for i, feat in enumerate(top_features, 1):
-            print(f"   {i:2}. {feat}")
-        
-        X = X_full[top_features]
-        features = top_features
-    else:
-        X = X_full
-
     print(f"\n📊 Distribución:")
     for clase in [0, 1, 2]:
         nombre = ['Local', 'Empate', 'Visitante'][clase]
@@ -225,248 +155,7 @@ def cargar_datos_hibridos():
         pct = count / len(y) * 100
         print(f"   {nombre}: {count} ({pct:.1f}%)")
 
-    return X, y, features, df
-
-# ============================================================================
-# FUNCIÓN PARA AGREGAR FEATURES DE POSICIÓN EN TABLA (NUEVA)
-# ============================================================================
-
-def agregar_features_tabla(df):
-    """
-    Calcula features basadas en la posición en la tabla.
-    Se calcula de forma temporal (solo partidos anteriores) para evitar leakage.
-    """
-    print("\n🔧 Calculando features de posición en tabla...")
-    
-    df = df.sort_values('Date').reset_index(drop=True)
-    
-    # Inicializar columnas
-    df['HT_Position'] = np.nan
-    df['AT_Position'] = np.nan
-    df['HT_Points'] = np.nan
-    df['AT_Points'] = np.nan
-    df['Position_Diff'] = np.nan
-    df['HT_Points_Above'] = np.nan  # Puntos sobre el siguiente
-    df['HT_Points_Below'] = np.nan  # Puntos bajo el anterior
-    df['AT_Points_Above'] = np.nan
-    df['AT_Points_Below'] = np.nan
-    df['Matchday'] = np.nan
-    df['Season_Progress'] = np.nan  # 0 a 1 (inicio a fin de temporada)
-    df['Position_Reliability'] = np.nan  # Qué tan confiable es la posición
-    
-    # Identificar temporadas
-    df['Season'] = df['Date'].apply(lambda x: f"{x.year}-{x.year+1}" if x.month >= 8 else f"{x.year-1}-{x.year}")
-    
-    temporadas = df['Season'].unique()
-    print(f"   Procesando {len(temporadas)} temporadas...")
-    
-    for temporada in temporadas:
-        mask_temporada = df['Season'] == temporada
-        indices_temporada = df[mask_temporada].index.tolist()
-        
-        if len(indices_temporada) == 0:
-            continue
-        
-        # Diccionario para tracking de puntos por equipo
-        puntos_equipo = {}
-        goles_favor = {}
-        goles_contra = {}
-        partidos_jugados = {}
-        
-        # Obtener todos los equipos de esta temporada
-        equipos_temporada = set(df.loc[mask_temporada, 'HomeTeam'].unique()) | set(df.loc[mask_temporada, 'AwayTeam'].unique())
-        
-        for equipo in equipos_temporada:
-            puntos_equipo[equipo] = 0
-            goles_favor[equipo] = 0
-            goles_contra[equipo] = 0
-            partidos_jugados[equipo] = 0
-        
-        # Contador de jornada (aproximado por fecha)
-        fechas_unicas = sorted(df.loc[mask_temporada, 'Date'].unique())
-        fecha_to_jornada = {fecha: i+1 for i, fecha in enumerate(fechas_unicas)}
-        
-        # Procesar cada partido de la temporada en orden cronológico
-        for idx in indices_temporada:
-            row = df.loc[idx]
-            home = row['HomeTeam']
-            away = row['AwayTeam']
-            fecha = row['Date']
-            
-            # Calcular jornada aproximada
-            jornada = fecha_to_jornada.get(fecha, 1)
-            total_jornadas = len(fechas_unicas)
-            
-            # ================================================================
-            # ANTES del partido: calcular posiciones actuales
-            # ================================================================
-            
-            if partidos_jugados.get(home, 0) > 0 or partidos_jugados.get(away, 0) > 0:
-                # Crear tabla actual
-                tabla = []
-                for equipo in equipos_temporada:
-                    if partidos_jugados.get(equipo, 0) > 0:
-                        tabla.append({
-                            'Equipo': equipo,
-                            'Puntos': puntos_equipo.get(equipo, 0),
-                            'GD': goles_favor.get(equipo, 0) - goles_contra.get(equipo, 0),
-                            'GF': goles_favor.get(equipo, 0),
-                            'PJ': partidos_jugados.get(equipo, 0)
-                        })
-                
-                if len(tabla) > 0:
-                    # Ordenar por puntos, diferencia de goles, goles a favor
-                    tabla_df = pd.DataFrame(tabla)
-                    tabla_df = tabla_df.sort_values(
-                        by=['Puntos', 'GD', 'GF'], 
-                        ascending=[False, False, False]
-                    ).reset_index(drop=True)
-                    tabla_df['Posicion'] = range(1, len(tabla_df) + 1)
-                    
-                    # Obtener posición y puntos de cada equipo
-                    pos_home = tabla_df[tabla_df['Equipo'] == home]['Posicion'].values
-                    pos_away = tabla_df[tabla_df['Equipo'] == away]['Posicion'].values
-                    pts_home = puntos_equipo.get(home, 0)
-                    pts_away = puntos_equipo.get(away, 0)
-                    
-                    if len(pos_home) > 0:
-                        df.at[idx, 'HT_Position'] = pos_home[0]
-                        df.at[idx, 'HT_Points'] = pts_home
-                        
-                        # Calcular densidad de puntos (diferencia con vecinos)
-                        pos_h = int(pos_home[0])
-                        if pos_h > 1:
-                            equipo_arriba = tabla_df[tabla_df['Posicion'] == pos_h - 1]['Puntos'].values
-                            if len(equipo_arriba) > 0:
-                                df.at[idx, 'HT_Points_Below'] = equipo_arriba[0] - pts_home
-                        if pos_h < len(tabla_df):
-                            equipo_abajo = tabla_df[tabla_df['Posicion'] == pos_h + 1]['Puntos'].values
-                            if len(equipo_abajo) > 0:
-                                df.at[idx, 'HT_Points_Above'] = pts_home - equipo_abajo[0]
-                    
-                    if len(pos_away) > 0:
-                        df.at[idx, 'AT_Position'] = pos_away[0]
-                        df.at[idx, 'AT_Points'] = pts_away
-                        
-                        # Calcular densidad de puntos
-                        pos_a = int(pos_away[0])
-                        if pos_a > 1:
-                            equipo_arriba = tabla_df[tabla_df['Posicion'] == pos_a - 1]['Puntos'].values
-                            if len(equipo_arriba) > 0:
-                                df.at[idx, 'AT_Points_Below'] = equipo_arriba[0] - pts_away
-                        if pos_a < len(tabla_df):
-                            equipo_abajo = tabla_df[tabla_df['Posicion'] == pos_a + 1]['Puntos'].values
-                            if len(equipo_abajo) > 0:
-                                df.at[idx, 'AT_Points_Above'] = pts_away - equipo_abajo[0]
-                    
-                    # Diferencia de posición
-                    if len(pos_home) > 0 and len(pos_away) > 0:
-                        df.at[idx, 'Position_Diff'] = pos_away[0] - pos_home[0]
-            
-            # Contexto de temporada
-            df.at[idx, 'Matchday'] = jornada
-            df.at[idx, 'Season_Progress'] = jornada / max(total_jornadas, 1)
-            
-            # Confiabilidad de posición (más partidos = más confiable)
-            min_partidos = min(partidos_jugados.get(home, 0), partidos_jugados.get(away, 0))
-            df.at[idx, 'Position_Reliability'] = min(min_partidos / 10, 1.0)  # Máximo en 10 partidos
-            
-            # ================================================================
-            # DESPUÉS del partido: actualizar puntos
-            # ================================================================
-            
-            if pd.notna(row['FTHG']) and pd.notna(row['FTAG']):
-                goles_h = int(row['FTHG'])
-                goles_a = int(row['FTAG'])
-                
-                # Actualizar goles
-                goles_favor[home] = goles_favor.get(home, 0) + goles_h
-                goles_contra[home] = goles_contra.get(home, 0) + goles_a
-                goles_favor[away] = goles_favor.get(away, 0) + goles_a
-                goles_contra[away] = goles_contra.get(away, 0) + goles_h
-                
-                # Actualizar puntos
-                if goles_h > goles_a:  # Victoria local
-                    puntos_equipo[home] = puntos_equipo.get(home, 0) + 3
-                elif goles_h < goles_a:  # Victoria visitante
-                    puntos_equipo[away] = puntos_equipo.get(away, 0) + 3
-                else:  # Empate
-                    puntos_equipo[home] = puntos_equipo.get(home, 0) + 1
-                    puntos_equipo[away] = puntos_equipo.get(away, 0) + 1
-                
-                # Actualizar partidos jugados
-                partidos_jugados[home] = partidos_jugados.get(home, 0) + 1
-                partidos_jugados[away] = partidos_jugados.get(away, 0) + 1
-    
-    # ========================================================================
-    # FEATURES DERIVADAS
-    # ========================================================================
-    
-    # Categoría de enfrentamiento (continua, no categórica)
-    # Positivo = local es favorito, negativo = visitante es favorito
-    df['Position_Advantage'] = df['Position_Diff']  # Ya es away - home
-    
-    # Nivel del rival (para cada equipo)
-    # Top (1-6), Mid (7-14), Bottom (15-20)
-    df['HT_Level'] = pd.cut(df['HT_Position'], bins=[0, 6, 14, 20], labels=[3, 2, 1])
-    df['AT_Level'] = pd.cut(df['AT_Position'], bins=[0, 6, 14, 20], labels=[3, 2, 1])
-    df['HT_Level'] = pd.to_numeric(df['HT_Level'], errors='coerce')
-    df['AT_Level'] = pd.to_numeric(df['AT_Level'], errors='coerce')
-    
-    # Tipo de partido (diferencia de niveles)
-    df['Match_Type'] = df['HT_Level'] - df['AT_Level']  # Positivo = local más fuerte
-    
-    # Presión competitiva (qué tan apretada está la tabla para cada equipo)
-    df['HT_Pressure'] = (df['HT_Points_Below'].fillna(0) + df['HT_Points_Above'].fillna(0)) / 2
-    df['AT_Pressure'] = (df['AT_Points_Below'].fillna(0) + df['AT_Points_Above'].fillna(0)) / 2
-    
-    # Ajustar features por confiabilidad
-    df['Position_Diff_Weighted'] = df['Position_Diff'] * df['Position_Reliability']
-    
-    # ========================================================================
-    # RELLENAR NaN
-    # ========================================================================
-    
-    tabla_cols = [
-        'HT_Position', 'AT_Position', 'HT_Points', 'AT_Points',
-        'Position_Diff', 'HT_Points_Above', 'HT_Points_Below',
-        'AT_Points_Above', 'AT_Points_Below', 'Matchday', 'Season_Progress',
-        'Position_Reliability', 'Position_Advantage', 'HT_Level', 'AT_Level',
-        'Match_Type', 'HT_Pressure', 'AT_Pressure', 'Position_Diff_Weighted'
-    ]
-    
-    for col in tabla_cols:
-        if col in df.columns:
-            if col in ['HT_Position', 'AT_Position']:
-                df[col] = df[col].fillna(10)  # Posición media como default
-            elif col in ['HT_Level', 'AT_Level']:
-                df[col] = df[col].fillna(2)  # Nivel medio
-            elif col == 'Season_Progress':
-                df[col] = df[col].fillna(0.5)
-            elif col == 'Position_Reliability':
-                df[col] = df[col].fillna(0)
-            else:
-                df[col] = df[col].fillna(0)
-    
-    # Eliminar columna auxiliar
-    if 'Season' in df.columns:
-        df = df.drop(columns=['Season'])
-    
-    # Estadísticas
-    con_posicion = (df['HT_Position'] != 10).sum()
-    print(f"   ✅ Features de tabla calculadas: {con_posicion} partidos con posición real")
-    
-    print("\n📋 Features de tabla creadas:")
-    print("   • HT_Position, AT_Position (posición 1-20)")
-    print("   • Position_Diff (diferencia de posición)")
-    print("   • HT_Points, AT_Points (puntos acumulados)")
-    print("   • HT_Points_Above/Below (densidad de puntos)")
-    print("   • Season_Progress (0-1, avance de temporada)")
-    print("   • Position_Reliability (0-1, confiabilidad)")
-    print("   • Match_Type (tipo de enfrentamiento)")
-    print("   • HT_Pressure, AT_Pressure (presión competitiva)")
-    
-    return df
+    return X_full, y, features, df
 
 # ============================================================================
 # ENTRENAMIENTO
@@ -555,7 +244,6 @@ def entrenar_modelos_hibridos(X_train, y_train, X_test, y_test):
             random_state=42,
             objective='multi:softprob',
             eval_metric='mlogloss',
-            use_label_encoder=False,
             n_jobs=-1
         )
         
@@ -793,21 +481,50 @@ def main():
     print("⚽" * 35 + "\n")
     
     # Cargar datos (devuelve df también)
-    X, y, features, df = cargar_datos_hibridos()
+    X_full, y, features, df = cargar_datos_hibridos()
     
-    # Split temporal
+    # Split temporal ANTES de cualquier selección de features
     print("\n🔪 Split 80/20 (temporal)")
-    split_idx = int(len(X) * 0.8)
+    split_idx = int(len(X_full) * 0.8)
 
-    X_train = X.iloc[:split_idx]
-    X_test = X.iloc[split_idx:]
+    X_train_full = X_full.iloc[:split_idx]
+    X_test_full = X_full.iloc[split_idx:]
     y_train = y.iloc[:split_idx]
     y_test = y.iloc[split_idx:]
 
     # Usar df filtrado para obtener cuotas en test
     df_test = df.iloc[split_idx:]
 
-    print(f"   Train: {len(X_train)} | Test: {len(X_test)}")
+    print(f"   Train: {len(X_train_full)} | Test: {len(X_test_full)}")
+
+    # Feature selection: Top 15 — entrenado SOLO sobre train para evitar leakage
+    usar_top_features = True
+    top_n = 15
+
+    if usar_top_features:
+        print(f"\n🔝 Seleccionando top {top_n} features (sobre train únicamente)...")
+        rf_temp = RandomForestClassifier(
+            n_estimators=100,
+            min_samples_leaf=5,
+            random_state=42,
+            n_jobs=-1
+        )
+        rf_temp.fit(X_train_full, y_train)
+
+        importancias = rf_temp.feature_importances_
+        top_idx = np.argsort(importancias)[::-1][:top_n]
+        top_features = [features[i] for i in top_idx]
+
+        print(f"\nTop {top_n} features seleccionadas:")
+        for i, feat in enumerate(top_features, 1):
+            print(f"   {i:2}. {feat}")
+
+        X_train = X_train_full[top_features]
+        X_test = X_test_full[top_features]
+        features = top_features
+    else:
+        X_train = X_train_full
+        X_test = X_test_full
     
     # Entrenar múltiples modelos
     modelos = entrenar_modelos_hibridos(X_train, y_train, X_test, y_test)
@@ -828,15 +545,12 @@ def main():
     visualizar_resultados(y_test, mejor['predicciones'], mejor['nombre'], 
                          features, mejor['modelo'])
 
-    # Guardar modelo final
-    archivo_final = os.path.join(RUTA_MODELOS, 'modelo_value_betting.pkl')
-    joblib.dump(mejor['modelo'], archivo_final)
+    # Guardar modelo final usando rutas de config
+    joblib.dump(mejor['modelo'], ARCHIVO_MODELO_VB)
+    joblib.dump(features, ARCHIVO_FEATURES_VB)
 
-    archivo_features = os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')
-    joblib.dump(features, archivo_features)
-
-    print(f"\n💾 Modelo guardado: {archivo_final}")
-    print(f"💾 Features guardadas: {archivo_features}")
+    print(f"\n💾 Modelo guardado: {ARCHIVO_MODELO_VB}")
+    print(f"💾 Features guardadas: {ARCHIVO_FEATURES_VB}")
     
     # Resumen final
     print("\n" + "="*70)

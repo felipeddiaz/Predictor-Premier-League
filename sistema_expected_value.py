@@ -7,26 +7,15 @@ EV = (Prob_Ganar × Ganancia) - (Prob_Perder × Pérdida)
 Solo apuesta si EV > 0
 """
 
-import pandas as pd
 import numpy as np
-import joblib
-import os
-from datetime import datetime
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-try:
-    from fpdf import FPDF
-    PDF_AVAILABLE = True
-except ImportError:
-    PDF_AVAILABLE = False
+from config import ARCHIVO_FEATURES, RUTA_MODELOS
 
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
 
-RUTA_DATOS = './datos/procesados/premier_league_con_features.csv'
-RUTA_MODELOS = './modelos/'
+RUTA_DATOS = ARCHIVO_FEATURES
 
 # ============================================================================
 # CÁLCULO DE EXPECTED VALUE (EV)
@@ -234,6 +223,7 @@ def simular_roi_historico(resultados_predicciones, strategy='ev_positive', bankr
                 ganancia = stake * (cuota - 1)
                 bankroll += ganancia
             else:
+                ganancia = -stake
                 bankroll -= stake
             
             apuestas_realizadas.append({
@@ -242,7 +232,7 @@ def simular_roi_historico(resultados_predicciones, strategy='ev_positive', bankr
                 'cuota': cuota,
                 'stake': stake,
                 'gano': gano,
-                'ganancia': ganancia if gano else -stake,
+                'ganancia': ganancia,
                 'bankroll': bankroll,
                 'ev': ev_info['ev'],
                 'edge': ev_info['edge']
@@ -293,10 +283,15 @@ def simular_roi_historico(resultados_predicciones, strategy='ev_positive', bankr
 def analizar_jornada_con_ev(partidos, modelo, features, df, bankroll=1000):
     """
     Analiza una jornada completa con Expected Value.
+
+    Nota: predecir_partido debe pasarse como callable para evitar importación
+    circular con predecir_jornada_completa.py. Alternativamente, llama a esta
+    función desde predecir_jornada_completa.py pasando la función directamente.
     """
-    
-    from predecir_jornada_completa import predecir_partido, obtener_stats_equipo, transformar_cuotas
-    
+    # Importación diferida: solo se ejecuta si se llama a esta función,
+    # y únicamente desde contextos que NO sean predecir_jornada_completa.py.
+    from predecir_jornada_completa import predecir_partido  # noqa: PLC0415
+
     print("="*70)
     print("💰 ANÁLISIS DE EXPECTED VALUE - JORNADA COMPLETA")
     print("="*70)
@@ -312,57 +307,44 @@ def analizar_jornada_con_ev(partidos, modelo, features, df, bankroll=1000):
             continue
         
         # Analizar cada posible resultado
-        analisis_opciones = []
-        
-        # Opción 1: Apostar al Local
-        if pred['prediccion'] == 'Local':
-            ev_local = analizar_apuesta(
-                {'confianza': pred['prob_local']},
-                partido['cuota_h'],
-                stake=10,
-                bankroll=bankroll
-            )
-            analisis_opciones.append(('Local', pred['local'], ev_local))
-        
-        # Opción 2: Apostar al Empate
-        if pred['prediccion'] == 'Empate':
-            ev_empate = analizar_apuesta(
-                {'confianza': pred['prob_empate']},
-                partido['cuota_d'],
-                stake=10,
-                bankroll=bankroll
-            )
-            analisis_opciones.append(('Empate', 'Empate', ev_empate))
-        
-        # Opción 3: Apostar al Visitante
-        if pred['prediccion'] == 'Visitante':
-            ev_visitante = analizar_apuesta(
-                {'confianza': pred['prob_visitante']},
-                partido['cuota_a'],
-                stake=10,
-                bankroll=bankroll
-            )
-            analisis_opciones.append(('Visitante', pred['visitante'], ev_visitante))
-        
-        # Guardar mejor opción
-        if analisis_opciones:
-            mejor_opcion = analisis_opciones[0]
-            
-            resultados_ev.append({
-                'partido': f"{partido['local']} vs {partido['visitante']}",
-                'local': partido['local'],
-                'visitante': partido['visitante'],
-                'prediccion': mejor_opcion[0],
-                'equipo': mejor_opcion[1],
-                'ev': mejor_opcion[2]['ev'],
-                'roi': mejor_opcion[2]['roi'],
-                'edge': mejor_opcion[2]['edge'],
-                'clasificacion': mejor_opcion[2]['clasificacion'],
-                'stake_recomendado': mejor_opcion[2]['stake_recomendado'],
-                'cuota': partido[f"cuota_{'h' if mejor_opcion[0]=='Local' else 'd' if mejor_opcion[0]=='Empate' else 'a'}"],
-                'prob_modelo': mejor_opcion[2]['prob_modelo'],
-                'prob_casa': mejor_opcion[2]['prob_casa']
-            })
+        # Evaluar los 3 outcomes independientemente del predicho
+        analisis_opciones = [
+            ('Local', pred['local'], analizar_apuesta(
+                {'confianza': pred['prob_local']}, partido['cuota_h'],
+                stake=10, bankroll=bankroll
+            )),
+            ('Empate', 'Empate', analizar_apuesta(
+                {'confianza': pred['prob_empate']}, partido['cuota_d'],
+                stake=10, bankroll=bankroll
+            )),
+            ('Visitante', pred['visitante'], analizar_apuesta(
+                {'confianza': pred['prob_visitante']}, partido['cuota_a'],
+                stake=10, bankroll=bankroll
+            )),
+        ]
+
+        # Seleccionar la opción con mayor EV positivo
+        opciones_ev_positivo = [o for o in analisis_opciones if o[2]['ev'] > 0]
+        if opciones_ev_positivo:
+            mejor_opcion = max(opciones_ev_positivo, key=lambda o: o[2]['ev'])
+        else:
+            mejor_opcion = max(analisis_opciones, key=lambda o: o[2]['ev'])
+
+        resultados_ev.append({
+            'partido': f"{partido['local']} vs {partido['visitante']}",
+            'local': partido['local'],
+            'visitante': partido['visitante'],
+            'prediccion': mejor_opcion[0],
+            'equipo': mejor_opcion[1],
+            'ev': mejor_opcion[2]['ev'],
+            'roi': mejor_opcion[2]['roi'],
+            'edge': mejor_opcion[2]['edge'],
+            'clasificacion': mejor_opcion[2]['clasificacion'],
+            'stake_recomendado': mejor_opcion[2]['stake_recomendado'],
+            'cuota': partido[f"cuota_{'h' if mejor_opcion[0]=='Local' else 'd' if mejor_opcion[0]=='Empate' else 'a'}"],
+            'prob_modelo': mejor_opcion[2]['prob_modelo'],
+            'prob_casa': mejor_opcion[2]['prob_casa'],
+        })
     
     # Mostrar resultados
     print("\n📊 ANÁLISIS DE EXPECTED VALUE POR PARTIDO:")

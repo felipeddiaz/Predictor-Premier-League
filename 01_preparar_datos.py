@@ -1,23 +1,35 @@
 # -*- coding: utf-8 -*-
 """
 Premier League Match Predictor
-01 - PREPARACIÓN DE DATOS (Con H2H correctamente integrado)
+01 - PREPARACION DE DATOS
+
+Carga temporadas brutas, limpia, aplica feature engineering en 4 fases
+(rendimiento rolling, forma W/D/L, Head-to-Head, xG rolling) y guarda
+el dataset canonico en datos/procesados/premier_league_con_features.csv.
 """
 
 import pandas as pd
 import numpy as np
 import glob
 import os
-from datetime import datetime
 import warnings
+
+from config import (
+    RUTA_TEMPORADAS,
+    RUTA_PROCESADOS,
+    ARCHIVO_LIMPIO,
+    ARCHIVO_FEATURES,
+    ROLLING_WINDOW,
+    MISSING_THRESHOLD,
+    COLUMNAS_ESENCIALES,
+)
+from utils import calcular_h2h_features, agregar_xg_rolling
+
 warnings.filterwarnings('ignore')
 
-# ============================================================================
-# CONFIGURACIÓN - AJUSTA ESTAS RUTAS SEGÚN TU PROYECTO
-# ============================================================================
-
-RUTA_DATOS = RUTA_DATOS = './datos/temporadas/'
-RUTA_GUARDADO = './datos/procesados/'
+# Alias para compatibilidad interna
+RUTA_DATOS = RUTA_TEMPORADAS
+RUTA_GUARDADO = RUTA_PROCESADOS
 
 # Crear carpeta de salida si no existe
 os.makedirs(RUTA_GUARDADO, exist_ok=True)
@@ -56,6 +68,10 @@ def cargar_datos_premier_league(ruta_carpeta):
         except Exception as e:
             print(f"  ✗ Error en {os.path.basename(archivo)}: {e}")
     
+    if not lista_dfs:
+        print("❌ ERROR: Ningún archivo CSV se pudo cargar correctamente")
+        return None
+
     df = pd.concat(lista_dfs, ignore_index=True)
     print(f"\n✅ Total de partidos: {len(df)}")
     
@@ -75,18 +91,17 @@ def cargar_datos_premier_league(ruta_carpeta):
     df.sort_values(by='Date', inplace=True)
     df.reset_index(drop=True, inplace=True)
     
-    # Eliminar columnas con >20% datos faltantes
+    # Eliminar columnas con >MISSING_THRESHOLD datos faltantes
     print("\n🧹 Eliminando columnas inconsistentes...")
     missing_percentage = df.isnull().sum() / len(df)
-    columns_to_drop = missing_percentage[missing_percentage > 0.20].index.tolist()
+    columns_to_drop = missing_percentage[missing_percentage > MISSING_THRESHOLD].index.tolist()
     
     if len(columns_to_drop) > 0:
         print(f"  Eliminadas {len(columns_to_drop)} columnas")
         df.drop(columns=columns_to_drop, inplace=True)
     
     # Eliminar filas con datos faltantes en columnas esenciales
-    columnas_esenciales = ['FTHG', 'FTAG', 'HS', 'AS', 'HST', 'AST']
-    columnas_disponibles = [col for col in columnas_esenciales if col in df.columns]
+    columnas_disponibles = [col for col in COLUMNAS_ESENCIALES if col in df.columns]
     
     filas_antes = len(df)
     df.dropna(subset=columnas_disponibles, inplace=True)
@@ -97,7 +112,8 @@ def cargar_datos_premier_league(ruta_carpeta):
     
     # Crear columna objetivo
     if 'FTR' in df.columns:
-        df['FTR_numeric'] = df['FTR'].map({'H': 0, 'D': 1, 'A': 2})
+        ftr_map = {'H': 0, 'D': 1, 'A': 2}
+        df['FTR_numeric'] = df['FTR'].map(ftr_map)
         print("\n✅ Columna objetivo creada (0=Local, 1=Empate, 2=Visitante)")
     
     print(f"\n✅ Dataset limpio: {len(df)} partidos x {len(df.columns)} columnas")
@@ -109,65 +125,55 @@ def cargar_datos_premier_league(ruta_carpeta):
 # FASE 2: INGENIERÍA DE CARACTERÍSTICAS - RENDIMIENTO
 # ============================================================================
 
-def crear_features_rendimiento(df):
+def crear_features_rendimiento(df, window=ROLLING_WINDOW):
     """
-    Crea características de rendimiento basadas en promedios móviles.
+    Crea promedios moviles de goles y tiros a puerta por equipo.
+
+    Usa una asignacion vectorizada (merge) en lugar de iterrows para evitar
+    el KeyError latente y reducir la complejidad de O(n^2) a O(n).
+    El shift(1) garantiza que el partido actual no contamine su propia media.
     """
     print("\n" + "="*60)
     print("FASE 2: CARACTERÍSTICAS DE RENDIMIENTO")
     print("="*60)
-    
-    df_features = df.copy()
-    team_stats = {}
-    teams = df_features['HomeTeam'].unique()
-    
-    print(f"📊 Calculando promedios móviles para {len(teams)} equipos...")
-    
+
+    df_features = df.copy().sort_values('Date').reset_index(drop=True)
+    teams = sorted(df_features['HomeTeam'].unique())
+    print(f"📊 Calculando promedios moviles para {len(teams)} equipos...")
+
+    # Inicializar con NaN
+    for col in ['HT_AvgGoals', 'AT_AvgGoals', 'HT_AvgShotsTarget', 'AT_AvgShotsTarget']:
+        df_features[col] = np.nan
+
     for team in teams:
-        team_matches = df_features[
-            (df_features['HomeTeam'] == team) | 
-            (df_features['AwayTeam'] == team)
-        ].copy()
-        
-        team_matches['GoalsScored'] = team_matches.apply(
-            lambda row: row['FTHG'] if row['HomeTeam'] == team else row['FTAG'], 
-            axis=1
+        mask_home = df_features['HomeTeam'] == team
+        mask_away = df_features['AwayTeam'] == team
+
+        # Goles anotados como local
+        df_features.loc[mask_home, 'HT_AvgGoals'] = (
+            df_features.loc[mask_home, 'FTHG']
+            .shift(1).rolling(window, min_periods=1).mean().values
         )
-        
-        team_matches['ShotsOnTarget'] = team_matches.apply(
-            lambda row: row['HST'] if row['HomeTeam'] == team else row['AST'], 
-            axis=1
+        # Goles anotados como visitante
+        df_features.loc[mask_away, 'AT_AvgGoals'] = (
+            df_features.loc[mask_away, 'FTAG']
+            .shift(1).rolling(window, min_periods=1).mean().values
         )
-        
-        team_matches['AvgGoals_rolling'] = team_matches['GoalsScored'].rolling(
-            window=5, min_periods=1
-        ).mean().shift(1)
-        
-        team_matches['AvgShotsOnTarget_rolling'] = team_matches['ShotsOnTarget'].rolling(
-            window=5, min_periods=1
-        ).mean().shift(1)
-        
-        team_stats[team] = team_matches
-    
-    df_features['HT_AvgGoals'] = None
-    df_features['AT_AvgGoals'] = None
-    df_features['HT_AvgShotsTarget'] = None
-    df_features['AT_AvgShotsTarget'] = None
-    
-    for index, row in df_features.iterrows():
-        home_team = row['HomeTeam']
-        away_team = row['AwayTeam']
-        
-        df_features.at[index, 'HT_AvgGoals'] = team_stats[home_team].loc[index, 'AvgGoals_rolling']
-        df_features.at[index, 'HT_AvgShotsTarget'] = team_stats[home_team].loc[index, 'AvgShotsOnTarget_rolling']
-        df_features.at[index, 'AT_AvgGoals'] = team_stats[away_team].loc[index, 'AvgGoals_rolling']
-        df_features.at[index, 'AT_AvgShotsTarget'] = team_stats[away_team].loc[index, 'AvgShotsOnTarget_rolling']
-    
+        # Tiros a puerta como local
+        df_features.loc[mask_home, 'HT_AvgShotsTarget'] = (
+            df_features.loc[mask_home, 'HST']
+            .shift(1).rolling(window, min_periods=1).mean().values
+        )
+        # Tiros a puerta como visitante
+        df_features.loc[mask_away, 'AT_AvgShotsTarget'] = (
+            df_features.loc[mask_away, 'AST']
+            .shift(1).rolling(window, min_periods=1).mean().values
+        )
+
     feature_cols = ['HT_AvgGoals', 'AT_AvgGoals', 'HT_AvgShotsTarget', 'AT_AvgShotsTarget']
     df_features[feature_cols] = df_features[feature_cols].fillna(0)
-    
+
     print("✅ Características de rendimiento creadas")
-    
     return df_features
 
 
@@ -175,7 +181,7 @@ def crear_features_rendimiento(df):
 # FASE 3: INGENIERÍA DE CARACTERÍSTICAS - RESULTADOS
 # ============================================================================
 
-def crear_features_resultados(df, window=5):
+def crear_features_resultados(df, window=ROLLING_WINDOW):
     """
     Crea características basadas en resultados recientes (W/D/L).
     """
@@ -236,233 +242,80 @@ def crear_features_resultados(df, window=5):
 # ============================================================================
 # FASE 4: INGENIERÍA DE CARACTERÍSTICAS - HEAD-TO-HEAD
 # ============================================================================
-
-def calcular_h2h_features(df, equipo_local, equipo_visitante, fecha_limite=None, ultimos_n=5):
-    """
-    Calcula features de Head-to-Head CON flag de disponibilidad.
-    
-    NUEVA LÓGICA:
-    - Si hay historial → H2H_Available = 1, features reales
-    - Si NO hay historial → H2H_Available = 0, features neutras
-    """
-    
-    # Filtrar enfrentamientos
-    mask = (
-        ((df['HomeTeam'] == equipo_local) & (df['AwayTeam'] == equipo_visitante)) |
-        ((df['HomeTeam'] == equipo_visitante) & (df['AwayTeam'] == equipo_local))
-    )
-    if fecha_limite is not None:
-        mask = mask & (pd.to_datetime(df['Date']) < pd.to_datetime(fecha_limite))
-
-    h2h = df[mask].sort_values('Date', ascending=False).head(ultimos_n)
-    
-    # Si NO hay historial → retornar NaN (no valores neutros)
-    if len(h2h) == 0:
-        return {
-            'H2H_Matches': 0,
-            'H2H_Home_Wins': np.nan,      # ← NaN en lugar de 0
-            'H2H_Draws': np.nan,
-            'H2H_Away_Wins': np.nan,
-            'H2H_Home_Goals_Avg': np.nan,  # ← NaN en lugar de 1.5
-            'H2H_Away_Goals_Avg': np.nan,
-            'H2H_Home_Win_Rate': np.nan,   # ← NaN en lugar de 0.33
-            'H2H_BTTS_Rate': np.nan
-        }
-    
-    # Si SÍ hay historial → calcular features reales
-    resultados_local = []
-    goles_local = []
-    goles_visitante = []
-    btts_count = 0
-    
-    for _, partido in h2h.iterrows():
-        if partido['HomeTeam'] == equipo_local:
-            goles_local.append(partido['FTHG'])
-            goles_visitante.append(partido['FTAG'])
-            
-            if partido['FTR'] == 'H':
-                resultados_local.append('W')
-            elif partido['FTR'] == 'D':
-                resultados_local.append('D')
-            else:
-                resultados_local.append('L')
-        else:
-            goles_local.append(partido['FTAG'])
-            goles_visitante.append(partido['FTHG'])
-            
-            if partido['FTR'] == 'A':
-                resultados_local.append('W')
-            elif partido['FTR'] == 'D':
-                resultados_local.append('D')
-            else:
-                resultados_local.append('L')
-        
-        if partido['FTHG'] > 0 and partido['FTAG'] > 0:
-            btts_count += 1
-    
-    wins = resultados_local.count('W')
-    draws = resultados_local.count('D')
-    losses = resultados_local.count('L')
-    total = len(resultados_local)
-    
-    return {
-        'H2H_Available': 1,  # ← NUEVO: HAY HISTORIAL
-        'H2H_Matches': total,
-        'H2H_Home_Wins': wins,
-        'H2H_Draws': draws,
-        'H2H_Away_Wins': losses,
-        'H2H_Home_Goals_Avg': np.mean(goles_local) if goles_local else 0,
-        'H2H_Away_Goals_Avg': np.mean(goles_visitante) if goles_visitante else 0,
-        'H2H_Home_Win_Rate': wins / total if total > 0 else 0.33,
-        'H2H_BTTS_Rate': btts_count / total if total > 0 else 0.5
-    }
-
+# calcular_h2h_features y agregar_xg_rolling viven en utils.py (version
+# canonica). Aqui solo se define el orquestador de la fase H2H.
 
 def crear_features_h2h(df):
     """
     Agrega features H2H a todo el dataset.
-    ESTA ES LA VERSIÓN OPTIMIZADA QUE SE INTEGRA EN EL PIPELINE PRINCIPAL
-    
+
+    Usa calcular_h2h_features de utils.py como implementacion canonica.
+    Las features derivadas se zerean correctamente para partidos sin historial.
+
     Args:
-        df: DataFrame con partidos (debe tener Date, HomeTeam, AwayTeam, etc.)
-        
+        df: DataFrame con partidos (Date, HomeTeam, AwayTeam, FTHG, FTAG, FTR).
+
     Returns:
-        DataFrame con features H2H agregadas
+        DataFrame con features H2H y derivadas agregadas.
     """
-    
     print("\n" + "="*60)
     print("FASE 4: CARACTERÍSTICAS HEAD-TO-HEAD")
     print("="*60)
-    
-    # Asegurar que Date es datetime
+
     df['Date'] = pd.to_datetime(df['Date'])
-    
-    # Inicializar columnas H2H
-    h2h_cols = [
-        'H2H_Available',  # ← NUEVO
-        'H2H_Matches', 'H2H_Home_Wins', 'H2H_Draws', 'H2H_Away_Wins',
-        'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg', 'H2H_Home_Win_Rate',
-        'H2H_BTTS_Rate'
+
+    h2h_base_cols = [
+        'H2H_Available', 'H2H_Matches', 'H2H_Home_Wins', 'H2H_Draws',
+        'H2H_Away_Wins', 'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg',
+        'H2H_Home_Win_Rate', 'H2H_BTTS_Rate',
     ]
-    
-    for col in h2h_cols:
+    for col in h2h_base_cols:
         df[col] = 0.0
-    
-    # Calcular H2H para cada partido
+
     total = len(df)
     print(f"\n📊 Calculando H2H para {total} partidos...")
-    
+
     for idx, row in df.iterrows():
-        if idx % 100 == 0:
+        if idx % 200 == 0:
             print(f"  Progreso: {idx}/{total} ({idx/total*100:.1f}%)", end='\r')
-        
-        # Calcular H2H hasta este partido (sin incluirlo)
-        h2h_features = calcular_h2h_features(
+
+        h2h_feats = calcular_h2h_features(
             df=df,
             equipo_local=row['HomeTeam'],
             equipo_visitante=row['AwayTeam'],
             fecha_limite=row['Date'],
-            ultimos_n=5
         )
-        
-        # Asignar features
-        for key, value in h2h_features.items():
+        for key, value in h2h_feats.items():
             df.at[idx, key] = value
-    
+
     print(f"\n✅ Características H2H creadas")
-    
-    # Estadísticas
-    print("\n📊 Estadísticas H2H:")
-    print(f"   Partidos con historial: {(df['H2H_Matches'] > 0).sum()} ({(df['H2H_Matches'] > 0).sum()/len(df)*100:.1f}%)")
-    print(f"   Partidos sin historial: {(df['H2H_Matches'] == 0).sum()}")
+
+    # Estadisticas
+    con_h2h = (df['H2H_Matches'] > 0).sum()
+    print(f"\n📊 Estadísticas H2H:")
+    print(f"   Partidos con historial: {con_h2h} ({con_h2h/len(df)*100:.1f}%)")
+    print(f"   Partidos sin historial: {len(df) - con_h2h}")
     print(f"   Promedio enfrentamientos: {df['H2H_Matches'].mean():.2f}")
-    if (df['H2H_Matches'] > 0).sum() > 0:
-        print(f"   Win rate local promedio: {df[df['H2H_Matches']>0]['H2H_Home_Win_Rate'].mean():.1%}")
-    
-    # ================================================================
+
+    # Features derivadas
     print("\n🔧 Creando features derivadas de H2H...")
-    
-    # Features derivadas H2H
     df['H2H_Goal_Diff'] = df['H2H_Home_Goals_Avg'] - df['H2H_Away_Goals_Avg']
     df['H2H_Total_Goals_Avg'] = df['H2H_Home_Goals_Avg'] + df['H2H_Away_Goals_Avg']
-    df['H2H_Home_Consistent'] = ((df['H2H_Home_Wins'] + df['H2H_Draws']) / 
-                                df['H2H_Matches'].replace(0, 1))
-    
+    df['H2H_Home_Consistent'] = (
+        (df['H2H_Home_Wins'] + df['H2H_Draws']) / df['H2H_Matches'].replace(0, 1)
+    )
     df['H2H_Win_Advantage'] = df['H2H_Home_Wins'] - df['H2H_Away_Wins']
 
-    # Cuando H2H_Available = 0, poner derivadas en 0
-    df.loc[df['H2H_Available'] == 0, ['H2H_Goal_Diff', 'H2H_Win_Advantage']] = 0
-    
-    print("✅ Creadas:")
-    print("   • H2H_Goal_Diff")
-    print("   • H2H_Total_Goals_Avg")
-    print("   • H2H_Home_Consistent")
-    print("   • H2H_Win_Advantage")
-    
-    # Al final de crear_features_h2h()
-    h2h_cols = [col for col in df.columns if 'H2H' in col and col != 'H2H_Matches']
-    df[h2h_cols] = df[h2h_cols].fillna(0)  # Rellenar NaN con 0
+    # Zerear TODAS las derivadas para filas sin historial
+    mask_sin_h2h = df['H2H_Available'] == 0
+    derivadas = ['H2H_Goal_Diff', 'H2H_Win_Advantage', 'H2H_Total_Goals_Avg', 'H2H_Home_Consistent']
+    df.loc[mask_sin_h2h, derivadas] = 0
 
-    return df
+    # Rellenar cualquier NaN residual
+    h2h_all_cols = [col for col in df.columns if 'H2H' in col]
+    df[h2h_all_cols] = df[h2h_all_cols].fillna(0)
 
-# En tu 01_preparar_datos.py, agregar función:
-
-def crear_features_xg_rolling(df, window=5):
-    """
-    Crea promedios móviles de xG para cada equipo.
-    """
-    print("\n" + "="*60)
-    print("CARACTERÍSTICAS xG ROLLING")
-    print("="*60)
-    
-    # Verificar que existan columnas xG
-    if 'Home_xG' not in df.columns:
-        print("⚠️  No hay datos de xG disponibles")
-        return df
-    
-    df = df.sort_values('Date').reset_index(drop=True)
-    
-    # Inicializar columnas
-    df['HT_xG_Avg'] = np.nan
-    df['AT_xG_Avg'] = np.nan
-    df['HT_xGA_Avg'] = np.nan
-    df['AT_xGA_Avg'] = np.nan
-    
-    teams = df['HomeTeam'].unique()
-    
-    for team in teams:
-        # Partidos como local
-        mask_home = df['HomeTeam'] == team
-        # Partidos como visitante
-        mask_away = df['AwayTeam'] == team
-        
-        # xG creado por el equipo (rolling)
-        team_xg_home = df.loc[mask_home, 'Home_xG'].shift(1).rolling(window, min_periods=1).mean()
-        team_xg_away = df.loc[mask_away, 'Away_xG'].shift(1).rolling(window, min_periods=1).mean()
-        
-        # xG concedido por el equipo (rolling)
-        team_xga_home = df.loc[mask_home, 'Away_xG'].shift(1).rolling(window, min_periods=1).mean()
-        team_xga_away = df.loc[mask_away, 'Home_xG'].shift(1).rolling(window, min_periods=1).mean()
-        
-        # Asignar cuando juega como LOCAL
-        df.loc[mask_home, 'HT_xG_Avg'] = team_xg_home.values
-        df.loc[mask_home, 'HT_xGA_Avg'] = team_xga_home.values
-        
-        # Asignar cuando juega como VISITANTE
-        df.loc[mask_away, 'AT_xG_Avg'] = team_xg_away.values
-        df.loc[mask_away, 'AT_xGA_Avg'] = team_xga_away.values
-    
-    # Features derivadas
-    df['xG_Diff'] = df['HT_xG_Avg'] - df['AT_xG_Avg']
-    df['xG_Total'] = df['HT_xG_Avg'] + df['AT_xG_Avg']
-    
-    # Rellenar NaN
-    xg_cols = ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg', 'xG_Diff', 'xG_Total']
-    df[xg_cols] = df[xg_cols].fillna(0)
-    
-    print(f"✅ Features xG rolling creadas")
-    print(f"   Partidos con xG histórico: {(df['HT_xG_Avg'] > 0).sum()}")
-    
+    print("✅ Creadas: H2H_Goal_Diff, H2H_Total_Goals_Avg, H2H_Home_Consistent, H2H_Win_Advantage")
     return df
 
 # ============================================================================
@@ -485,45 +338,40 @@ def main():
         return None
     
     # Guardar datos limpios
-    archivo_limpio = os.path.join(RUTA_GUARDADO, 'premier_league_limpio.csv')
-    df_limpio.to_csv(archivo_limpio, index=False)
-    print(f"\n💾 Guardado: {archivo_limpio}")
-    
+    os.makedirs(RUTA_GUARDADO, exist_ok=True)
+    df_limpio.to_csv(ARCHIVO_LIMPIO, index=False)
+    print(f"\n💾 Guardado: {ARCHIVO_LIMPIO}")
+
     # Paso 2: Features de rendimiento
     df_con_rendimiento = crear_features_rendimiento(df_limpio)
-    
+
     # Paso 3: Features de resultados
     df_con_resultados = crear_features_resultados(df_con_rendimiento)
-    
-    # Paso 4: (opcional) H2H - por defecto no se modifica df_final aquí
-    df_final = df_con_resultados
 
+    # Paso 4: H2H
     try:
-        df_final_h2h = crear_features_h2h(df_final.copy())
-        archivo_final = os.path.join(RUTA_GUARDADO, 'premier_league_con_features.csv')
+        df_final_h2h = crear_features_h2h(df_con_resultados.copy())
 
-        # Si existe un archivo previo, mover a backup (simple .backup)
-        if os.path.exists(archivo_final):
-            backup_path = archivo_final + '.backup'
+        # Paso 5 (opcional): xG rolling — importado de utils
+        df_final_h2h = agregar_xg_rolling(df_final_h2h)
+
+        # Backup del archivo anterior si existe
+        if os.path.exists(ARCHIVO_FEATURES):
+            backup_path = ARCHIVO_FEATURES + '.backup'
             try:
-                os.replace(archivo_final, backup_path)
+                os.replace(ARCHIVO_FEATURES, backup_path)
                 print(f"\n📁 Backup creado: {backup_path}")
-            except Exception:
-                # si el replace falla, continuamos e intentamos sobreescribir
+            except OSError:
                 pass
 
-        # Guardar la versión final (con H2H) usando el nombre canónico
-        df_final_h2h.to_csv(archivo_final, index=False)
-        print(f"\n💾 Guardado (canónico, CON H2H): {archivo_final}")
-
-        # Usar la versión con H2H para posteriores pasos/summary
+        df_final_h2h.to_csv(ARCHIVO_FEATURES, index=False)
+        print(f"\n💾 Guardado (canonico, CON H2H): {ARCHIVO_FEATURES}")
         df_final = df_final_h2h
 
     except Exception as e:
-            # Si la generación H2H falla, NO guardamos una versión sin H2H
-            # para evitar crear el archivo no deseado. Informamos al usuario.
-        print(f"\n⚠️ No se pudo generar H2H: {e}")
-        print("No se ha guardado ningun 'premier_league_con_features.csv' nuevo.\n")
+        print(f"\n⚠️  No se pudo generar H2H: {e}")
+        print("No se ha guardado ningun archivo nuevo.\n")
+        df_final = df_con_resultados
     
     # Resumen
     print("\n" + "="*60)

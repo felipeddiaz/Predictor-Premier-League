@@ -9,8 +9,24 @@ import numpy as np
 import joblib
 import os
 from datetime import datetime
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+from config import (
+    ARCHIVO_FEATURES,
+    ARCHIVO_MODELO,
+    ARCHIVO_FEATURES_PKL,
+    ARCHIVO_MODELO_VB,
+    ARCHIVO_FEATURES_VB,
+    RUTA_MODELOS,
+    FACTOR_CONSERVADOR,
+    UMBRAL_EDGE_MINIMO,
+    CUOTA_MAXIMA,
+    PROBABILIDAD_MINIMA,
+    KELLY_FRACTION,
+    STAKE_MAXIMO_PCT,
+    BANKROLL_DEFAULT,
+    MONEDA,
+)
+from utils import calcular_h2h_features
 
 # Importar FPDF para generar PDFs
 try:
@@ -18,66 +34,30 @@ try:
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
-    print("⚠️  FPDF no disponible. Instala con: pip install fpdf")
-
-# Importar sistema EV
-import sys
-sys.path.append('.')
+    print("⚠️  FPDF no disponible. Instala con: pip install fpdf2")
 
 try:
     from sistema_expected_value import calcular_ev, kelly_criterion, analizar_apuesta
     EV_AVAILABLE = True
 except ImportError:
-    print("⚠️  Sistema EV no disponible. Ejecuta sistema_expected_value.py primero")
     EV_AVAILABLE = False
-
-#new change
-#asd
-
-#sadjashda
-#nuevas lineas para pruebas
 
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
 
-RUTA_DATOS = './datos/procesados/premier_league_con_features.csv'
-RUTA_MODELOS = './modelos/'
+RUTA_DATOS = ARCHIVO_FEATURES
+BANKROLL = BANKROLL_DEFAULT
 
-# ============================================================================
-# CONFIGURACIÓN VALUE BETTING CON 3 CAPAS DE PROTECCIÓN
-# ============================================================================
-
-# CAPA 1: Cerebro (Ajuste conservador de probabilidades)
-FACTOR_CONSERVADOR = 0.60  # 40% descuento en probabilidades extremas
-
-# CAPA 2: Filtros de Value Bet
-UMBRAL_EDGE_MINIMO = 0.10  # 10% - Edge mínimo para considerar value bet
-CUOTA_MAXIMA = 5.0  # No apostar en underdogs extremos (evita Sunderland 8.21)
-PROBABILIDAD_MINIMA = 0.35  # Modelo debe dar al menos 35% de probabilidad
-
-# CAPA 3: Gestor de Riesgo (Kelly Criterion)
-KELLY_FRACTION = 0.25  # Usar solo 25% del Kelly completo
-STAKE_MAXIMO_PCT = 0.025  # Máximo 2.5% del bankroll por apuesta
-
-# General
-BANKROLL = 2000  # Tu bankroll
-MONEDA = "$"
+# Número de jornada actual — actualizar antes de ejecutar
+NUMERO_JORNADA = 15
 
 # ============================================================================
 # TUS PARTIDOS DE LA JORNADA
+# Actualiza esta lista con los partidos y cuotas de la jornada actual.
 # ============================================================================
 
-# Lista de partidos y cuotas para la jornada 14 (22-24 de noviembre de 2025)
-
-# Lista de partidos y cuotas para la jornada 14 (29-30 de noviembre de 2025)
-
-# Lista de partidos y cuotas para la jornada 14 (29-30 de noviembre de 2025)
-# Basado en tu lista REAL proporcionada.
-
-# Lista de partidos y cuotas para la Jornada 14 (2-4 de diciembre de 2025)
-
-partidos_jornada_14 = [
+partidos_jornada = [
     # Martes 2 de Diciembre
     {'local': 'Bournemouth', 'visitante': 'Everton', 'cuota_h': 2.30, 'cuota_d': 3.40, 'cuota_a': 3.10}, # Partido parejo
     {'local': 'Fulham', 'visitante': 'Man City', 'cuota_h': 5.00, 'cuota_d': 4.25, 'cuota_a': 1.67}, # City favorito visitante
@@ -174,24 +154,26 @@ def cargar_sistema():
     print("🔄 CARGANDO SISTEMA DE PREDICCIÓN")
     print("="*70)
     
-    # Intentar cargar modelo optimizado primero (del 02_entrenar_modelo.py)
-    modelo_file = os.path.join(RUTA_MODELOS, 'modelo_final_optimizado.pkl')
-    features_file = os.path.join(RUTA_MODELOS, 'features.pkl')
-    
-    # Si no existe, intentar con el modelo de value betting (backwards compatibility)
-    if not os.path.exists(modelo_file):
-        modelo_file = os.path.join(RUTA_MODELOS, 'modelo_value_betting.pkl')
-        features_file = os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')
-    
-    if not os.path.exists(modelo_file):
-        print(f"❌ No se encontró el modelo")
-        print(f"   Ejecuta: python 02_entrenar_modelo.py")
+    # Prioridad: modelo optimizado (02) → modelo de value betting (03)
+    if os.path.exists(ARCHIVO_MODELO):
+        modelo_file = ARCHIVO_MODELO
+        features_file = ARCHIVO_FEATURES_PKL
+    elif os.path.exists(ARCHIVO_MODELO_VB):
+        modelo_file = ARCHIVO_MODELO_VB
+        features_file = ARCHIVO_FEATURES_VB
+    else:
+        print("❌ No se encontró el modelo")
+        print("   Ejecuta: python 02_entrenar_modelo.py")
         return None, None, None
     
     modelo = joblib.load(modelo_file)
     features = joblib.load(features_file) if os.path.exists(features_file) else None
     df_historico = pd.read_csv(RUTA_DATOS) if os.path.exists(RUTA_DATOS) else None
     
+    if features is None or df_historico is None:
+        print("❌ No se pudieron cargar features o datos históricos")
+        return None, None, None
+
     print(f"✅ Modelo cargado: {os.path.basename(modelo_file)}")
     print(f"✅ Features: {len(features)}")
     print(f"✅ Histórico: {len(df_historico)} partidos\n")
@@ -245,24 +227,32 @@ def obtener_stats_equipo(equipo, df, es_local=True):
 
 
 def transformar_cuotas(cuota_h, cuota_d, cuota_a):
-    """Transforma cuotas en features."""
-    
-    prob_home = 1 / cuota_h
-    prob_draw = 1 / cuota_d
-    prob_away = 1 / cuota_a
-    
-    total_prob = prob_home + prob_draw + prob_away
-    prob_home_norm = prob_home / total_prob
-    prob_draw_norm = prob_draw / total_prob
-    prob_away_norm = prob_away / total_prob
-    
-    favoritism = prob_home_norm - prob_away_norm
-    
+    """
+    Transforma cuotas de apertura en features de probabilidad.
+
+    Los nombres de las features generadas coinciden exactamente con los
+    producidos por utils.agregar_features_cuotas_derivadas() durante el
+    entrenamiento. Las probabilidades NO se normalizan (consistente con training).
+    """
+    prob_h = 1 / cuota_h
+    prob_d = 1 / cuota_d
+    prob_a = 1 / cuota_a
+
+    prob_max = max(prob_h, prob_d, prob_a)
+    prob_min = min(prob_h, prob_d, prob_a)
+
     return {
-        'Prob_Home_Norm': prob_home_norm,
-        'Prob_Draw_Norm': prob_draw_norm,
-        'Prob_Away_Norm': prob_away_norm,
-        'Favoritism': favoritism
+        'Prob_H': prob_h,
+        'Prob_D': prob_d,
+        'Prob_A': prob_a,
+        # No hay cuotas de cierre en predicción en vivo → movimiento = 0
+        'Prob_Move_H': 0.0,
+        'Prob_Move_D': 0.0,
+        'Prob_Move_A': 0.0,
+        'Market_Move_Strength': 0.0,
+        'Prob_Spread': prob_max - prob_min,
+        'Market_Confidence': prob_max - (1 / 3),
+        'Home_Advantage_Prob': prob_h - prob_a,
     }
 
 
@@ -282,7 +272,7 @@ def predecir_partido(partido, modelo, features, df):
     if stats_local is None or stats_visitante is None:
         return None
     
-    # Transformar cuotas
+    # Transformar cuotas en features con nombres canónicos (idénticos a training)
     features_cuotas = transformar_cuotas(cuota_h, cuota_d, cuota_a)
     
     # Construir features
@@ -297,15 +287,10 @@ def predecir_partido(partido, modelo, features, df):
         'AT_Form_W': stats_visitante['Form_W'],
         'AT_Form_D': stats_visitante['Form_D'],
         'AT_Form_L': stats_visitante['Form_L'],
-        'Goal_Diff': stats_local['AvgGoals'] - stats_visitante['AvgGoals'],
-        'Form_Diff': stats_local['Form_W'] - stats_visitante['Form_W'],
-        'Shots_Diff': stats_local['AvgShotsTarget'] - stats_visitante['AvgShotsTarget'],
-        'Prob_Home_Norm': features_cuotas['Prob_Home_Norm'],
-        'Prob_Draw_Norm': features_cuotas['Prob_Draw_Norm'],
-        'Prob_Away_Norm': features_cuotas['Prob_Away_Norm'],
-        'Favoritism': features_cuotas['Favoritism']
     }
-    
+    # Agregar todas las features de cuotas (nombres canónicos)
+    datos.update(features_cuotas)
+
     # Agregar xG si está disponible
     if 'xG_Avg' in stats_local and 'xG_Avg' in stats_visitante:
         datos['HT_xG_Avg'] = stats_local.get('xG_Avg', 0)
@@ -317,19 +302,18 @@ def predecir_partido(partido, modelo, features, df):
         datos['HT_xGA_Avg'] = stats_local.get('xGA_Avg', 0)
         datos['AT_xGA_Avg'] = stats_visitante.get('xGA_Avg', 0)
     
-    # ...existing code...
+    # H2H features (incluye H2H_Available y features derivadas)
     try:
         h2h_features = calcular_h2h_features(
             df=df,
             equipo_local=local,
             equipo_visitante=visitante,
             fecha_limite=None,
-            ultimos_n=5
         )
         datos.update(h2h_features)
     except Exception:
-        # Si no hay H2H o falla, continuar sin esas features
-        pass
+        # Valores neutros si falla H2H
+        datos['H2H_Available'] = 0
     
     datos_filtrado = {k: v for k, v in datos.items() if k in features}
     partido_df = pd.DataFrame([datos_filtrado], columns=features).fillna(0)
@@ -340,14 +324,14 @@ def predecir_partido(partido, modelo, features, df):
     # CAPA 1: AJUSTAR PROBABILIDADES (CONSERVADOR)
     probs = ajustar_probabilidades_conservador(probs_originales)
     
-    # Calcular edge para cada opción (CORRECTO: comparar mismo con mismo)
+    # Calcular edge para la opción predicha
     idx_prediccion = np.argmax(probs)
     if idx_prediccion == 0:  # Local
-        diferencia_valor_calc = probs[0] - features_cuotas['Prob_Home_Norm']
+        diferencia_valor_calc = probs[0] - features_cuotas['Prob_H']
     elif idx_prediccion == 1:  # Empate
-        diferencia_valor_calc = probs[1] - features_cuotas['Prob_Draw_Norm']
+        diferencia_valor_calc = probs[1] - features_cuotas['Prob_D']
     else:  # Visitante
-        diferencia_valor_calc = probs[2] - features_cuotas['Prob_Away_Norm']
+        diferencia_valor_calc = probs[2] - features_cuotas['Prob_A']
     
     resultado = {
         'local': local,
@@ -363,93 +347,15 @@ def predecir_partido(partido, modelo, features, df):
         'prob_visitante': probs[2],
         'prediccion': ['Local', 'Empate', 'Visitante'][idx_prediccion],
         'confianza': np.max(probs),
-        'prob_mercado_local': features_cuotas['Prob_Home_Norm'],
-        'prob_mercado_empate': features_cuotas['Prob_Draw_Norm'],
-        'prob_mercado_visitante': features_cuotas['Prob_Away_Norm'],
+        'prob_mercado_local': features_cuotas['Prob_H'],
+        'prob_mercado_empate': features_cuotas['Prob_D'],
+        'prob_mercado_visitante': features_cuotas['Prob_A'],
         'forma_local': f"{stats_local['Form_W']:.0f}W-{stats_local['Form_D']:.0f}D-{stats_local['Form_L']:.0f}L",
         'forma_visitante': f"{stats_visitante['Form_W']:.0f}W-{stats_visitante['Form_D']:.0f}D-{stats_visitante['Form_L']:.0f}L",
         'diferencia_valor': diferencia_valor_calc  # Ahora es el edge real
     }
     
     return resultado
-
-def calcular_h2h_features(df, equipo_local, equipo_visitante, fecha_limite=None, ultimos_n=5):
-    """
-    Calcula features de Head-to-Head entre dos equipos.
-
-    Args:
-        fecha_limite: si se proporciona, solo se usan partidos anteriores a esta fecha.
-    """
-    
-    # Filtrar enfrentamientos directos (opcionalmente ANTES de la fecha límite)
-    mask = (
-        ((df['HomeTeam'] == equipo_local) & (df['AwayTeam'] == equipo_visitante)) |
-        ((df['HomeTeam'] == equipo_visitante) & (df['AwayTeam'] == equipo_local))
-    )
-    if fecha_limite is not None:
-        mask = mask & (pd.to_datetime(df['Date']) < pd.to_datetime(fecha_limite))
-
-    h2h = df[mask].sort_values('Date', ascending=False).head(ultimos_n)
-    
-    # Si no hay historial, retornar valores neutros
-    if len(h2h) == 0:
-        return {
-            'H2H_Matches': 0,
-            'H2H_Home_Wins': 0,
-            'H2H_Draws': 0,
-            'H2H_Away_Wins': 0,
-            'H2H_Home_Goals_Avg': 0,
-            'H2H_Away_Goals_Avg': 0,
-            'H2H_Home_Win_Rate': 0.33,
-            'H2H_BTTS_Rate': 0.5
-        }
-    
-    # Calcular resultados desde perspectiva del equipo LOCAL actual
-    resultados_local = []
-    goles_local = []
-    goles_visitante = []
-    btts_count = 0
-    
-    for _, partido in h2h.iterrows():
-        if partido['HomeTeam'] == equipo_local:
-            goles_local.append(partido['FTHG'])
-            goles_visitante.append(partido['FTAG'])
-            
-            if partido['FTR'] == 'H':
-                resultados_local.append('W')
-            elif partido['FTR'] == 'D':
-                resultados_local.append('D')
-            else:
-                resultados_local.append('L')
-        else:
-            goles_local.append(partido['FTAG'])
-            goles_visitante.append(partido['FTHG'])
-            
-            if partido['FTR'] == 'A':
-                resultados_local.append('W')
-            elif partido['FTR'] == 'D':
-                resultados_local.append('D')
-            else:
-                resultados_local.append('L')
-        
-        if partido['FTHG'] > 0 and partido['FTAG'] > 0:
-            btts_count += 1
-    
-    wins = resultados_local.count('W')
-    draws = resultados_local.count('D')
-    losses = resultados_local.count('L')
-    total = len(resultados_local)
-    
-    return {
-        'H2H_Matches': total,
-        'H2H_Home_Wins': wins,
-        'H2H_Draws': draws,
-        'H2H_Away_Wins': losses,
-        'H2H_Home_Goals_Avg': np.mean(goles_local) if goles_local else 0,
-        'H2H_Away_Goals_Avg': np.mean(goles_visitante) if goles_visitante else 0,
-        'H2H_Home_Win_Rate': wins / total if total > 0 else 0.33,
-        'H2H_BTTS_Rate': btts_count / total if total > 0 else 0.5
-    }
 
 # ============================================================================
 # GENERAR PDF
@@ -460,7 +366,7 @@ class PDFReporte(FPDF):
     
     def header(self):
         self.set_font('Arial', 'B', 16)
-        self.cell(0, 10, 'Premier League - Predicciones jornada 14', 0, 1, 'C')
+        self.cell(0, 10, f'Premier League - Predicciones Jornada {NUMERO_JORNADA}', 0, 1, 'C')
         self.set_font('Arial', 'I', 10)
         self.cell(0, 5, f'Generado: {datetime.now().strftime("%d/%m/%Y %H:%M")}', 0, 1, 'C')
         self.ln(5)
@@ -815,7 +721,7 @@ def main():
     
     print("\n" + "⚽" * 35)
     print("   PREDICTOR DE JORNADA COMPLETA")
-    print("   jornada 14 - 22-23 Noviembre 2025")
+    print(f"   Jornada {NUMERO_JORNADA}")
     print("   💰 CON VALUE BETTING PROFESIONAL")
     print("⚽" * 35 + "\n")
     
@@ -828,13 +734,13 @@ def main():
     
     # Predecir todos los partidos
     print("="*70)
-    print(f"🔮 PREDICIENDO {len(partidos_jornada_14)} PARTIDOS")
+    print(f"🔮 PREDICIENDO {len(partidos_jornada)} PARTIDOS")
     print("="*70 + "\n")
     
     resultados = []
     
-    for i, partido in enumerate(partidos_jornada_14, 1):
-        print(f"[{i}/{len(partidos_jornada_14)}] {partido['local']} vs {partido['visitante']}...", end=' ')
+    for i, partido in enumerate(partidos_jornada, 1):
+        print(f"[{i}/{len(partidos_jornada)}] {partido['local']} vs {partido['visitante']}...", end=' ')
         
         resultado = predecir_partido(partido, modelo, features, df)
         
@@ -844,7 +750,7 @@ def main():
         else:
             print("❌ Error")
     
-    print(f"\n✅ Predicciones completadas: {len(resultados)}/{len(partidos_jornada_14)}")
+    print(f"\n✅ Predicciones completadas: {len(resultados)}/{len(partidos_jornada)}")
     
     # Mostrar resumen en consola
     print("\n" + "="*70)
@@ -1052,26 +958,28 @@ def main():
     print("📁 GENERANDO REPORTES")
     print("="*70)
     
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    jornada_tag = f"jornada{NUMERO_JORNADA}_{timestamp}"
+
     # PDF
+    pdf_file = None
     if PDF_AVAILABLE:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        pdf_file = generar_pdf(resultados, f'predicciones_jornada14_{timestamp}.pdf')
+        pdf_file = generar_pdf(resultados, f'predicciones_{jornada_tag}.pdf')
     else:
-        print("\n💡 Instala fpdf para generar PDF: pip install fpdf")
+        print("\n💡 Instala fpdf para generar PDF: pip install fpdf2")
     
     # Excel (si openpyxl está instalado)
+    excel_file = None
     try:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        excel_file = generar_excel(resultados, f'predicciones_jornada14_{timestamp}.xlsx')
+        excel_file = generar_excel(resultados, f'predicciones_{jornada_tag}.xlsx')
     except ImportError:
         print("\n💡 Para generar Excel, instala: pip install openpyxl")
-        excel_file = None
     
     print("="*70)
     print("✅ PROCESO COMPLETADO - VALUE BETTING")
     print("="*70)
     print(f"\nArchivos generados:")
-    if PDF_AVAILABLE and pdf_file:
+    if pdf_file:
         print(f"   📄 {pdf_file}")
     if excel_file:
         print(f"   📊 {excel_file}")
