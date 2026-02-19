@@ -26,6 +26,10 @@ from config import (
     BANKROLL_DEFAULT,
     MONEDA,
 )
+
+# Carpeta de salida para reportes
+RUTA_REPORTES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reportes')
+os.makedirs(RUTA_REPORTES, exist_ok=True)
 from utils import calcular_h2h_features
 
 # Importar FPDF para generar PDFs
@@ -964,14 +968,16 @@ def main():
     # PDF
     pdf_file = None
     if PDF_AVAILABLE:
-        pdf_file = generar_pdf(resultados, f'predicciones_{jornada_tag}.pdf')
+        pdf_path = os.path.join(RUTA_REPORTES, f'predicciones_{jornada_tag}.pdf')
+        pdf_file = generar_pdf(resultados, pdf_path)
     else:
         print("\n💡 Instala fpdf para generar PDF: pip install fpdf2")
     
     # Excel (si openpyxl está instalado)
     excel_file = None
     try:
-        excel_file = generar_excel(resultados, f'predicciones_{jornada_tag}.xlsx')
+        excel_path = os.path.join(RUTA_REPORTES, f'predicciones_{jornada_tag}.xlsx')
+        excel_file = generar_excel(resultados, excel_path)
     except ImportError:
         print("\n💡 Para generar Excel, instala: pip install openpyxl")
     

@@ -15,134 +15,8 @@ import warnings
 warnings.filterwarnings('ignore')
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-# ============================================================================
-# FUNCIONES DE FEATURES
-# ============================================================================
-
-def agregar_features_cuotas_derivadas(df):
-    """Agrega features derivadas de las cuotas."""
-    print("\n🔧 Calculando features derivadas de cuotas...")
-    
-    cols_necesarias = ['B365H', 'B365D', 'B365A', 'B365CH', 'B365CD', 'B365CA']
-    if any(c not in df.columns for c in cols_necesarias):
-        return df
-    
-    # Probabilidades implícitas
-    df['Prob_H'] = 1 / df['B365H']
-    df['Prob_D'] = 1 / df['B365D']
-    df['Prob_A'] = 1 / df['B365A']
-    
-    df['ProbC_H'] = 1 / df['B365CH']
-    df['ProbC_D'] = 1 / df['B365CD']
-    df['ProbC_A'] = 1 / df['B365CA']
-    
-    # Movimiento de mercado
-    df['Prob_Move_H'] = df['ProbC_H'] - df['Prob_H']
-    df['Prob_Move_D'] = df['ProbC_D'] - df['Prob_D']
-    df['Prob_Move_A'] = df['ProbC_A'] - df['Prob_A']
-    df['Market_Move_Strength'] = df['Prob_Move_H'].abs() + df['Prob_Move_D'].abs() + df['Prob_Move_A'].abs()
-    
-    # Estructura del mercado
-    df['Prob_Max'] = df[['Prob_H', 'Prob_D', 'Prob_A']].max(axis=1)
-    df['Prob_Min'] = df[['Prob_H', 'Prob_D', 'Prob_A']].min(axis=1)
-    df['Prob_Spread'] = df['Prob_Max'] - df['Prob_Min']
-    df['Market_Confidence'] = df['Prob_Max'] - (1/3)
-    df['Home_Advantage_Prob'] = df['Prob_H'] - df['Prob_A']
-    
-    df = df.drop(columns=['ProbC_H', 'ProbC_D', 'ProbC_A'], errors='ignore')
-    
-    features_nuevas = ['Prob_H', 'Prob_D', 'Prob_A', 'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-                       'Market_Move_Strength', 'Prob_Max', 'Prob_Min', 'Prob_Spread',
-                       'Market_Confidence', 'Home_Advantage_Prob']
-    for col in features_nuevas:
-        if col in df.columns:
-            df[col] = df[col].fillna(0)
-    
-    print(f"   ✅ Features de cuotas derivadas agregadas: {len(features_nuevas)}")
-    return df
-
-def agregar_xg_rolling(df, window=5):
-    """Agrega features xG rolling."""
-    if 'Home_xG' not in df.columns:
-        return df
-    
-    df = df.sort_values(['Date', 'HomeTeam', 'AwayTeam']).reset_index(drop=True)
-    for col in ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg']:
-        df[col] = np.nan
-    
-    for team in sorted(df['HomeTeam'].unique()):
-        mask_home = df['HomeTeam'] == team
-        mask_away = df['AwayTeam'] == team
-        df.loc[mask_home, 'HT_xG_Avg'] = df.loc[mask_home, 'Home_xG'].shift(1).rolling(window, min_periods=1).mean().values
-        df.loc[mask_away, 'AT_xG_Avg'] = df.loc[mask_away, 'Away_xG'].shift(1).rolling(window, min_periods=1).mean().values
-        df.loc[mask_home, 'HT_xGA_Avg'] = df.loc[mask_home, 'Away_xG'].shift(1).rolling(window, min_periods=1).mean().values
-        df.loc[mask_away, 'AT_xGA_Avg'] = df.loc[mask_away, 'Home_xG'].shift(1).rolling(window, min_periods=1).mean().values
-    
-    df['xG_Diff'] = df['HT_xG_Avg'] - df['AT_xG_Avg']
-    df['xG_Total'] = df['HT_xG_Avg'] + df['AT_xG_Avg']
-    for col in ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg', 'xG_Diff', 'xG_Total']:
-        df[col] = df[col].fillna(0)
-    return df
-
-def agregar_features_tabla(df):
-    """Agrega features de posición en tabla."""
-    df = df.sort_values(['Date', 'HomeTeam', 'AwayTeam']).reset_index(drop=True)
-    for col in ['HT_Position', 'AT_Position', 'Position_Diff', 'Season_Progress', 'Position_Reliability']:
-        df[col] = np.nan
-    
-    if 'Date' in df.columns:
-        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
-        df['Season'] = df['Date'].apply(lambda x: f"{x.year}-{x.year+1}" if x.month >= 8 else f"{x.year-1}-{x.year}")
-    
-    for temporada in sorted(df['Season'].unique()):
-        mask = df['Season'] == temporada
-        indices = df[mask].index.tolist()
-        if not indices:
-            continue
-        
-        puntos = {}
-        gf, gc, pj = {}, {}, {}
-        equipos = sorted(set(df.loc[mask, 'HomeTeam'].unique()) | set(df.loc[mask, 'AwayTeam'].unique()))
-        for eq in equipos:
-            puntos[eq] = gf[eq] = gc[eq] = pj[eq] = 0
-        
-        fechas = sorted(df.loc[mask, 'Date'].unique())
-        fecha_jornada = {f: i+1 for i, f in enumerate(fechas)}
-        
-        for idx in indices:
-            row = df.loc[idx]
-            h, a = row['HomeTeam'], row['AwayTeam']
-            
-            if pj.get(h, 0) > 0 or pj.get(a, 0) > 0:
-                tabla = [{'Eq': eq, 'Pts': puntos[eq], 'GD': gf[eq]-gc[eq]} for eq in equipos if pj[eq] > 0]
-                if tabla:
-                    t = pd.DataFrame(tabla).sort_values(['Pts', 'GD'], ascending=False).reset_index(drop=True)
-                    t['Pos'] = range(1, len(t)+1)
-                    ph = t[t['Eq']==h]['Pos'].values
-                    pa = t[t['Eq']==a]['Pos'].values
-                    if len(ph): df.at[idx, 'HT_Position'] = ph[0]
-                    if len(pa): df.at[idx, 'AT_Position'] = pa[0]
-                    if len(ph) and len(pa): df.at[idx, 'Position_Diff'] = pa[0] - ph[0]
-            
-            df.at[idx, 'Season_Progress'] = fecha_jornada[row['Date']] / len(fechas)
-            df.at[idx, 'Position_Reliability'] = min(min(pj.get(h,0), pj.get(a,0)) / 10, 1.0)
-            
-            if pd.notna(row.get('FTHG')) and pd.notna(row.get('FTAG')):
-                gh, ga = int(row['FTHG']), int(row['FTAG'])
-                gf[h] += gh; gc[h] += ga; gf[a] += ga; gc[a] += gh
-                if gh > ga: puntos[h] += 3
-                elif gh < ga: puntos[a] += 3
-                else: puntos[h] += 1; puntos[a] += 1
-                pj[h] += 1; pj[a] += 1
-    
-    df['HT_Position'] = df['HT_Position'].fillna(10)
-    df['AT_Position'] = df['AT_Position'].fillna(10)
-    df['Position_Diff'] = df['Position_Diff'].fillna(0)
-    df['Season_Progress'] = df['Season_Progress'].fillna(0.5)
-    df['Position_Reliability'] = df['Position_Reliability'].fillna(0)
-    if 'Season' in df.columns:
-        df = df.drop(columns=['Season'])
-    return df
+from config import ARCHIVO_FEATURES
+from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas
 
 # ============================================================================
 # CARGAR Y PREPARAR DATOS
@@ -153,7 +27,7 @@ print("OPTIMIZACIÓN DE PESOS CON OPTUNA v2")
 print("(Con features derivadas de cuotas)")
 print("="*70)
 
-df = pd.read_csv('./datos/procesados/premier_league_RESTAURADO.csv')
+df = pd.read_csv(ARCHIVO_FEATURES)
 print(f"\n✅ Cargados: {len(df)} partidos")
 
 # Aplicar todas las funciones de features

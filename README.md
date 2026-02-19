@@ -57,7 +57,7 @@ mi_predictor_pl/
 │
 ├── predecir_jornada_completa.py          # Prediccion de jornada completa → PDF + Excel
 ├── sistema_expected_value.py             # Libreria de EV, Kelly Criterion y simulacion ROI
-├── visualizacion..py                     # Genera 6 graficos de portafolio (300 DPI)
+├── visualizacion.py                      # Genera 6 graficos de portafolio (300 DPI)
 ├── agregar_features_derivadas.py         # Script puntual: añade Goal_Diff/Form_Diff/Shots_Diff
 ├── analisis_rapido.py                    # Diagnostico rapido del CSV procesado
 ├── verify_setup.py                       # Verifica integridad del dataset canonico
@@ -218,7 +218,7 @@ El script `predecir_jornada_completa.py` genera reportes automaticos por jornada
 
 ## Visualizaciones de Portafolio
 
-El script `visualizacion..py` genera 6 graficos PNG a 300 DPI listos para portafolio web:
+El script `visualizacion.py` genera 6 graficos PNG a 300 DPI listos para portafolio web:
 
 | Archivo | Contenido |
 |---|---|
@@ -277,7 +277,7 @@ python predecir_jornada_completa.py
 ```bash
 python analisis_rapido.py         # Diagnostico rapido del CSV procesado
 python verify_setup.py            # Verifica integridad del dataset canonico
-python visualizacion..py          # Genera los 6 graficos de portafolio
+python visualizacion.py           # Genera los 6 graficos de portafolio
 python sistema_expected_value.py  # Demo de calculos EV y Kelly
 ```
 
