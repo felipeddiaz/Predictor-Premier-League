@@ -20,7 +20,7 @@ RUTA_PORTAFOLIO = './portafolio_imagenes/'
 
 # Archivos de datos
 ARCHIVO_LIMPIO = os.path.join(RUTA_PROCESADOS, 'premier_league_limpio.csv')
-ARCHIVO_FEATURES = os.path.join(RUTA_PROCESADOS, 'premier_league_con_features.csv')
+ARCHIVO_FEATURES = os.path.join(RUTA_PROCESADOS, 'archive', 'premier_league_RESTAURADO.csv')
 ARCHIVO_XG_RAW = os.path.join(RUTA_RAW, 'final_matches_xg.csv')
 
 # Archivos de modelo
