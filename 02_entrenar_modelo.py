@@ -571,13 +571,12 @@ def main():
     # Visualizaciones (usa modelo base para feature_importances_)
     visualizar_resultados(y_test, pred_final, nombre_final, features, modelo_final)
 
-    # Guardar modelo calibrado (el que realmente se usa en prediccion)
-    guardar_modelo_final(modelo_calibrado, features, nombre_final)
+    # Guardar modelo 
+    guardar_modelo_final(modelo_final, features, nombre_final)
 
     # Resumen — se reportan las metricas del modelo calibrado (consistente con lo guardado)
-    pred_calibrado = modelo_calibrado.predict(X_test)
-    acc_final = accuracy_score(y_test, pred_calibrado)
-    f1_final = f1_score(y_test, pred_calibrado, average='weighted')
+    acc_final = mejor_modelo['accuracy']
+    f1_final = mejor_modelo['f1_score']
 
     print("\n" + "="*70)
     print("✅ ENTRENAMIENTO COMPLETADO")
