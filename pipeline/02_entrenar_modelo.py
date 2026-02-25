@@ -37,6 +37,7 @@ from config import (
     ARCHIVO_FEATURES_PKL,
     ARCHIVO_METADATA,
     PESOS_OPTIMOS,
+    PESOS_XGB,
     PARAMS_OPTIMOS,
     PARAMS_XGB,
     ALL_FEATURES,
@@ -47,10 +48,18 @@ from config import (
     FEATURES_H2H,
     FEATURES_H2H_DERIVADAS,
     FEATURES_TABLA,
+    FEATURES_ASIAN_HANDICAP,
+    FEATURES_ROLLING_EXTRA,
     TEST_SIZE,
     RANDOM_SEED,
 )
-from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas
+from utils import (
+    agregar_xg_rolling,
+    agregar_features_tabla,
+    agregar_features_cuotas_derivadas,
+    agregar_features_asian_handicap,
+    agregar_features_rolling_extra,
+)
 
 warnings.filterwarnings('ignore')
 
@@ -80,6 +89,8 @@ def cargar_datos():
     df = agregar_xg_rolling(df)
     df = agregar_features_tabla(df)
     df = agregar_features_cuotas_derivadas(df)
+    df = agregar_features_asian_handicap(df)
+    df = agregar_features_rolling_extra(df)
 
     # Filtrar solo las que existen en el DataFrame
     # Usa ALL_FEATURES de config.py como lista canonica unica
@@ -93,6 +104,8 @@ def cargar_datos():
     print(f"   • H2H derivadas: {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
     print(f"   • Tabla: {len([f for f in FEATURES_TABLA if f in features])}")
     print(f"   • Cuotas derivadas: {len([f for f in FEATURES_CUOTAS_DERIVADAS if f in features])}")
+    print(f"   • Asian Handicap: {len([f for f in FEATURES_ASIAN_HANDICAP if f in features])}")
+    print(f"   • Rolling extra: {len([f for f in FEATURES_ROLLING_EXTRA if f in features])}")
     
     # Info de H2H
     if 'H2H_Available' in features:
@@ -232,17 +245,22 @@ def entrenar_modelos(X_train, y_train, X_test, y_test):
     print("\n" + "="*70)
     print("MODELO 4: XGBOOST ⚡")
     print("="*70)
+    print(f"   Pesos XGB optimizados:")
+    print(f"   • Local (0): {PESOS_XGB[0]:.4f}")
+    print(f"   • Empate (1): {PESOS_XGB[1]:.4f}")
+    print(f"   • Visitante (2): {PESOS_XGB[2]:.4f}")
     print(f"   Hiperparámetros:")
     print(f"   • n_estimators: {PARAMS_XGB['n_estimators']}")
     print(f"   • max_depth: {PARAMS_XGB['max_depth']}")
     print(f"   • learning_rate: {PARAMS_XGB['learning_rate']}")
     print(f"   • subsample: {PARAMS_XGB['subsample']}")
     print(f"   • colsample_bytree: {PARAMS_XGB['colsample_bytree']}")
+    print(f"   • colsample_bylevel: {PARAMS_XGB.get('colsample_bylevel', 'N/A')}")
 
     # XGBoost multiclase no acepta class_weight dict — se usan sample_weight
-    # basados en PESOS_OPTIMOS para mantener la misma lógica que el RF Optuna
+    # basados en PESOS_XGB (optimizados especificamente para XGB)
     sample_weights_train = compute_sample_weight(
-        class_weight=PESOS_OPTIMOS, y=y_train
+        class_weight=PESOS_XGB, y=y_train
     )
 
     xgb_model = XGBClassifier(**PARAMS_XGB)
@@ -543,9 +561,10 @@ def main():
     X, y, features = resultado
     
     # Split temporal (shuffle=False mantiene orden)
-    print("\n🔪 División de datos (80/20 temporal)")
+    pct_label = f"{int(TEST_SIZE*100)}"
+    print(f"\n🔪 División de datos ({100-int(TEST_SIZE*100)}/{pct_label} temporal)")
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, shuffle=False
+        X, y, test_size=TEST_SIZE, shuffle=False
     )
     print(f"   Entrenamiento: {len(X_train)} partidos")
     print(f"   Prueba: {len(X_test)} partidos")
@@ -595,7 +614,10 @@ def main():
         print(f"   n_estimators: {PARAMS_XGB['n_estimators']}")
         print(f"   max_depth: {PARAMS_XGB['max_depth']}")
         print(f"   learning_rate: {PARAMS_XGB['learning_rate']}")
-        print(f"   (Para tunear: ejecutar visualizar_busqueda.py con MODO_XGB = True)")
+        print(f"\n⚖️  Pesos XGB:")
+        print(f"   Local: {PESOS_XGB[0]:.4f}")
+        print(f"   Empate: {PESOS_XGB[1]:.4f}")
+        print(f"   Visitante: {PESOS_XGB[2]:.4f}")
 
     print(f"\n📁 Archivos guardados en {RUTA_MODELOS}")
     print(f"\n➡️  Siguiente: python 03_entrenar_sin_cuotas.py  o  python predecir_jornada_completa.py\n")

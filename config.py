@@ -8,15 +8,20 @@ viven aquí. Los demás scripts importan desde este módulo.
 
 import os
 
+# Raiz del proyecto: directorio donde vive este config.py.
+# Usar rutas absolutas garantiza que todos los scripts funcionen
+# independientemente de desde donde se ejecuten (raiz, pipeline/, jornada/, etc.)
+_RAIZ = os.path.dirname(os.path.abspath(__file__))
+
 # ============================================================================
 # RUTAS
 # ============================================================================
 
-RUTA_TEMPORADAS = './datos/temporadas/'
-RUTA_PROCESADOS = './datos/procesados/'
-RUTA_RAW = './datos/raw/'
-RUTA_MODELOS = './modelos/'
-RUTA_PORTAFOLIO = './portafolio_imagenes/'
+RUTA_TEMPORADAS = os.path.join(_RAIZ, 'datos', 'temporadas') + os.sep
+RUTA_PROCESADOS = os.path.join(_RAIZ, 'datos', 'procesados') + os.sep
+RUTA_RAW        = os.path.join(_RAIZ, 'datos', 'raw') + os.sep
+RUTA_MODELOS    = os.path.join(_RAIZ, 'modelos') + os.sep
+RUTA_PORTAFOLIO = os.path.join(_RAIZ, 'portafolio_imagenes') + os.sep
 
 # Archivos de datos
 ARCHIVO_LIMPIO = os.path.join(RUTA_PROCESADOS, 'premier_league_limpio.csv')
@@ -46,13 +51,20 @@ COLUMNAS_ESENCIALES = ['FTHG', 'FTAG', 'HS', 'AS', 'HST', 'AST']
 # ============================================================================
 
 RANDOM_SEED = 42
-TEST_SIZE = 0.20            # 80/20 split temporal
+TEST_SIZE = 0.15            # 85/15 split temporal (ultimos ~303 partidos desde ene-2025)
 
-# Pesos de clase optimizados por Optuna (100 trials, maximizando F1 weighted)
+# Pesos de clase optimizados por Optuna (100 trials RF, maximizando F1 weighted)
 PESOS_OPTIMOS = {
     0: 1.2486,  # Local
     1: 3.3228,  # Empate
     2: 1.9519   # Visitante
+}
+
+# Pesos optimizados para XGBoost (busqueda en grilla, F1=0.5726 en test 15%)
+PESOS_XGB = {
+    0: 1.4,   # Local
+    1: 2.8,   # Empate
+    2: 1.8,   # Visitante
 }
 
 # Hiperparámetros óptimos encontrados por Optuna (modelo CON cuotas)
@@ -79,17 +91,18 @@ PARAMS_OPTIMOS_VB = {
 }
 
 # Hiperparámetros XGBoost para el modelo CON cuotas (02_entrenar_modelo.py)
-# Valores iniciales conservadores. Para optimizar: ejecutar visualizar_busqueda.py
-# con MODO_XGB = True y copiar aquí los valores que imprima el script.
-# scale_pos_weight no se usa aquí — XGBoost multiclase usa sample_weight por clase.
+# Optimizados por búsqueda en grilla sobre test=15% temporal, F1=0.5697 -> 0.5726
 PARAMS_XGB = {
-    'n_estimators': 300,
-    'max_depth': 5,
-    'learning_rate': 0.05,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'reg_alpha': 0.1,
-    'reg_lambda': 1.0,
+    'n_estimators': 450,
+    'max_depth': 7,
+    'learning_rate': 0.022,
+    'subsample': 0.81,
+    'colsample_bytree': 0.77,
+    'colsample_bylevel': 0.71,
+    'reg_alpha': 0.38,
+    'reg_lambda': 2.3,
+    'min_child_weight': 2,
+    'gamma': 0.11,
     'random_state': RANDOM_SEED,
     'n_jobs': -1,
     'eval_metric': 'mlogloss',
@@ -152,8 +165,8 @@ FEATURES_XG = [
 ]
 
 FEATURES_H2H = [
-    'H2H_Available',
-    'H2H_Matches', 'H2H_Home_Wins', 'H2H_Draws', 'H2H_Away_Wins',
+    
+    'H2H_Matches', 
     'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg',
     'H2H_Home_Win_Rate', 'H2H_BTTS_Rate',
 ]
@@ -174,6 +187,24 @@ FEATURES_TABLA = [
     'HT_Pressure', 'AT_Pressure'
 ]
 
+FEATURES_ASIAN_HANDICAP = [
+    'AHh',                    # Handicap apertura r=0.44
+    'AHCh',                   # Handicap cierre
+    'AH_Move',                # Movimiento de línea
+    'AH_Magnitude',           # Magnitud absoluta
+    'AH_Home_Favored',        # Local es favorito
+    'AH_Close_Match',         # Partido parejo
+    'AH_Big_Favorite',        # Hay gran favorito
+]
+
+# Features rolling extra — calculadas en utils.agregar_features_rolling_extra()
+FEATURES_ROLLING_EXTRA = [
+    'HT_Goals_Diff',   # Diferencia de goles rolling (local como home)
+    'AT_Goals_Diff',   # Diferencia de goles rolling (visitante como away)
+    'AT_HTR_Rate',     # % partidos ganando al descanso (visitante)
+    'PS_vs_Avg_H',     # Pinnacle vs mercado promedio local (sharp signal)
+]
+
 ALL_FEATURES = (
     FEATURES_BASE
     + FEATURES_CUOTAS
@@ -182,4 +213,6 @@ ALL_FEATURES = (
     + FEATURES_H2H
     + FEATURES_H2H_DERIVADAS
     + FEATURES_TABLA
-)
+    + FEATURES_ASIAN_HANDICAP
+    + FEATURES_ROLLING_EXTRA
+)   

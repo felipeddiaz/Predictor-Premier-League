@@ -536,3 +536,145 @@ def calcular_h2h_features(
         'H2H_Total_Goals_Avg': home_goals_avg + away_goals_avg,
         'H2H_Home_Consistent': 1 if win_rate >= 0.6 else 0,
     }
+
+
+# ============================================================================
+# ASIAN HANDICAP
+# ============================================================================
+
+def agregar_features_asian_handicap(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calcula features derivadas del Asian Handicap a partir de columnas raw del CSV.
+
+    Columnas raw requeridas (football-data.co.uk):
+        AHh        handicap apertura local  (ej: -1.5, 0.25, 1.0)
+        AHCh       handicap cierre local
+        B365AHH    cuota Bet365 apertura local con handicap
+        B365AHA    cuota Bet365 apertura visitante con handicap
+        B365CAHH   cuota Bet365 cierre local con handicap
+        B365CAHA   cuota Bet365 cierre visitante con handicap
+        Prob_H     probabilidad implicita 1X2 local (de agregar_features_cuotas_derivadas)
+        Prob_A     probabilidad implicita 1X2 visitante
+
+    Features generadas:
+        AH_Line          handicap de apertura (señal de fuerza relativa del mercado)
+        AH_Line_Move     AHCh - AHh: linea se movio hacia el local (>0) o visitante (<0)
+        AH_Implied_Home  prob implicita local desde cuotas AH apertura (1/B365AHH normalizada)
+        AH_Implied_Away  prob implicita visitante
+        AH_Edge_Home     diferencia entre prob AH y prob 1X2 del mercado para el local
+        AH_Market_Conf   que tan lejos esta la cuota de la linea justa (1.909 sin margen)
+        AH_Close_Move_H  movimiento cuota local apertura -> cierre
+        AH_Close_Move_A  movimiento cuota visitante apertura -> cierre
+
+    No modifica el CSV. Se llama en memoria antes de entrenar/predecir.
+    """
+    print("\nCalculando features Asian Handicap...")
+
+    required = ['AHh', 'AHCh', 'B365AHH', 'B365AHA', 'B365CAHH', 'B365CAHA']
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        print(f"   AVISO: columnas AH no encontradas: {missing}. Saltando.")
+        for col in ['AH_Line', 'AH_Line_Move', 'AH_Implied_Home', 'AH_Implied_Away',
+                    'AH_Edge_Home', 'AH_Market_Conf', 'AH_Close_Move_H', 'AH_Close_Move_A']:
+            df[col] = 0.0
+        return df
+
+    # Linea de handicap
+    df['AH_Line'] = df['AHh']
+
+    # Movimiento de linea: positivo = mercado favorece mas al local al cierre
+    df['AH_Line_Move'] = df['AHCh'] - df['AHh']
+
+    # Probabilidades implicitas desde cuotas AH apertura
+    # AH es mercado binario (sin empate): normalizamos las dos cuotas
+    raw_h = 1.0 / df['B365AHH'].replace(0, np.nan)
+    raw_a = 1.0 / df['B365AHA'].replace(0, np.nan)
+    total = raw_h + raw_a
+    df['AH_Implied_Home'] = (raw_h / total).fillna(0.5)
+    df['AH_Implied_Away'] = (raw_a / total).fillna(0.5)
+
+    # Edge AH vs mercado 1X2: diferencia entre lo que dice el AH y las cuotas 1X2
+    # Si Prob_H no existe (aun no se calcularon cuotas derivadas), usar 0
+    if 'Prob_H' in df.columns and 'Prob_A' in df.columns:
+        prob_1x2_h = df['Prob_H']
+        prob_1x2_a = df['Prob_A']
+        # Normalizar 1X2 ignorando empate para comparar con AH binario
+        total_1x2 = prob_1x2_h + prob_1x2_a
+        prob_1x2_h_norm = (prob_1x2_h / total_1x2).fillna(0.5)
+        df['AH_Edge_Home'] = df['AH_Implied_Home'] - prob_1x2_h_norm
+    else:
+        df['AH_Edge_Home'] = 0.0
+
+    # Confianza del mercado AH: distancia de la cuota ideal sin margen (1.909)
+    # Cuota mas baja que 1.909 = mercado tiene alta confianza en ese lado
+    ah_fair = 1.909
+    df['AH_Market_Conf'] = (ah_fair - df['B365AHH'].clip(upper=ah_fair)).fillna(0.0)
+
+    # Movimiento de cuotas apertura -> cierre
+    df['AH_Close_Move_H'] = df['B365CAHH'] - df['B365AHH']
+    df['AH_Close_Move_A'] = df['B365CAHA'] - df['B365AHA']
+
+    # Rellenar posibles NaN residuales
+    ah_cols = ['AH_Line', 'AH_Line_Move', 'AH_Implied_Home', 'AH_Implied_Away',
+               'AH_Edge_Home', 'AH_Market_Conf', 'AH_Close_Move_H', 'AH_Close_Move_A']
+    df[ah_cols] = df[ah_cols].fillna(0.0)
+
+    con_datos = (df['AH_Line'] != 0).sum()
+    print(f"   Asian Handicap: {con_datos} partidos con datos")
+    print(f"   Handicap promedio local: {df['AH_Line'].mean():.3f}")
+    print(f"   Movimiento de linea promedio: {df['AH_Line_Move'].mean():.3f}")
+
+    return df
+
+
+# ============================================================================
+# FEATURES ROLLING EXTRA
+# ============================================================================
+
+def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Agrega 4 features rolling que mejoran el F1 del modelo XGBoost:
+      - HT_Goals_Diff  : rolling-5 de diferencia de goles del local (como home)
+      - AT_Goals_Diff  : rolling-5 de diferencia de goles del visitante (como away)
+      - AT_HTR_Rate    : rolling-5 de % partidos ganando al descanso (visitante)
+      - PS_vs_Avg_H    : Pinnacle vs promedio de mercado (señal sharp money, local)
+
+    Usa groupby+shift+rolling (vectorizado) para evitar loops lentos por equipo.
+    El shift(1) garantiza que cada partido solo ve datos ANTERIORES a ese partido.
+    """
+    window = ROLLING_WINDOW
+
+    # Asegurar orden temporal
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    # HT_Goals_Diff: diferencia goles rolling del equipo LOCAL cuando juega en casa
+    df['_HT_gd'] = df['FTHG'].fillna(0) - df['FTAG'].fillna(0)
+    df['HT_Goals_Diff'] = (
+        df.groupby('HomeTeam')['_HT_gd']
+        .transform(lambda x: x.shift(1).rolling(window, min_periods=1).mean())
+        .fillna(0)
+    )
+
+    # AT_Goals_Diff: diferencia goles rolling del equipo VISITANTE cuando juega fuera
+    df['_AT_gd'] = df['FTAG'].fillna(0) - df['FTHG'].fillna(0)
+    df['AT_Goals_Diff'] = (
+        df.groupby('AwayTeam')['_AT_gd']
+        .transform(lambda x: x.shift(1).rolling(window, min_periods=1).mean())
+        .fillna(0)
+    )
+
+    # AT_HTR_Rate: % partidos ganando al descanso del VISITANTE como away
+    df['_AT_htr'] = (df['HTAG'].fillna(0) > df['HTHG'].fillna(0)).astype(float)
+    df['AT_HTR_Rate'] = (
+        df.groupby('AwayTeam')['_AT_htr']
+        .transform(lambda x: x.shift(1).rolling(window, min_periods=1).mean())
+        .fillna(0)
+    )
+
+    # PS_vs_Avg_H: Pinnacle cierre vs promedio mercado cuota local (sharp money signal)
+    df['PS_vs_Avg_H'] = (df['PSCH'] - df['AvgCH']).fillna(0)
+
+    # Limpiar columnas temporales
+    df.drop(columns=['_HT_gd', '_AT_gd', '_AT_htr'], inplace=True, errors='ignore')
+
+    return df
