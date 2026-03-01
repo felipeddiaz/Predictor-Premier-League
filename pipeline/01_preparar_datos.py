@@ -5,7 +5,7 @@ Premier League Match Predictor
 
 Carga temporadas brutas, limpia, aplica feature engineering en 4 fases
 (rendimiento rolling, forma W/D/L, Head-to-Head, xG rolling) y guarda
-el dataset canonico en datos/procesados/premier_league_con_features.csv.
+el dataset canonico.
 """
 
 import pandas as pd
@@ -81,8 +81,16 @@ def cargar_datos_premier_league(ruta_carpeta):
         print("❌ ERROR: No se encontró la columna 'Date'")
         return None
     
-    df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y', dayfirst=True, errors='coerce')
-    
+    # Intentar parsear con formato de 4 digitos (DD/MM/YYYY) y donde falle
+    # intentar con 2 digitos (DD/MM/YY) — necesario para archivos pre-2017
+    fecha_raw = df['Date'].astype(str)
+    df['Date'] = pd.to_datetime(fecha_raw, format='%d/%m/%Y', errors='coerce')
+    mascara_nat = df['Date'].isnull()
+    if mascara_nat.sum() > 0:
+        df.loc[mascara_nat, 'Date'] = pd.to_datetime(
+            fecha_raw[mascara_nat], format='%d/%m/%y', errors='coerce'
+        )
+
     fechas_invalidas = df['Date'].isnull().sum()
     if fechas_invalidas > 0:
         print(f"⚠️  Eliminadas {fechas_invalidas} filas con fechas inválidas")
@@ -91,15 +99,50 @@ def cargar_datos_premier_league(ruta_carpeta):
     df.sort_values(by='Date', inplace=True)
     df.reset_index(drop=True, inplace=True)
     
-    # Eliminar columnas con >MISSING_THRESHOLD datos faltantes
+    # Eliminar columnas con >MISSING_THRESHOLD datos faltantes,
+    # EXCEPTO las columnas de cuotas/AH que son criticas para el modelo
+    # y solo estan disponibles en temporadas recientes (post-2020).
+    # Esas columnas se conservan con NaN — el modelo las rellena con 0.
+    COLUMNAS_PRESERVAR = {
+        'B365CH', 'B365CD', 'B365CA',   # cuotas de cierre
+        'AHh', 'AHCh',                   # asian handicap apertura y cierre
+        'B365AHH', 'B365AHA',
+        'B365CAHH', 'B365CAHA',
+        'PSCH', 'PSCD', 'PSCA',          # Pinnacle cierre
+        'AvgCH', 'AvgCD', 'AvgCA',       # promedio mercado cierre
+        'MaxCH', 'MaxCD', 'MaxCA',
+    }
     print("\n🧹 Eliminando columnas inconsistentes...")
     missing_percentage = df.isnull().sum() / len(df)
-    columns_to_drop = missing_percentage[missing_percentage > MISSING_THRESHOLD].index.tolist()
-    
+    columns_to_drop = [
+        c for c in missing_percentage[missing_percentage > MISSING_THRESHOLD].index
+        if c not in COLUMNAS_PRESERVAR
+    ]
+
     if len(columns_to_drop) > 0:
         print(f"  Eliminadas {len(columns_to_drop)} columnas")
         df.drop(columns=columns_to_drop, inplace=True)
-    
+    preservadas = [c for c in COLUMNAS_PRESERVAR if c in df.columns]
+    if preservadas:
+        print(f"  Preservadas {len(preservadas)} columnas de cuotas/AH (con NaN en temp. antiguas)")
+
+    # Imputacion inteligente: temporadas 16-17, 17-18, 18-19 no tienen B365CH/CD/CA
+    # pero si tienen PSCH/PSCD/PSCA (Pinnacle cierre) que son equivalentes.
+    # Tambien imputan AHh/AHCh con BbAHh (Betbrain AH) si existe.
+    for par_destino, par_origen in [('B365CH','PSCH'), ('B365CD','PSCD'), ('B365CA','PSCA')]:
+        if par_destino in df.columns and par_origen in df.columns:
+            mask = df[par_destino].isnull() & df[par_origen].notnull()
+            if mask.sum() > 0:
+                df.loc[mask, par_destino] = df.loc[mask, par_origen]
+                print(f"  Imputados {mask.sum()} NaN en {par_destino} con {par_origen}")
+    # AHh y AHCh: imputar con BbAHh si existe (disponible en 16-17/17-18/18-19)
+    for par_destino, par_origen in [('AHh','BbAHh'), ('AHCh','BbAHh')]:
+        if par_destino in df.columns and par_origen in df.columns:
+            mask = df[par_destino].isnull() & df[par_origen].notnull()
+            if mask.sum() > 0:
+                df.loc[mask, par_destino] = df.loc[mask, par_origen]
+                print(f"  Imputados {mask.sum()} NaN en {par_destino} con {par_origen}")
+
     # Eliminar filas con datos faltantes en columnas esenciales
     columnas_disponibles = [col for col in COLUMNAS_ESENCIALES if col in df.columns]
     

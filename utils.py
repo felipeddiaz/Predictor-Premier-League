@@ -12,9 +12,48 @@ import numpy as np
 import os
 import warnings
 
-from config import ROLLING_WINDOW, H2H_ULTIMOS_N, ARCHIVO_XG_RAW
+from config import ROLLING_WINDOW, H2H_ULTIMOS_N, ARCHIVO_XG_RAW, RUTA_RAW
 
 warnings.filterwarnings('ignore')
+
+
+# ============================================================================
+# ENSEMBLE LGBM + XGB (clase serializable via joblib)
+# ============================================================================
+
+from sklearn.base import BaseEstimator, ClassifierMixin
+
+class EnsembleLGBM_XGB(BaseEstimator, ClassifierMixin):
+    """
+    Ensemble de votacion ponderada entre LightGBM y XGBoost.
+
+    LightGBM maneja NaN nativamente; XGBoost necesita fillna(0).
+    El ensemble aplica el fillna internamente para XGBoost.
+
+    Parametros:
+        lgbm_model   : LGBMClassifier ya entrenado
+        xgb_model    : XGBClassifier ya entrenado
+        lgbm_weight  : peso de LightGBM en el promedio (default 0.25)
+        xgb_weight   : peso de XGBoost en el promedio  (default 0.75)
+    """
+
+    def __init__(self, lgbm_model=None, xgb_model=None,
+                 lgbm_weight: float = 0.25, xgb_weight: float = 0.75):
+        self.lgbm_model  = lgbm_model
+        self.xgb_model   = xgb_model
+        self.lgbm_weight = lgbm_weight
+        self.xgb_weight  = xgb_weight
+        self.classes_    = [0, 1, 2]
+
+    def predict_proba(self, X):
+        X_fill = X.fillna(0) if hasattr(X, 'fillna') else X
+        proba_lgbm = self.lgbm_model.predict_proba(X)
+        proba_xgb  = self.xgb_model.predict_proba(X_fill)
+        return self.lgbm_weight * proba_lgbm + self.xgb_weight * proba_xgb
+
+    def predict(self, X):
+        proba = self.predict_proba(X)
+        return np.argmax(proba, axis=1)
 
 
 # ============================================================================
@@ -672,9 +711,416 @@ def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # PS_vs_Avg_H: Pinnacle cierre vs promedio mercado cuota local (sharp money signal)
-    df['PS_vs_Avg_H'] = (df['PSCH'] - df['AvgCH']).fillna(0)
+    # Solo disponible en temporadas con cuotas de cierre (post-2020); 0 en las demas
+    if 'PSCH' in df.columns and 'AvgCH' in df.columns:
+        df['PS_vs_Avg_H'] = (df['PSCH'] - df['AvgCH']).fillna(0)
+    else:
+        df['PS_vs_Avg_H'] = 0.0
 
     # Limpiar columnas temporales
     df.drop(columns=['_HT_gd', '_AT_gd', '_AT_htr'], inplace=True, errors='ignore')
 
+    return df
+
+
+# ============================================================================
+# FEATURES ELO (clubelo.com)
+# ============================================================================
+
+# Mapeo nombre canónico de equipo → nombre de archivo CSV en datos/raw/elo/
+_ELO_TEAM_TO_FILE = {
+    'Arsenal': 'Arsenal', 'Aston Villa': 'AstonVilla', 'Bournemouth': 'Bournemouth',
+    'Brentford': 'Brentford', 'Brighton': 'Brighton', 'Burnley': 'Burnley',
+    'Chelsea': 'Chelsea', 'Crystal Palace': 'CrystalPalace', 'Everton': 'Everton',
+    'Fulham': 'Fulham', 'Ipswich': 'Ipswich', 'Leeds': 'Leeds', 'Leicester': 'Leicester',
+    'Liverpool': 'Liverpool', 'Luton': 'Luton', 'Man City': 'ManCity',
+    'Man United': 'ManUnited', 'Newcastle': 'Newcastle', 'Norwich': 'Norwich',
+    "Nott'm Forest": 'NottmForest', 'Sheffield United': 'SheffieldUnited',
+    'Southampton': 'Southampton', 'Sunderland': 'Sunderland', 'Tottenham': 'Tottenham',
+    'Watford': 'Watford', 'West Brom': 'WestBrom', 'West Ham': 'WestHam', 'Wolves': 'Wolves',
+}
+
+_elo_cache = None  # cache global para no releer los CSVs en cada llamada
+
+
+def _cargar_elo_all() -> pd.DataFrame:
+    """Carga todos los CSVs de ELO en un único DataFrame, con cache."""
+    global _elo_cache
+    if _elo_cache is not None:
+        return _elo_cache
+
+    elo_dir = os.path.join(RUTA_RAW, 'elo')
+    frames = []
+    for team_name, file_stem in _ELO_TEAM_TO_FILE.items():
+        path = os.path.join(elo_dir, f'{file_stem}.csv')
+        if os.path.exists(path):
+            e = pd.read_csv(path)
+            e['From'] = pd.to_datetime(e['From'])
+            e['To'] = pd.to_datetime(e['To'])
+            e['team_name'] = team_name
+            frames.append(e[['team_name', 'Elo', 'From', 'To']])
+
+    if not frames:
+        raise FileNotFoundError(f"No se encontraron CSVs de ELO en {elo_dir}")
+
+    elo_all = pd.concat(frames, ignore_index=True).sort_values('From').reset_index(drop=True)
+    _elo_cache = elo_all
+    return elo_all
+
+
+def _lookup_elo_for_team(team_series: pd.Series, date_series: pd.Series,
+                          elo_all: pd.DataFrame, fallback_mean: dict, global_mean: float) -> pd.Series:
+    """
+    Para cada (team, date) devuelve el ELO vigente en esa fecha.
+    Estrategia vectorizada por equipo: merge_asof por fecha dentro de cada grupo.
+    """
+    result = pd.Series(index=team_series.index, dtype=float)
+
+    for team in team_series.unique():
+        mask = team_series == team
+        dates = date_series[mask]
+
+        # Subset ELO de este equipo, ordenado por From
+        elo_team = elo_all[elo_all['team_name'] == team].sort_values('From').reset_index(drop=True)
+
+        if elo_team.empty:
+            result[mask] = fallback_mean.get(team, global_mean)
+            continue
+
+        # Construir DataFrame de consulta
+        query_df = pd.DataFrame({'Date': dates}).sort_values('Date')
+
+        # Eliminar filas con From/To nulos (pueden existir en algunos CSVs)
+        elo_clean = elo_team[['From', 'To', 'Elo']].dropna(subset=['From', 'To'])
+
+        if elo_clean.empty:
+            result[mask] = fallback_mean.get(team, global_mean)
+            continue
+
+        # merge_asof: para cada fecha en query_df, busca el registro ELO más reciente
+        # cuyo 'From' sea <= Date (último ELO vigente antes o en la fecha del partido)
+        merged = pd.merge_asof(
+            query_df,
+            elo_clean,
+            left_on='Date',
+            right_on='From',
+            direction='backward'
+        )
+
+        # Verificar que la fecha esté dentro del rango [From, To]
+        # Si To < Date → el ELO estaba expirado; igualmente lo usamos (es el más reciente disponible)
+        # Esto cubre partidos recientes donde el CSV no se actualizó
+        elo_values = merged['Elo'].fillna(fallback_mean.get(team, global_mean))
+        elo_values.index = query_df.index  # restaurar índice original
+
+        result[mask] = elo_values
+
+    return result
+
+
+def agregar_features_elo(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Agrega 3 features ELO al DataFrame:
+      - HT_ELO   : rating ELO del equipo local en la fecha del partido
+      - AT_ELO   : rating ELO del equipo visitante en la fecha del partido
+      - ELO_Diff : HT_ELO - AT_ELO
+
+    Usa pd.merge_asof por equipo (vectorizado) para evitar el loop lento
+    de .iterrows() que usa el script de experimento de referencia.
+
+    Fuente de datos: datos/raw/elo/<Equipo>.csv (28 archivos de clubelo.com)
+    """
+    df = df.copy()
+
+    # Asegurar que Date sea datetime
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Cargar todos los ELOs (con cache)
+    elo_all = _cargar_elo_all()
+
+    # Calcular fallbacks por equipo y global
+    fallback_mean = elo_all.groupby('team_name')['Elo'].mean().to_dict()
+    global_mean = elo_all['Elo'].mean()
+
+    # Calcular ELO para locales y visitantes
+    df['HT_ELO'] = _lookup_elo_for_team(df['HomeTeam'], df['Date'], elo_all, fallback_mean, global_mean)
+    df['AT_ELO'] = _lookup_elo_for_team(df['AwayTeam'], df['Date'], elo_all, fallback_mean, global_mean)
+    df['ELO_Diff'] = df['HT_ELO'] - df['AT_ELO']
+
+    con_elo = df['HT_ELO'].notna().sum()
+    print(f"   ELO: {con_elo}/{len(df)} partidos con datos ({con_elo/len(df)*100:.1f}%)")
+    print(f"   ELO local promedio: {df['HT_ELO'].mean():.1f} | visitante: {df['AT_ELO'].mean():.1f}")
+
+    return df
+
+
+# ============================================================================
+# FEATURES DE FORMA Y MOMENTUM
+# ============================================================================
+
+def agregar_features_forma_momentum(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Agrega features de forma reciente y momentum para cada equipo:
+
+    Features globales (ultimos 5 partidos de cualquier venue):
+      - HT_WinRate5       : % victorias local en ultimos 5 partidos (cualquier venue)
+      - AT_WinRate5       : % victorias visitante en ultimos 5 partidos (cualquier venue)
+      - HT_Streak         : racha actual (>0 = victorias consecutivas, <0 = derrotas)
+      - AT_Streak         : racha actual del visitante
+      - HT_Pts5           : puntos ganados por local en ultimos 5 partidos (max 15)
+      - AT_Pts5           : puntos ganados por visitante en ultimos 5 partidos
+      - HT_GoalsFor5      : goles marcados por local en ultimos 5 partidos (total)
+      - AT_GoalsFor5      : goles marcados por visitante en ultimos 5 partidos
+      - HT_GoalsAgainst5  : goles encajados por local en ultimos 5 partidos
+      - AT_GoalsAgainst5  : goles encajados por visitante en ultimos 5 partidos
+      - Momentum_Diff     : diferencia de puntos (HT_Pts5 - AT_Pts5), indica quien llega mejor
+
+    Features especificas de venue (rendimiento como local vs visitante):
+      - HT_HomeWinRate5   : % victorias del local jugando EN CASA (ultimos 5 en casa)
+      - AT_AwayWinRate5   : % victorias del visitante jugando FUERA (ultimos 5 fuera)
+      - HT_HomeGoals5     : goles marcados por local en sus ultimos 5 partidos en casa
+      - AT_AwayGoals5     : goles marcados por visitante en sus ultimos 5 partidos fuera
+
+    Usa groupby + shift + rolling vectorizado. El shift(1) garantiza
+    que cada partido solo ve datos ANTERIORES (sin data leakage).
+    """
+    window = ROLLING_WINDOW
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    # ── Construir tabla de resultados por equipo (formato long) ──────────────
+    # Para cada partido, creamos dos filas: una para el local y una para el visitante
+    home_rows = df[['Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG']].copy()
+    home_rows.columns = ['Date', 'Team', 'Opponent', 'GF', 'GA']
+    home_rows['IsHome'] = 1
+    home_rows['Result'] = np.where(
+        home_rows['GF'] > home_rows['GA'], 1,
+        np.where(home_rows['GF'] < home_rows['GA'], -1, 0)
+    )  # 1=win, 0=draw, -1=loss
+    home_rows['Pts'] = np.where(home_rows['Result'] == 1, 3,
+                        np.where(home_rows['Result'] == 0, 1, 0))
+
+    away_rows = df[['Date', 'AwayTeam', 'HomeTeam', 'FTAG', 'FTHG']].copy()
+    away_rows.columns = ['Date', 'Team', 'Opponent', 'GF', 'GA']
+    away_rows['IsHome'] = 0
+    away_rows['Result'] = np.where(
+        away_rows['GF'] > away_rows['GA'], 1,
+        np.where(away_rows['GF'] < away_rows['GA'], -1, 0)
+    )
+    away_rows['Pts'] = np.where(away_rows['Result'] == 1, 3,
+                        np.where(away_rows['Result'] == 0, 1, 0))
+
+    # Rellenar NaN de goles con 0 antes de calcular
+    for col in ['GF', 'GA', 'Result', 'Pts']:
+        home_rows[col] = pd.to_numeric(home_rows[col], errors='coerce').fillna(0)
+        away_rows[col] = pd.to_numeric(away_rows[col], errors='coerce').fillna(0)
+
+    long_df = pd.concat([home_rows, away_rows], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    # ── Calcular rolling stats por equipo (cualquier venue) ─────────────────
+    def rolling_shift(series, w=window):
+        return series.shift(1).rolling(w, min_periods=1).mean()
+
+    def rolling_sum_shift(series, w=window):
+        return series.shift(1).rolling(w, min_periods=1).sum()
+
+    grp = long_df.groupby('Team')
+
+    long_df['WinRate5']      = grp['Result'].transform(
+        lambda x: (x.shift(1) == 1).rolling(window, min_periods=1).mean()
+    )
+    long_df['Pts5']          = grp['Pts'].transform(rolling_sum_shift)
+    long_df['GoalsFor5']     = grp['GF'].transform(rolling_sum_shift)
+    long_df['GoalsAgainst5'] = grp['GA'].transform(rolling_sum_shift)
+
+    # Racha: suma acumulativa de victorias/derrotas consecutivas
+    def calcular_racha(series):
+        """Racha: +N victorias consecutivas, -N derrotas consecutivas, 0 si empate."""
+        results = series.values
+        rachas = np.zeros(len(results))
+        for i in range(1, len(results)):
+            r = results[i - 1]
+            if r == 1:
+                rachas[i] = max(rachas[i - 1], 0) + 1
+            elif r == -1:
+                rachas[i] = min(rachas[i - 1], 0) - 1
+            else:
+                rachas[i] = 0
+        return pd.Series(rachas, index=series.index)
+
+    long_df['Streak'] = grp['Result'].transform(calcular_racha)
+
+    # ── Calcular rolling stats por equipo SOLO como local / solo fuera ───────
+    home_long = long_df[long_df['IsHome'] == 1].copy()
+    away_long = long_df[long_df['IsHome'] == 0].copy()
+
+    home_grp = home_long.groupby('Team')
+    away_grp = away_long.groupby('Team')
+
+    home_long['HomeWinRate5'] = home_grp['Result'].transform(
+        lambda x: (x.shift(1) == 1).rolling(window, min_periods=1).mean()
+    )
+    home_long['HomeGoals5'] = home_grp['GF'].transform(rolling_sum_shift)
+
+    away_long['AwayWinRate5'] = away_grp['Result'].transform(
+        lambda x: (x.shift(1) == 1).rolling(window, min_periods=1).mean()
+    )
+    away_long['AwayGoals5'] = away_grp['GF'].transform(rolling_sum_shift)
+
+    # ── Merge de vuelta al DataFrame original ───────────────────────────────
+    # Para el equipo LOCAL: tomamos filas IsHome=1
+    home_stats = home_long[['Date', 'Team', 'WinRate5', 'Pts5', 'GoalsFor5',
+                              'GoalsAgainst5', 'Streak', 'HomeWinRate5', 'HomeGoals5']].copy()
+    home_stats.columns = ['Date', 'HomeTeam', 'HT_WinRate5', 'HT_Pts5',
+                           'HT_GoalsFor5', 'HT_GoalsAgainst5', 'HT_Streak',
+                           'HT_HomeWinRate5', 'HT_HomeGoals5']
+
+    # Para el equipo VISITANTE: tomamos filas IsHome=0
+    away_stats = away_long[['Date', 'Team', 'WinRate5', 'Pts5', 'GoalsFor5',
+                              'GoalsAgainst5', 'Streak', 'AwayWinRate5', 'AwayGoals5']].copy()
+    away_stats.columns = ['Date', 'AwayTeam', 'AT_WinRate5', 'AT_Pts5',
+                           'AT_GoalsFor5', 'AT_GoalsAgainst5', 'AT_Streak',
+                           'AT_AwayWinRate5', 'AT_AwayGoals5']
+
+    df = df.merge(home_stats, on=['Date', 'HomeTeam'], how='left')
+    df = df.merge(away_stats, on=['Date', 'AwayTeam'], how='left')
+
+    # Feature derivada: diferencia de momentum
+    df['Momentum_Diff'] = df['HT_Pts5'].fillna(0) - df['AT_Pts5'].fillna(0)
+
+    # Rellenar NaN residuales
+    forma_cols = [
+        'HT_WinRate5', 'AT_WinRate5', 'HT_Streak', 'AT_Streak',
+        'HT_Pts5', 'AT_Pts5', 'HT_GoalsFor5', 'AT_GoalsFor5',
+        'HT_GoalsAgainst5', 'AT_GoalsAgainst5', 'Momentum_Diff',
+        'HT_HomeWinRate5', 'AT_AwayWinRate5', 'HT_HomeGoals5', 'AT_AwayGoals5',
+    ]
+    for col in forma_cols:
+        if col in df.columns:
+            df[col] = df[col].fillna(0)
+
+    print(f"\n🔧 Features de forma/momentum agregadas: {len(forma_cols)} columnas")
+    return df
+
+
+# ============================================================================
+# FEATURES PINNACLE MOVE (señal sharp money)
+# ============================================================================
+
+def agregar_features_pinnacle_move(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Agrega features de movimiento de linea Pinnacle (apertura → cierre).
+
+    Disponibles en TODAS las temporadas (2016-2026):
+      - Pinnacle_Move_H  : PSCH - PSH  (cuota local subio=mercado mueve contra local)
+      - Pinnacle_Move_A  : PSCA - PSA  (cuota visitante subio=mercado mueve contra visitante)
+      - Pinnacle_Move_D  : PSCD - PSD
+      - Pinnacle_Sharp_H : prob implicita cierre Pinnacle local  (1/PSCH, normalizada)
+      - Pinnacle_Sharp_A : prob implicita cierre Pinnacle visitante
+      - Pinnacle_Conf    : max(Pinnacle_Sharp_H, Pinnacle_Sharp_A) - 1/3
+                           (confianza del mercado Pinnacle, analogo a Market_Confidence)
+
+    La diferencia apertura-cierre de Pinnacle es la señal de 'dinero inteligente'
+    mas fiable del mercado: cuando la cuota BAJA de apertura a cierre, el mercado
+    recibio apuestas significativas en esa direccion.
+    """
+    cols_necesarias = ['PSH', 'PSD', 'PSA', 'PSCH', 'PSCD', 'PSCA']
+    disponibles = [c for c in cols_necesarias if c in df.columns]
+
+    if len(disponibles) < 6:
+        print(f"   Pinnacle Move: faltan columnas {set(cols_necesarias)-set(disponibles)}, saltando.")
+        for col in ['Pinnacle_Move_H', 'Pinnacle_Move_A', 'Pinnacle_Move_D',
+                    'Pinnacle_Sharp_H', 'Pinnacle_Sharp_A', 'Pinnacle_Conf']:
+            df[col] = 0.0
+        return df
+
+    # Movimiento de linea: cuota_cierre - cuota_apertura
+    # Si la cuota SUBE (ej. PSH 2.0 → PSCH 2.2) significa que el mercado apostó
+    # contra ese resultado (menos dinero en local → cuota sube).
+    # Si BAJA (PSH 2.0 → PSCH 1.8) significa dinero inteligente aposto al local.
+    df['Pinnacle_Move_H'] = (df['PSCH'].fillna(df['PSH']) - df['PSH']).fillna(0)
+    df['Pinnacle_Move_A'] = (df['PSCA'].fillna(df['PSA']) - df['PSA']).fillna(0)
+    df['Pinnacle_Move_D'] = (df['PSCD'].fillna(df['PSD']) - df['PSD']).fillna(0)
+
+    # Probabilidades implicitas Pinnacle cierre (sin vig)
+    prob_h = 1.0 / df['PSCH'].replace(0, np.nan)
+    prob_d = 1.0 / df['PSCD'].replace(0, np.nan)
+    prob_a = 1.0 / df['PSCA'].replace(0, np.nan)
+    total  = (prob_h + prob_d + prob_a).replace(0, np.nan)
+
+    df['Pinnacle_Sharp_H'] = (prob_h / total).fillna(0)
+    df['Pinnacle_Sharp_A'] = (prob_a / total).fillna(0)
+    df['Pinnacle_Conf']    = (df[['Pinnacle_Sharp_H', 'Pinnacle_Sharp_A']].max(axis=1) - 1/3).fillna(0)
+
+    n_validos = df['Pinnacle_Move_H'].abs().gt(0).sum()
+    print(f"\n🔧 Pinnacle Move agregado: {n_validos} partidos con movimiento de linea")
+    return df
+
+
+# ============================================================================
+# FEATURES DE ARBITRO
+# ============================================================================
+
+def agregar_features_arbitro(df: pd.DataFrame, window: int = 20) -> pd.DataFrame:
+    """
+    Agrega features rolling del arbitro designado para cada partido.
+
+    Features calculadas (usando los ultimos `window` partidos arbitrados ANTES del partido):
+      - Ref_Home_WinRate   : % de victorias locales con este arbitro
+      - Ref_Goals_Avg      : promedio de goles totales por partido
+      - Ref_Yellow_Avg     : promedio de tarjetas amarillas totales (HY+AY)
+      - Ref_Home_Yellow    : promedio de amarillas al equipo local
+      - Ref_Away_Yellow    : promedio de amarillas al equipo visitante
+
+    El shift(1) garantiza que no se usa informacion del partido actual.
+    """
+    if 'Referee' not in df.columns:
+        print("   Arbitro: columna Referee no encontrada, saltando.")
+        for col in ['Ref_Home_WinRate','Ref_Goals_Avg','Ref_Yellow_Avg',
+                    'Ref_Home_Yellow','Ref_Away_Yellow']:
+            df[col] = 0.0
+        return df
+
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    # Calcular variables base para cada partido
+    df['_ref_home_win'] = (df['FTR'] == 'H').astype(float)
+    df['_ref_goals']    = df['FTHG'].fillna(0) + df['FTAG'].fillna(0)
+    df['_ref_yellow']   = df['HY'].fillna(0) + df['AY'].fillna(0)
+    df['_ref_home_y']   = df['HY'].fillna(0)
+    df['_ref_away_y']   = df['AY'].fillna(0)
+
+    def rolling_ref(series, ref_series, w=window):
+        """Rolling mean por arbitro con shift(1) para evitar data leakage."""
+        result = series.copy().astype(float)
+        for ref in ref_series.unique():
+            if pd.isna(ref):
+                continue
+            mask = ref_series == ref
+            idx  = series.index[mask]
+            vals = series.loc[idx]
+            rolled = vals.shift(1).rolling(w, min_periods=3).mean()
+            result.loc[idx] = rolled
+        return result
+
+    print("\n🔧 Calculando features de arbitro...")
+    df['Ref_Home_WinRate'] = rolling_ref(df['_ref_home_win'], df['Referee'])
+    df['Ref_Goals_Avg']    = rolling_ref(df['_ref_goals'],    df['Referee'])
+    df['Ref_Yellow_Avg']   = rolling_ref(df['_ref_yellow'],   df['Referee'])
+    df['Ref_Home_Yellow']  = rolling_ref(df['_ref_home_y'],   df['Referee'])
+    df['Ref_Away_Yellow']  = rolling_ref(df['_ref_away_y'],   df['Referee'])
+
+    # Rellenar NaN de arbitros con pocos partidos con la media global
+    ref_cols = ['Ref_Home_WinRate','Ref_Goals_Avg','Ref_Yellow_Avg',
+                'Ref_Home_Yellow','Ref_Away_Yellow']
+    for col in ref_cols:
+        media_global = df[col].median()
+        df[col] = df[col].fillna(media_global if pd.notna(media_global) else 0.0)
+
+    # Limpiar columnas temporales
+    df.drop(columns=['_ref_home_win','_ref_goals','_ref_yellow',
+                     '_ref_home_y','_ref_away_y'], inplace=True, errors='ignore')
+
+    n_refs = df['Referee'].nunique()
+    print(f"   Arbitro: {n_refs} arbitros distintos, 5 features calculadas")
     return df

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mi_predictor_pl"
+version = "0.1.0"
+description = "Premier League match outcome predictor with value betting"
+requires-python = ">=3.9"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "pipeline*", "jornada*", "herramientas*"]
+
+# Con este archivo puedes instalar el proyecto como paquete editable:
+#   pip install -e .
+#
+# Esto permite que cualquier script dentro de core/, pipeline/, jornada/ o
+# herramientas/ importe directamente desde la raiz del proyecto:
+#   from config import ...
+#   from utils import ...
+#   from core.predictor import Predictor
+# sin necesidad de sys.path hacks.

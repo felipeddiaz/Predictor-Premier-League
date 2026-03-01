@@ -51,30 +51,39 @@ COLUMNAS_ESENCIALES = ['FTHG', 'FTAG', 'HS', 'AS', 'HST', 'AST']
 # ============================================================================
 
 RANDOM_SEED = 42
-TEST_SIZE = 0.15            # 85/15 split temporal (ultimos ~303 partidos desde ene-2025)
+TEST_SIZE = 0.20            # 80/20 split temporal
 
 # Pesos de clase optimizados por Optuna (100 trials RF, maximizando F1 weighted)
 PESOS_OPTIMOS = {
-    0: 1.2486,  # Local
-    1: 3.3228,  # Empate
-    2: 1.9519   # Visitante
+    0: 2.5498,  # Local
+    1: 6.0558,  # Empate
+    2: 3.8179,  # Visitante
 }
 
 # Pesos optimizados para XGBoost (busqueda en grilla, F1=0.5726 en test 15%)
 PESOS_XGB = {
-    0: 1.4,   # Local
-    1: 2.8,   # Empate
-    2: 1.8,   # Visitante
+    0: 0.9469,  # Local
+    1: 1.5348,  # Empate
+    2: 1.1303,  # Visitante
+}
+
+# Pesos optimizados para RF Balanceado (Optuna co-optimizacion)
+PESOS_RF_BAL = {
+    0: 2.2932,  # Local
+    1: 4.2476,  # Empate
+    2: 2.8255,  # Visitante
 }
 
 # Hiperparámetros óptimos encontrados por Optuna (modelo CON cuotas)
 PARAMS_OPTIMOS = {
-    'n_estimators': 229,
-    'max_depth': 8,
-    'min_samples_leaf': 3,
-    'class_weight': PESOS_OPTIMOS,
-    'random_state': RANDOM_SEED,
-    'n_jobs': -1
+    'n_estimators':      600,
+    'max_depth':         7,
+    'min_samples_leaf':  2,
+    'min_samples_split': 9,
+    'max_features':      'log2',
+    'class_weight':      PESOS_OPTIMOS,
+    'random_state':      RANDOM_SEED,
+    'n_jobs':            -1,
 }
 
 # Hiperparámetros para el modelo SIN cuotas (03_entrenar_sin_cuotas.py)
@@ -93,16 +102,16 @@ PARAMS_OPTIMOS_VB = {
 # Hiperparámetros XGBoost para el modelo CON cuotas (02_entrenar_modelo.py)
 # Optimizados por búsqueda en grilla sobre test=15% temporal, F1=0.5697 -> 0.5726
 PARAMS_XGB = {
-    'n_estimators': 450,
-    'max_depth': 7,
-    'learning_rate': 0.022,
-    'subsample': 0.81,
-    'colsample_bytree': 0.77,
-    'colsample_bylevel': 0.71,
-    'reg_alpha': 0.38,
-    'reg_lambda': 2.3,
-    'min_child_weight': 2,
-    'gamma': 0.11,
+    'n_estimators': 350,
+    'max_depth': 6,
+    'learning_rate': 0.00566,
+    'subsample': 0.5697,
+    'colsample_bytree': 0.8134,
+    'colsample_bylevel': 0.6459,
+    'reg_alpha': 0.7067,
+    'reg_lambda': 2.0347,
+    'min_child_weight': 20,
+    'gamma': 0.9796,
     'random_state': RANDOM_SEED,
     'n_jobs': -1,
     'eval_metric': 'mlogloss',

@@ -25,15 +25,16 @@ try:
 except ImportError:
     ADVANCED_LIBS = False
 
+from utils import agregar_xg_rolling, agregar_features_tabla
+
 RUTA_DATOS = './datos/procesados/archive/premier_league_RESTAURADO.csv'
 RUTA_MODELOS = './modelos/'
 os.makedirs(RUTA_MODELOS, exist_ok=True)
 
-# ============================================================================
-# FUNCIÓN PARA AGREGAR xG ROLLING (NUEVA)
-# ============================================================================
+# Nota: agregar_xg_rolling y agregar_features_tabla se importan desde utils.py
+# Las definiciones locales han sido eliminadas para evitar duplicacion de codigo.
 
-def agregar_xg_rolling(df, window=5):
+def agregar_xg_rolling_ELIMINADA(df, window=5):
     """
     Agrega features xG rolling (promedios históricos).
     Se calcula en memoria, no modifica el CSV original.
@@ -228,11 +229,16 @@ def cargar_datos_hibridos():
     return X, y, features, df
 
 # ============================================================================
-# FUNCIÓN PARA AGREGAR FEATURES DE POSICIÓN EN TABLA (NUEVA)
+# FUNCIÓN PARA AGREGAR FEATURES DE POSICIÓN EN TABLA
+# ELIMINADA: ahora se importa desde utils.agregar_features_tabla
 # ============================================================================
 
-def agregar_features_tabla(df):
+def agregar_features_tabla_ELIMINADA(df):
     """
+    ELIMINADA — usar utils.agregar_features_tabla en su lugar.
+    Esta copia local fue reemplazada por el import canonico al inicio del archivo.
+    Se conserva como referencia historica hasta confirmar compatibilidad.
+
     Calcula features basadas en la posición en la tabla.
     Se calcula de forma temporal (solo partidos anteriores) para evitar leakage.
     """

@@ -32,9 +32,10 @@ from config import (
     FEATURES_H2H,
     FEATURES_H2H_DERIVADAS,
     FEATURES_TABLA,
+    FEATURES_ASIAN_HANDICAP,
     ALL_FEATURES,
 )
-from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas
+from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_cuotas_derivadas, agregar_features_asian_handicap
 
 # ============================================================================
 # FLAGS PRINCIPALES — cambia aquí antes de ejecutar
@@ -71,6 +72,7 @@ print(f"\n✅ Cargados: {len(df)} partidos")
 # Features calculadas en memoria
 df = agregar_xg_rolling(df)
 df = agregar_features_tabla(df)
+df = agregar_features_asian_handicap(df)
 
 if MODO_SIN_CUOTAS and not MODO_XGB:
     # Modo sin cuotas (RF modelo 03): filtrar solo partidos con H2H disponible
@@ -81,15 +83,16 @@ if MODO_SIN_CUOTAS and not MODO_XGB:
     df = df.reset_index(drop=True)
 
     # Features sin cuotas ni cuotas derivadas
-    all_sin_cuotas = FEATURES_BASE + FEATURES_H2H + FEATURES_H2H_DERIVADAS + FEATURES_XG + FEATURES_TABLA
+    all_sin_cuotas = FEATURES_BASE + FEATURES_H2H + FEATURES_H2H_DERIVADAS + FEATURES_XG + FEATURES_TABLA + FEATURES_ASIAN_HANDICAP
     features = [f for f in all_sin_cuotas if f in df.columns]
 
     print(f"\n✅ Features totales: {len(features)} (SIN cuotas)")
-    print(f"   • Base:          {len([f for f in FEATURES_BASE if f in features])}")
-    print(f"   • H2H:           {len([f for f in FEATURES_H2H if f in features])}")
-    print(f"   • H2H derivadas: {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
-    print(f"   • xG rolling:    {len([f for f in FEATURES_XG if f in features])}")
-    print(f"   • Tabla:         {len([f for f in FEATURES_TABLA if f in features])}")
+    print(f"   • Base:             {len([f for f in FEATURES_BASE if f in features])}")
+    print(f"   • H2H:              {len([f for f in FEATURES_H2H if f in features])}")
+    print(f"   • H2H derivadas:    {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
+    print(f"   • xG rolling:       {len([f for f in FEATURES_XG if f in features])}")
+    print(f"   • Tabla:            {len([f for f in FEATURES_TABLA if f in features])}")
+    print(f"   • Asian Handicap:   {len([f for f in FEATURES_ASIAN_HANDICAP if f in features])}")
 
 else:
     # Modo con cuotas (RF modelo 02 o XGBoost modelo 02)
@@ -104,6 +107,7 @@ else:
     print(f"   • H2H:              {len([f for f in FEATURES_H2H if f in features])}")
     print(f"   • H2H derivadas:    {len([f for f in FEATURES_H2H_DERIVADAS if f in features])}")
     print(f"   • Tabla:            {len([f for f in FEATURES_TABLA if f in features])}")
+    print(f"   • Asian Handicap:   {len([f for f in FEATURES_ASIAN_HANDICAP if f in features])}")
 
 X = df[features].fillna(0)
 y = df['FTR_numeric']
