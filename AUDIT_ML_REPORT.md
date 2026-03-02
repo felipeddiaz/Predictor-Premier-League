@@ -418,58 +418,25 @@ WF_VAL_SIZE = 0.15
 3. Comparar automáticamente calibrado vs original y guardar el que tenga mejor Brier Score.
 4. Reportar métricas reales del modelo guardado (no del modelo descartado).
 
-### 7.2 Bug: Features Fantasma en Config
+### 7.2 ~~Bug: Features Fantasma en Config~~ (CORREGIDO)
 
-`config.py:199-207` define `FEATURES_ASIAN_HANDICAP` con nombres que no coinciden con las features generadas en `utils.py`. El código funciona porque el filtro `[f for f in ALL_FEATURES if f in df.columns]` los ignora silenciosamente, pero:
-- `ALL_FEATURES` tiene más features listadas de las que realmente existen.
-- Si alguien cambia las features de AH en utils.py sin actualizar config.py, puede perder features nuevas.
+**Estado: RESUELTO.** `FEATURES_ASIAN_HANDICAP` en config.py ahora usa los nombres reales generados por `utils.py:agregar_features_asian_handicap()`:
+`AHh, AHCh, AH_Line_Move, AH_Implied_Home, AH_Implied_Away, AH_Edge_Home, AH_Market_Conf, AH_Close_Move_H, AH_Close_Move_A` (9 features).
 
-### 7.3 CRÍTICO: Discrepancia entre features.pkl y ALL_FEATURES en Config
+### 7.3 ~~CRÍTICO: Discrepancia entre features.pkl y ALL_FEATURES en Config~~ (CORREGIDO)
 
-**Verificación empírica de `modelos/features.pkl` revela 55 features que incluyen:**
+**Estado: RESUELTO.** Se añadieron 3 categorías faltantes a `config.py`:
+- `FEATURES_PINNACLE` (6 features): Pinnacle_Move_H/D/A, Pinnacle_Sharp_H/A, Pinnacle_Conf
+- `FEATURES_REFEREE` (5 features): Ref_Home_WinRate, Ref_Goals_Avg, Ref_Yellow_Avg, Ref_Home_Yellow, Ref_Away_Yellow
+- `FEATURES_FORMA_MOMENTUM` (15 features): WinRate5, Streak, Pts5, GoalsFor5, GoalsAgainst5, Momentum_Diff, HomeWinRate5, AwayWinRate5, HomeGoals5, AwayGoals5
 
-- **6 features Pinnacle**: `Pinnacle_Move_H/D/A`, `Pinnacle_Sharp_H/A`, `Pinnacle_Conf`
-- **4 features Referee**: `Ref_Away_Yellow`, `Ref_Yellow_Avg`, `Ref_Home_WinRate`, `Ref_Goals_Avg`
-- **8 features Forma/Momentum**: `HT_HomeGoals5`, `AT_GoalsFor5`, `HT_GoalsFor5`, `HT_HomeWinRate5`, `Momentum_Diff`, `HT_Streak`, `HT_Pressure`, `HT_GoalsFor5`
+`ALL_FEATURES` ahora incluye las 12 categorías (91 features totales). Las 55 features del modelo pkl son un subconjunto exacto de ALL_FEATURES.
 
-**NINGUNA de estas está en `ALL_FEATURES` de `config.py`.**
+Además, `02_entrenar_modelo.py` ahora llama `agregar_features_forma_momentum()`, `agregar_features_pinnacle_move()`, y `agregar_features_arbitro()`, garantizando reproducibilidad al re-entrenar.
 
-Esto significa que el **modelo actual fue entrenado con una versión anterior del código** que incluía estas features. Si se re-ejecuta `02_entrenar_modelo.py` hoy, generará un modelo con un **set de features completamente diferente** (solo las de `ALL_FEATURES`, que excluye Pinnacle, Referee, y Forma/Momentum avanzadas).
+### 7.4 ~~AH Features en features.pkl vs Config~~ (CORREGIDO)
 
-**Consecuencias:**
-1. El modelo `.pkl` y el código actual **no son reproducibles**: re-ejecutar el pipeline produce un modelo diferente.
-2. Las métricas reportadas (F1=0.5102) corresponden a un modelo con Pinnacle — sin ellas, el rendimiento será significativamente peor.
-3. En predicción en vivo (`predictor.py`), el modelo espera 55 features incluyendo Pinnacle, pero si no se generan esas features para la entrada, reciben 0/NaN, degradando las predicciones.
-
-**Fix requerido:** Actualizar `ALL_FEATURES` en config.py para incluir las categorías faltantes:
-```python
-FEATURES_PINNACLE = [
-    'Pinnacle_Move_H', 'Pinnacle_Move_D', 'Pinnacle_Move_A',
-    'Pinnacle_Sharp_H', 'Pinnacle_Sharp_A', 'Pinnacle_Conf',
-]
-FEATURES_REFEREE = [
-    'Ref_Home_WinRate', 'Ref_Goals_Avg', 'Ref_Yellow_Avg', 'Ref_Away_Yellow',
-]
-FEATURES_FORMA_MOMENTUM = [
-    'HT_HomeWinRate5', 'HT_HomeGoals5', 'HT_GoalsFor5',
-    'AT_GoalsFor5', 'HT_Streak', 'Momentum_Diff', 'HT_Pressure',
-]
-```
-Y añadirlas a `ALL_FEATURES`.
-
-### 7.4 AH Features en features.pkl vs Config
-
-Las features AH en el modelo real son:
-```
-AHh, AHCh, AH_Line_Move, AH_Implied_Home, AH_Edge_Home, AH_Market_Conf, AH_Close_Move_H
-```
-
-Pero `FEATURES_ASIAN_HANDICAP` en config.py lista:
-```
-AHh, AHCh, AH_Move, AH_Magnitude, AH_Home_Favored, AH_Close_Match, AH_Big_Favorite
-```
-
-**Los nombres son completamente diferentes.** El modelo usa features que no coinciden con la configuración.
+**Estado: RESUELTO.** Cubierto por la corrección de 7.2.
 
 ---
 

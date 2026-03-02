@@ -50,6 +50,9 @@ from config import (
     FEATURES_TABLA,
     FEATURES_ASIAN_HANDICAP,
     FEATURES_ROLLING_EXTRA,
+    FEATURES_PINNACLE,
+    FEATURES_REFEREE,
+    FEATURES_FORMA_MOMENTUM,
     TEST_SIZE,
     RANDOM_SEED,
 )
@@ -59,6 +62,9 @@ from utils import (
     agregar_features_cuotas_derivadas,
     agregar_features_asian_handicap,
     agregar_features_rolling_extra,
+    agregar_features_forma_momentum,
+    agregar_features_pinnacle_move,
+    agregar_features_arbitro,
 )
 
 warnings.filterwarnings('ignore')
@@ -91,11 +97,14 @@ def cargar_datos():
     df = agregar_features_cuotas_derivadas(df)
     df = agregar_features_asian_handicap(df)
     df = agregar_features_rolling_extra(df)
+    df = agregar_features_forma_momentum(df)
+    df = agregar_features_pinnacle_move(df)
+    df = agregar_features_arbitro(df)
 
     # Filtrar solo las que existen en el DataFrame
     # Usa ALL_FEATURES de config.py como lista canonica unica
     features = [f for f in ALL_FEATURES if f in df.columns]
-    
+
     print(f"\n📊 Features totales: {len(features)}")
     print(f"   • Base: {len([f for f in FEATURES_BASE if f in features])}")
     print(f"   • Cuotas: {len([f for f in FEATURES_CUOTAS if f in features])}")
@@ -106,6 +115,9 @@ def cargar_datos():
     print(f"   • Cuotas derivadas: {len([f for f in FEATURES_CUOTAS_DERIVADAS if f in features])}")
     print(f"   • Asian Handicap: {len([f for f in FEATURES_ASIAN_HANDICAP if f in features])}")
     print(f"   • Rolling extra: {len([f for f in FEATURES_ROLLING_EXTRA if f in features])}")
+    print(f"   • Pinnacle: {len([f for f in FEATURES_PINNACLE if f in features])}")
+    print(f"   • Referee: {len([f for f in FEATURES_REFEREE if f in features])}")
+    print(f"   • Forma/Momentum: {len([f for f in FEATURES_FORMA_MOMENTUM if f in features])}")
     
     # Info de H2H
     if 'H2H_Available' in features:

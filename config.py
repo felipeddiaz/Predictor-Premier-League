@@ -197,13 +197,15 @@ FEATURES_TABLA = [
 ]
 
 FEATURES_ASIAN_HANDICAP = [
-    'AHh',                    # Handicap apertura r=0.44
-    'AHCh',                   # Handicap cierre
-    'AH_Move',                # Movimiento de línea
-    'AH_Magnitude',           # Magnitud absoluta
-    'AH_Home_Favored',        # Local es favorito
-    'AH_Close_Match',         # Partido parejo
-    'AH_Big_Favorite',        # Hay gran favorito
+    'AHh',                    # Handicap apertura (raw)
+    'AHCh',                   # Handicap cierre (raw)
+    'AH_Line_Move',           # Movimiento de línea: AHCh - AHh
+    'AH_Implied_Home',        # Prob implícita local desde cuotas AH
+    'AH_Implied_Away',        # Prob implícita visitante desde cuotas AH
+    'AH_Edge_Home',           # Edge: prob AH vs prob 1X2 para local
+    'AH_Market_Conf',         # Confianza del mercado AH
+    'AH_Close_Move_H',        # Movimiento cuota local apertura→cierre
+    'AH_Close_Move_A',        # Movimiento cuota visitante apertura→cierre
 ]
 
 # Features rolling extra — calculadas en utils.agregar_features_rolling_extra()
@@ -212,6 +214,44 @@ FEATURES_ROLLING_EXTRA = [
     'AT_Goals_Diff',   # Diferencia de goles rolling (visitante como away)
     'AT_HTR_Rate',     # % partidos ganando al descanso (visitante)
     'PS_vs_Avg_H',     # Pinnacle vs mercado promedio local (sharp signal)
+]
+
+# Features Pinnacle (sharp money) — calculadas en utils.agregar_features_pinnacle_move()
+FEATURES_PINNACLE = [
+    'Pinnacle_Move_H',     # Movimiento línea local (PSCH - PSH)
+    'Pinnacle_Move_D',     # Movimiento línea empate (PSCD - PSD)
+    'Pinnacle_Move_A',     # Movimiento línea visitante (PSCA - PSA)
+    'Pinnacle_Sharp_H',    # Prob implícita cierre Pinnacle local (normalizada)
+    'Pinnacle_Sharp_A',    # Prob implícita cierre Pinnacle visitante (normalizada)
+    'Pinnacle_Conf',       # Confianza mercado Pinnacle: max(Sharp_H, Sharp_A) - 1/3
+]
+
+# Features de árbitro — calculadas en utils.agregar_features_arbitro()
+FEATURES_REFEREE = [
+    'Ref_Home_WinRate',    # % victorias locales con este árbitro (rolling 20)
+    'Ref_Goals_Avg',       # Promedio goles totales por partido arbitrado
+    'Ref_Yellow_Avg',      # Promedio tarjetas amarillas totales (HY+AY)
+    'Ref_Home_Yellow',     # Promedio amarillas al equipo local
+    'Ref_Away_Yellow',     # Promedio amarillas al equipo visitante
+]
+
+# Features de forma y momentum — calculadas en utils.agregar_features_forma_momentum()
+FEATURES_FORMA_MOMENTUM = [
+    'HT_WinRate5',         # % victorias local últimos 5 partidos (cualquier venue)
+    'AT_WinRate5',         # % victorias visitante últimos 5 partidos
+    'HT_Streak',           # Racha actual local (+victorias, -derrotas)
+    'AT_Streak',           # Racha actual visitante
+    'HT_Pts5',             # Puntos local últimos 5 partidos
+    'AT_Pts5',             # Puntos visitante últimos 5 partidos
+    'HT_GoalsFor5',        # Goles marcados local últimos 5
+    'AT_GoalsFor5',        # Goles marcados visitante últimos 5
+    'HT_GoalsAgainst5',    # Goles encajados local últimos 5
+    'AT_GoalsAgainst5',    # Goles encajados visitante últimos 5
+    'Momentum_Diff',       # HT_Pts5 - AT_Pts5
+    'HT_HomeWinRate5',     # % victorias local jugando EN CASA (últimos 5 en casa)
+    'AT_AwayWinRate5',     # % victorias visitante jugando FUERA (últimos 5 fuera)
+    'HT_HomeGoals5',       # Goles local en últimos 5 en casa
+    'AT_AwayGoals5',       # Goles visitante en últimos 5 fuera
 ]
 
 ALL_FEATURES = (
@@ -224,4 +264,7 @@ ALL_FEATURES = (
     + FEATURES_TABLA
     + FEATURES_ASIAN_HANDICAP
     + FEATURES_ROLLING_EXTRA
+    + FEATURES_PINNACLE
+    + FEATURES_REFEREE
+    + FEATURES_FORMA_MOMENTUM
 )   
