@@ -1124,3 +1124,169 @@ def agregar_features_arbitro(df: pd.DataFrame, window: int = 20) -> pd.DataFrame
     n_refs = df['Referee'].nunique()
     print(f"   Arbitro: {n_refs} arbitros distintos, 5 features calculadas")
     return df
+
+
+# ============================================================================
+# FEATURES DE DESCANSO / FATIGA (multi-competición)
+# ============================================================================
+
+def agregar_features_descanso(df: pd.DataFrame,
+                               ruta_fixtures: str | None = None) -> pd.DataFrame:
+    """
+    Agrega features de días de descanso y congestión de partidos.
+
+    Usa un CSV externo (datos/raw/fbref_fixtures.csv) con el historial de
+    partidos de todas las competiciones (Premier League + Champions League +
+    Europa League + FA Cup + Carabao Cup) para calcular, para cada partido
+    de PL, cuántos días descansó cada equipo desde su partido anterior
+    en cualquier competición.
+
+    Features calculadas:
+      - HT_Days_Rest   : días desde el último partido del local (cualquier comp.)
+      - AT_Days_Rest   : días desde el último partido del visitante
+      - Rest_Diff      : HT_Days_Rest - AT_Days_Rest
+      - HT_Had_Europa  : 1 si el local jugó UCL o UEL en los últimos 4 días
+      - AT_Had_Europa  : 1 si el visitante jugó UCL o UEL en los últimos 4 días
+      - HT_Games_15d   : partidos del local en los últimos 15 días
+      - AT_Games_15d   : partidos del visitante en los últimos 15 días
+
+    Valores por defecto (cuando no hay datos del fixture externo):
+      HT/AT_Days_Rest = 7  (semana estándar entre partidos de PL)
+      HT/AT_Had_Europa = 0
+      HT/AT_Games_15d  = 2
+
+    Args:
+        df:             DataFrame principal con columnas Date, HomeTeam, AwayTeam.
+        ruta_fixtures:  Ruta al CSV de fixtures externos. Si es None, usa
+                        config.RUTA_RAW + 'fbref_fixtures.csv'.
+
+    Returns:
+        DataFrame con las 7 features de descanso añadidas.
+
+    Nota sobre leakage:
+        Solo se consideran partidos con fecha ANTERIOR (estrictamente <) a
+        la fecha del partido de PL que se está procesando. El partido actual
+        no se cuenta en ninguna ventana.
+    """
+    from config import RUTA_RAW
+
+    if ruta_fixtures is None:
+        ruta_fixtures = os.path.join(RUTA_RAW, 'fbref_fixtures.csv')
+
+    # Valores por defecto que se asignan si no hay datos de fixtures
+    DEFAULTS = {
+        'HT_Days_Rest':  7.0,
+        'AT_Days_Rest':  7.0,
+        'Rest_Diff':     0.0,
+        'HT_Had_Europa': 0.0,
+        'AT_Had_Europa': 0.0,
+        'HT_Games_15d':  2.0,
+        'AT_Games_15d':  2.0,
+    }
+
+    for col, val in DEFAULTS.items():
+        df[col] = val
+
+    if not os.path.exists(ruta_fixtures):
+        print(f"\n   Descanso: fixtures no encontrados en {ruta_fixtures}")
+        print("   Usando valores por defecto. Ejecuta:")
+        print("   python herramientas/descargar_fixtures_europeos.py --api-key TU_KEY")
+        return df
+
+    print("\n Calculando features de descanso / fatiga...")
+
+    # --- Cargar y preparar el CSV de fixtures externos ---
+    fixtures = pd.read_csv(ruta_fixtures, parse_dates=['Date'])
+    fixtures = fixtures[['Date', 'Team', 'Comp']].copy()
+    fixtures = fixtures.dropna(subset=['Date', 'Team'])
+    fixtures['Date'] = pd.to_datetime(fixtures['Date'])
+
+    # Normalizar fechas del DataFrame principal
+    df = df.sort_values('Date').reset_index(drop=True)
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Competiciones europeas que cuentan como "Europa"
+    COMPS_EUROPA = {'Champions Lg', 'Europa Lg'}
+
+    # Índice: dict team → lista de (Date, Comp) ordenados
+    calendario: dict[str, list[tuple]] = {}
+    for _, row in fixtures.iterrows():
+        team = row['Team']
+        if team not in calendario:
+            calendario[team] = []
+        calendario[team].append((row['Date'], row['Comp']))
+
+    # Ordenar calendarios por fecha
+    for team in calendario:
+        calendario[team].sort(key=lambda x: x[0])
+
+    def calcular_rest(team: str, fecha_partido: pd.Timestamp) -> dict:
+        """Calcula métricas de descanso para un equipo antes de una fecha."""
+        if team not in calendario:
+            return {}
+
+        partidos_previos = [
+            (d, c) for d, c in calendario[team] if d < fecha_partido
+        ]
+        if not partidos_previos:
+            return {}
+
+        # Días desde el último partido
+        ultimo_dia, _ = partidos_previos[-1]
+        days_rest = (fecha_partido - ultimo_dia).days
+
+        # ¿Jugó Europa (UCL/UEL) en los últimos 4 días?
+        cutoff_europa = fecha_partido - pd.Timedelta(days=4)
+        had_europa = int(any(
+            d >= cutoff_europa and c in COMPS_EUROPA
+            for d, c in partidos_previos
+        ))
+
+        # Partidos en los últimos 15 días
+        cutoff_15d = fecha_partido - pd.Timedelta(days=15)
+        games_15d = sum(d >= cutoff_15d for d, _ in partidos_previos)
+
+        return {
+            'days_rest':  float(days_rest),
+            'had_europa': float(had_europa),
+            'games_15d':  float(games_15d),
+        }
+
+    # --- Calcular features para cada partido ---
+    ht_days, at_days = [], []
+    ht_europa, at_europa = [], []
+    ht_games, at_games = [], []
+
+    for _, row in df.iterrows():
+        home = row['HomeTeam']
+        away = row['AwayTeam']
+        fecha = row['Date']
+
+        h = calcular_rest(home, fecha)
+        a = calcular_rest(away, fecha)
+
+        ht_days.append(h.get('days_rest',  DEFAULTS['HT_Days_Rest']))
+        at_days.append(a.get('days_rest',  DEFAULTS['AT_Days_Rest']))
+        ht_europa.append(h.get('had_europa', DEFAULTS['HT_Had_Europa']))
+        at_europa.append(a.get('had_europa', DEFAULTS['AT_Had_Europa']))
+        ht_games.append(h.get('games_15d',  DEFAULTS['HT_Games_15d']))
+        at_games.append(a.get('games_15d',  DEFAULTS['AT_Games_15d']))
+
+    df['HT_Days_Rest']  = ht_days
+    df['AT_Days_Rest']  = at_days
+    df['Rest_Diff']     = df['HT_Days_Rest'] - df['AT_Days_Rest']
+    df['HT_Had_Europa'] = ht_europa
+    df['AT_Had_Europa'] = at_europa
+    df['HT_Games_15d']  = ht_games
+    df['AT_Games_15d']  = at_games
+
+    # Estadísticas de cobertura
+    con_datos = (df['HT_Days_Rest'] != DEFAULTS['HT_Days_Rest']).sum()
+    total = len(df)
+    europa_partidos = (df['HT_Had_Europa'] + df['AT_Had_Europa'] > 0).sum()
+    print(f"   Descanso: {con_datos}/{total} partidos con datos reales "
+          f"({con_datos/total*100:.1f}%)")
+    print(f"   Partidos con contexto europeo: {europa_partidos} "
+          f"({europa_partidos/total*100:.1f}%)")
+
+    return df

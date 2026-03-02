@@ -26,7 +26,8 @@ RUTA_PORTAFOLIO = os.path.join(_RAIZ, 'portafolio_imagenes') + os.sep
 # Archivos de datos
 ARCHIVO_LIMPIO = os.path.join(RUTA_PROCESADOS, 'premier_league_limpio.csv')
 ARCHIVO_FEATURES = os.path.join(RUTA_PROCESADOS, 'archive', 'premier_league_RESTAURADO.csv')
-ARCHIVO_XG_RAW = os.path.join(RUTA_RAW, 'final_matches_xg.csv')
+ARCHIVO_XG_RAW       = os.path.join(RUTA_RAW, 'final_matches_xg.csv')
+ARCHIVO_FIXTURES_EXT = os.path.join(RUTA_RAW, 'fbref_fixtures.csv')
 
 # Archivos de modelo
 ARCHIVO_MODELO = os.path.join(RUTA_MODELOS, 'modelo_final_optimizado.pkl')
@@ -319,13 +320,28 @@ ALL_FEATURES = (
 # Total: 38 features.
 # ----------------------------------------------------------------------------
 
+# Features de descanso y fatiga (requieren datos de api-football.com)
+# Generar con: python herramientas/descargar_fixtures_europeos.py --api-key KEY
+# Fuente: datos/raw/fbref_fixtures.csv (UCL + UEL + FA Cup + Carabao Cup + PL)
+FEATURES_DESCANSO = [
+    'HT_Days_Rest',   # Días desde último partido del local (cualquier comp.)
+    'AT_Days_Rest',   # Días desde último partido del visitante
+    'Rest_Diff',      # HT_Days_Rest - AT_Days_Rest
+    'HT_Had_Europa',  # 1 si el local jugó UCL/UEL en los últimos 4 días
+    'AT_Had_Europa',  # 1 si el visitante jugó UCL/UEL en los últimos 4 días
+    'HT_Games_15d',   # Partidos del local en los últimos 15 días
+    'AT_Games_15d',   # Partidos del visitante en los últimos 15 días
+]
+
 FEATURES_ESTRUCTURALES = (
-    FEATURES_BASE            # 10: rendimiento, forma W/D/L
-    + FEATURES_XG            #  6: xG rolling
-    + FEATURES_H2H           #  9: historial directo + derivadas
-    + FEATURES_TABLA         # 11: posición, puntos, presión
+    FEATURES_BASE             # 10: rendimiento, forma W/D/L
+    + FEATURES_XG             #  6: xG rolling
+    + FEATURES_H2H            #  9: historial directo + derivadas
+    + FEATURES_TABLA          # 11: posición, puntos, presión
     + FEATURES_FORMA_MOMENTUM #  6: forma específica local/visitante + momentum
-    + FEATURES_REFEREE       #  4: árbitro
+    + FEATURES_REFEREE        #  4: árbitro
+    + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
+    # Total: 53 features — cero cuotas, cero señales de mercado
     # Excluye: FEATURES_CUOTAS_DERIVADAS, FEATURES_ASIAN_HANDICAP,
     #          FEATURES_PINNACLE, FEATURES_ROLLING_EXTRA (PS_vs_Avg_H es Pinnacle)
 )
