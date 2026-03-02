@@ -143,33 +143,65 @@ APUESTAS_ANUALES_ESTIMADAS = 50
 # ============================================================================
 # FEATURES CANÓNICAS
 # ============================================================================
-# Lista definitiva de features por categoría. Usada en training y predicción
-# para garantizar consistencia.
+# Dos conjuntos de features:
 #
-# FUENTE DE VERDAD: modelos/features.pkl (55 features del modelo guardado).
-# ALL_FEATURES debe coincidir exactamente con ese archivo.
-# Validar con: python -c "import config, joblib; assert set(joblib.load(config.ARCHIVO_FEATURES_PKL)) == set(config.ALL_FEATURES), 'DESYNC'"
+#   ALL_FEATURES          — Modelo híbrido (con mercado). Fuente de verdad:
+#                           modelos/features.pkl (55 features del modelo guardado).
+#                           Validar: python -c "import pickle,config; assert set(pickle.load(open(config.ARCHIVO_FEATURES_PKL,'rb')))==set(config.ALL_FEATURES)"
+#
+#   FEATURES_ESTRUCTURALES — Modelo estructural (sin cuotas). Solo información
+#                            disponible ANTES del partido sin depender de casas
+#                            de apuestas. Base para Fase 1 del refactor.
+
+# ----------------------------------------------------------------------------
+# Grupos de features estructurales (sin mercado)
+# Cada grupo lista TODAS las features que genera su función en utils.py.
+# ALL_FEATURES usa subconjuntos de estos grupos (solo las que sobrevivieron
+# en el modelo híbrido); FEATURES_ESTRUCTURALES los usa completos.
+# ----------------------------------------------------------------------------
 
 FEATURES_BASE = [
+    # Rendimiento promedio rolling (últimos N partidos, shift(1) sin leakage)
     'HT_AvgGoals', 'AT_AvgGoals',
     'HT_AvgShotsTarget', 'AT_AvgShotsTarget',
-    'HT_Form_W',
-    'AT_Form_W',
+    # Forma reciente (W/D/L de los últimos 5)
+    'HT_Form_W', 'HT_Form_D', 'HT_Form_L',
+    'AT_Form_W', 'AT_Form_D', 'AT_Form_L',
 ]
 
-FEATURES_CUOTAS_DERIVADAS = [
-    'Prob_A',
-    'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-    'Prob_Spread',
+# Subconjunto de FEATURES_BASE presente en el modelo híbrido (features.pkl)
+_BASE_HIBRIDO = [
+    'HT_AvgGoals', 'AT_AvgGoals',
+    'HT_AvgShotsTarget', 'AT_AvgShotsTarget',
+    'HT_Form_W', 'AT_Form_W',
 ]
 
 FEATURES_XG = [
+    # Expected Goals rolling (requiere datos de fbref)
+    'HT_xG_Avg', 'AT_xG_Avg',
+    'HT_xGA_Avg', 'AT_xGA_Avg',
+    'xG_Diff', 'xG_Total',
+]
+
+# Subconjunto de FEATURES_XG presente en el modelo híbrido
+_XG_HIBRIDO = [
     'HT_xG_Avg', 'AT_xG_Avg',
     'AT_xGA_Avg',
     'xG_Diff', 'xG_Total',
 ]
 
 FEATURES_H2H = [
+    # Historial de enfrentamientos directos
+    'H2H_Matches',
+    'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg',
+    'H2H_Home_Win_Rate', 'H2H_BTTS_Rate',
+    'H2H_Total_Goals_Avg',
+    # Derivadas H2H
+    'H2H_Goal_Diff', 'H2H_Win_Advantage', 'H2H_Home_Consistent',
+]
+
+# Subconjunto de FEATURES_H2H presente en el modelo híbrido
+_H2H_HIBRIDO = [
     'H2H_Matches',
     'H2H_Away_Goals_Avg',
     'H2H_Home_Win_Rate', 'H2H_BTTS_Rate',
@@ -177,6 +209,17 @@ FEATURES_H2H = [
 ]
 
 FEATURES_TABLA = [
+    # Posición y puntos en tabla antes del partido (sin leakage)
+    'HT_Position', 'AT_Position',
+    'Position_Diff', 'Position_Diff_Weighted',
+    'HT_Points', 'AT_Points',
+    'Season_Progress', 'Position_Reliability',
+    'Match_Type',
+    'HT_Pressure', 'AT_Pressure',
+]
+
+# Subconjunto de FEATURES_TABLA presente en el modelo híbrido
+_TABLA_HIBRIDO = [
     'AT_Position',
     'Position_Diff', 'Position_Diff_Weighted',
     'HT_Points', 'AT_Points',
@@ -185,75 +228,104 @@ FEATURES_TABLA = [
     'HT_Pressure',
 ]
 
+FEATURES_FORMA_MOMENTUM = [
+    # Forma específica local/visitante y momentum
+    'HT_HomeWinRate5', 'HT_HomeGoals5',
+    'HT_GoalsFor5', 'AT_GoalsFor5',
+    'HT_Streak', 'Momentum_Diff',
+]
+
+FEATURES_REFEREE = [
+    # Estadísticas históricas del árbitro asignado
+    'Ref_Home_WinRate', 'Ref_Goals_Avg',
+    'Ref_Yellow_Avg', 'Ref_Away_Yellow',
+]
+
+# ----------------------------------------------------------------------------
+# Grupos exclusivos del modelo híbrido (con mercado)
+# ----------------------------------------------------------------------------
+
+FEATURES_CUOTAS_DERIVADAS = [
+    # Probabilidades implícitas del mercado Bet365
+    'Prob_A',
+    'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
+    'Prob_Spread',
+]
+
 FEATURES_ASIAN_HANDICAP = [
-    'AHh',             # Handicap apertura
-    'AHCh',            # Handicap cierre
-    'AH_Line_Move',    # Movimiento de línea AH
+    # Asian Handicap (señal de mercado sharp)
+    'AHh',             # Línea de apertura
+    'AHCh',            # Línea de cierre
+    'AH_Line_Move',    # Movimiento de línea
     'AH_Implied_Home', # Probabilidad implícita AH del local
     'AH_Edge_Home',    # Edge AH para el local
     'AH_Market_Conf',  # Confianza del mercado AH
     'AH_Close_Move_H', # Movimiento de cierre AH local
 ]
 
-FEATURES_ROLLING_EXTRA = [
-    'HT_Goals_Diff',   # Diferencia de goles rolling (local como home)
-    'PS_vs_Avg_H',     # Pinnacle vs mercado promedio local (sharp signal)
-]
-
-# --- Categorías añadidas en Fase 0 (sincronización con features.pkl) ---
-
 FEATURES_PINNACLE = [
+    # Señales Pinnacle (mercado sharp de referencia)
     'Pinnacle_Move_H', 'Pinnacle_Move_D', 'Pinnacle_Move_A',
     'Pinnacle_Sharp_H', 'Pinnacle_Sharp_A',
     'Pinnacle_Conf',
 ]
 
-FEATURES_REFEREE = [
-    'Ref_Home_WinRate', 'Ref_Goals_Avg',
-    'Ref_Yellow_Avg', 'Ref_Away_Yellow',
+FEATURES_ROLLING_EXTRA = [
+    # Rolling extra sin cuotas
+    'HT_Goals_Diff',   # Diferencia de goles rolling (local como home)
+    # Con señal de mercado (excluida del modelo estructural)
+    'PS_vs_Avg_H',     # Pinnacle vs mercado promedio local (sharp signal)
 ]
 
-FEATURES_FORMA_MOMENTUM = [
-    'HT_HomeWinRate5', 'HT_HomeGoals5',
-    'HT_GoalsFor5', 'AT_GoalsFor5',
-    'HT_Streak', 'Momentum_Diff',
-]
-
-# --- Features legacy (existían antes, no están en el modelo actual) ---
-# Conservadas para referencia histórica; NO incluidas en ALL_FEATURES.
+# ----------------------------------------------------------------------------
+# Features legacy (existían antes, no están en ningún modelo activo)
+# Conservadas para referencia histórica.
+# ----------------------------------------------------------------------------
 
 FEATURES_LEGACY = [
     # Cuotas B365 raw (reemplazadas por Prob_* derivadas)
     'B365H', 'B365D', 'B365A',
     'B365CH', 'B365CD', 'B365CA',
-    # Forma completa (solo Form_W sobrevivió en el modelo)
-    'HT_Form_D', 'HT_Form_L',
-    'AT_Form_D', 'AT_Form_L',
-    # Cuotas derivadas no retenidas por el modelo
+    # Cuotas derivadas no retenidas por el modelo híbrido
     'Prob_H', 'Prob_D',
     'Market_Move_Strength', 'Market_Confidence', 'Home_Advantage_Prob',
-    # xGA local (alta correlación con AT_xG_Avg)
-    'HT_xGA_Avg',
-    # H2H derivadas descartadas
-    'H2H_Home_Goals_Avg',
-    'H2H_Goal_Diff', 'H2H_Win_Advantage', 'H2H_Home_Consistent',
-    # Tabla legacy
-    'HT_Position', 'AT_Pressure',
     # AH con nombres incorrectos (renombradas en utils.py)
     'AH_Move', 'AH_Magnitude', 'AH_Home_Favored', 'AH_Close_Match', 'AH_Big_Favorite',
-    # Rolling extra descartadas
+    # Rolling extra no retenidas
     'AT_Goals_Diff', 'AT_HTR_Rate',
 ]
 
+# ----------------------------------------------------------------------------
+# ALL_FEATURES — Modelo híbrido (con mercado)
+# FUENTE DE VERDAD: modelos/features.pkl (55 features)
+# ----------------------------------------------------------------------------
+
 ALL_FEATURES = (
-    FEATURES_BASE
+    _BASE_HIBRIDO
     + FEATURES_CUOTAS_DERIVADAS
-    + FEATURES_XG
-    + FEATURES_H2H
-    + FEATURES_TABLA
+    + _XG_HIBRIDO
+    + _H2H_HIBRIDO
+    + _TABLA_HIBRIDO
     + FEATURES_ASIAN_HANDICAP
     + FEATURES_ROLLING_EXTRA
     + FEATURES_PINNACLE
     + FEATURES_REFEREE
     + FEATURES_FORMA_MOMENTUM
+)
+
+# ----------------------------------------------------------------------------
+# FEATURES_ESTRUCTURALES — Modelo estructural (sin cuotas, Fase 1)
+# Solo información disponible antes del partido sin depender de casas de apuestas.
+# Total: 38 features.
+# ----------------------------------------------------------------------------
+
+FEATURES_ESTRUCTURALES = (
+    FEATURES_BASE            # 10: rendimiento, forma W/D/L
+    + FEATURES_XG            #  6: xG rolling
+    + FEATURES_H2H           #  9: historial directo + derivadas
+    + FEATURES_TABLA         # 11: posición, puntos, presión
+    + FEATURES_FORMA_MOMENTUM #  6: forma específica local/visitante + momentum
+    + FEATURES_REFEREE       #  4: árbitro
+    # Excluye: FEATURES_CUOTAS_DERIVADAS, FEATURES_ASIAN_HANDICAP,
+    #          FEATURES_PINNACLE, FEATURES_ROLLING_EXTRA (PS_vs_Avg_H es Pinnacle)
 )
