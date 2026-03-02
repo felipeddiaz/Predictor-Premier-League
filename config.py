@@ -145,83 +145,115 @@ APUESTAS_ANUALES_ESTIMADAS = 50
 # ============================================================================
 # Lista definitiva de features por categoría. Usada en training y predicción
 # para garantizar consistencia.
+#
+# FUENTE DE VERDAD: modelos/features.pkl (55 features del modelo guardado).
+# ALL_FEATURES debe coincidir exactamente con ese archivo.
+# Validar con: python -c "import config, joblib; assert set(joblib.load(config.ARCHIVO_FEATURES_PKL)) == set(config.ALL_FEATURES), 'DESYNC'"
 
 FEATURES_BASE = [
     'HT_AvgGoals', 'AT_AvgGoals',
     'HT_AvgShotsTarget', 'AT_AvgShotsTarget',
-    'HT_Form_W', 'HT_Form_D', 'HT_Form_L',
-    'AT_Form_W', 'AT_Form_D', 'AT_Form_L',
-]
-
-FEATURES_CUOTAS = [
-    'B365H', 'B365D', 'B365A',
-    'B365CH', 'B365CD', 'B365CA',
+    'HT_Form_W',
+    'AT_Form_W',
 ]
 
 FEATURES_CUOTAS_DERIVADAS = [
-    'Prob_H', 'Prob_D', 'Prob_A',
+    'Prob_A',
     'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-    'Market_Move_Strength',
     'Prob_Spread',
-    'Market_Confidence',
-    'Home_Advantage_Prob',
 ]
 
 FEATURES_XG = [
     'HT_xG_Avg', 'AT_xG_Avg',
-    'HT_xGA_Avg', 'AT_xGA_Avg',
+    'AT_xGA_Avg',
     'xG_Diff', 'xG_Total',
 ]
 
 FEATURES_H2H = [
-    
-    'H2H_Matches', 
-    'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg',
+    'H2H_Matches',
+    'H2H_Away_Goals_Avg',
     'H2H_Home_Win_Rate', 'H2H_BTTS_Rate',
-]
-
-FEATURES_H2H_DERIVADAS = [
-    'H2H_Goal_Diff',
-    'H2H_Win_Advantage',
     'H2H_Total_Goals_Avg',
-    'H2H_Home_Consistent',
 ]
 
 FEATURES_TABLA = [
-    'HT_Position', 'AT_Position',
+    'AT_Position',
     'Position_Diff', 'Position_Diff_Weighted',
     'HT_Points', 'AT_Points',
     'Season_Progress', 'Position_Reliability',
     'Match_Type',
-    'HT_Pressure', 'AT_Pressure'
+    'HT_Pressure',
 ]
 
 FEATURES_ASIAN_HANDICAP = [
-    'AHh',                    # Handicap apertura r=0.44
-    'AHCh',                   # Handicap cierre
-    'AH_Move',                # Movimiento de línea
-    'AH_Magnitude',           # Magnitud absoluta
-    'AH_Home_Favored',        # Local es favorito
-    'AH_Close_Match',         # Partido parejo
-    'AH_Big_Favorite',        # Hay gran favorito
+    'AHh',             # Handicap apertura
+    'AHCh',            # Handicap cierre
+    'AH_Line_Move',    # Movimiento de línea AH
+    'AH_Implied_Home', # Probabilidad implícita AH del local
+    'AH_Edge_Home',    # Edge AH para el local
+    'AH_Market_Conf',  # Confianza del mercado AH
+    'AH_Close_Move_H', # Movimiento de cierre AH local
 ]
 
-# Features rolling extra — calculadas en utils.agregar_features_rolling_extra()
 FEATURES_ROLLING_EXTRA = [
     'HT_Goals_Diff',   # Diferencia de goles rolling (local como home)
-    'AT_Goals_Diff',   # Diferencia de goles rolling (visitante como away)
-    'AT_HTR_Rate',     # % partidos ganando al descanso (visitante)
     'PS_vs_Avg_H',     # Pinnacle vs mercado promedio local (sharp signal)
+]
+
+# --- Categorías añadidas en Fase 0 (sincronización con features.pkl) ---
+
+FEATURES_PINNACLE = [
+    'Pinnacle_Move_H', 'Pinnacle_Move_D', 'Pinnacle_Move_A',
+    'Pinnacle_Sharp_H', 'Pinnacle_Sharp_A',
+    'Pinnacle_Conf',
+]
+
+FEATURES_REFEREE = [
+    'Ref_Home_WinRate', 'Ref_Goals_Avg',
+    'Ref_Yellow_Avg', 'Ref_Away_Yellow',
+]
+
+FEATURES_FORMA_MOMENTUM = [
+    'HT_HomeWinRate5', 'HT_HomeGoals5',
+    'HT_GoalsFor5', 'AT_GoalsFor5',
+    'HT_Streak', 'Momentum_Diff',
+]
+
+# --- Features legacy (existían antes, no están en el modelo actual) ---
+# Conservadas para referencia histórica; NO incluidas en ALL_FEATURES.
+
+FEATURES_LEGACY = [
+    # Cuotas B365 raw (reemplazadas por Prob_* derivadas)
+    'B365H', 'B365D', 'B365A',
+    'B365CH', 'B365CD', 'B365CA',
+    # Forma completa (solo Form_W sobrevivió en el modelo)
+    'HT_Form_D', 'HT_Form_L',
+    'AT_Form_D', 'AT_Form_L',
+    # Cuotas derivadas no retenidas por el modelo
+    'Prob_H', 'Prob_D',
+    'Market_Move_Strength', 'Market_Confidence', 'Home_Advantage_Prob',
+    # xGA local (alta correlación con AT_xG_Avg)
+    'HT_xGA_Avg',
+    # H2H derivadas descartadas
+    'H2H_Home_Goals_Avg',
+    'H2H_Goal_Diff', 'H2H_Win_Advantage', 'H2H_Home_Consistent',
+    # Tabla legacy
+    'HT_Position', 'AT_Pressure',
+    # AH con nombres incorrectos (renombradas en utils.py)
+    'AH_Move', 'AH_Magnitude', 'AH_Home_Favored', 'AH_Close_Match', 'AH_Big_Favorite',
+    # Rolling extra descartadas
+    'AT_Goals_Diff', 'AT_HTR_Rate',
 ]
 
 ALL_FEATURES = (
     FEATURES_BASE
-    + FEATURES_CUOTAS
     + FEATURES_CUOTAS_DERIVADAS
     + FEATURES_XG
     + FEATURES_H2H
-    + FEATURES_H2H_DERIVADAS
     + FEATURES_TABLA
     + FEATURES_ASIAN_HANDICAP
     + FEATURES_ROLLING_EXTRA
-)   
+    + FEATURES_PINNACLE
+    + FEATURES_REFEREE
+    + FEATURES_FORMA_MOMENTUM
+)
