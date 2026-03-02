@@ -20,8 +20,8 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, TimeSeriesSplit
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, log_loss, brier_score_loss
+from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.utils.class_weight import compute_sample_weight
 from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
@@ -300,29 +300,86 @@ def entrenar_modelos(X_train, y_train, X_test, y_test):
 def calibrar_modelo(modelo, X_train, y_train, X_test, y_test):
     """
     Calibra el modelo para obtener probabilidades más realistas.
-    Usa validación cruzada isotónica (Platt scaling o isotónico).
+
+    Usa TimeSeriesSplit (no KFold estándar) para respetar la causalidad temporal.
+    Evalúa calibración con Brier Score y Log Loss — NO con F1.
+    F1 mide clasificación; Brier/LogLoss miden calidad probabilística,
+    que es lo que importa para value betting y Kelly Criterion.
+
+    Retorna (modelo_a_guardar, probs, es_calibrado):
+      - Si la calibración mejora Brier Score → retorna modelo calibrado
+      - Si no mejora → retorna modelo original (probabilidades ya eran buenas)
     """
     print("\n" + "="*70)
     print("CALIBRACIÓN DE PROBABILIDADES")
     print("="*70)
-    
-    # Crear modelo calibrado usando validación cruzada
+
+    # --- Métricas del modelo SIN calibrar ---
+    probs_original = modelo.predict_proba(X_test)
+    logloss_original = log_loss(y_test, probs_original)
+
+    # Brier Score multiclase: promedio del Brier por clase (one-vs-rest)
+    brier_original = 0.0
+    for clase in range(3):
+        y_bin = (y_test == clase).astype(int)
+        brier_original += brier_score_loss(y_bin, probs_original[:, clase])
+    brier_original /= 3
+
+    print(f"\n📊 Modelo ORIGINAL (sin calibrar):")
+    print(f"   Log Loss:    {logloss_original:.4f}")
+    print(f"   Brier Score: {brier_original:.4f}")
+
+    # --- Calibrar con TimeSeriesSplit (respeta orden temporal) ---
+    from sklearn.model_selection import TimeSeriesSplit
+    tscv = TimeSeriesSplit(n_splits=3)
+
     modelo_calibrado = CalibratedClassifierCV(
         estimator=modelo,
-        method='sigmoid',  # Platt scaling (menos propenso al overfitting)
-        cv=3  # 3-fold cross-validation
+        method='sigmoid',   # Platt Scaling
+        cv=tscv             # Temporal, no shuffle
     )
-    
-    # Entrenar con datos de calibración (usamos X_train)
     modelo_calibrado.fit(X_train, y_train)
-    
-    # Obtener probabilidades calibradas
+
+    # --- Métricas del modelo CALIBRADO ---
     probs_calibradas = modelo_calibrado.predict_proba(X_test)
-    
-    print(f"✅ Modelo calibrado usando Platt Scaling (sigmoid)")
-    print(f"   Probabilidades ahora más realistas para predicciones")
-    
-    return modelo_calibrado, probs_calibradas
+    logloss_calibrado = log_loss(y_test, probs_calibradas)
+
+    brier_calibrado = 0.0
+    for clase in range(3):
+        y_bin = (y_test == clase).astype(int)
+        brier_calibrado += brier_score_loss(y_bin, probs_calibradas[:, clase])
+    brier_calibrado /= 3
+
+    print(f"\n📊 Modelo CALIBRADO (Platt Scaling + TimeSeriesSplit):")
+    print(f"   Log Loss:    {logloss_calibrado:.4f}")
+    print(f"   Brier Score: {brier_calibrado:.4f}")
+
+    # --- Comparar: ¿la calibración mejoró las probabilidades? ---
+    mejora_logloss = logloss_original - logloss_calibrado
+    mejora_brier = brier_original - brier_calibrado
+
+    print(f"\n📊 COMPARACIÓN:")
+    print(f"   {'Métrica':<15} {'Original':<12} {'Calibrado':<12} {'Cambio':<12}")
+    print(f"   {'-'*50}")
+    print(f"   {'Log Loss':<15} {logloss_original:<12.4f} {logloss_calibrado:<12.4f} {mejora_logloss:>+10.4f}")
+    print(f"   {'Brier Score':<15} {brier_original:<12.4f} {brier_calibrado:<12.4f} {mejora_brier:>+10.4f}")
+
+    # F1 informativo (pero NO es el criterio de decisión)
+    pred_cal = modelo_calibrado.predict(X_test)
+    f1_cal = f1_score(y_test, pred_cal, average='weighted')
+    pred_orig = modelo.predict(X_test)
+    f1_orig = f1_score(y_test, pred_orig, average='weighted')
+    print(f"   {'F1 (info)':<15} {f1_orig:<12.4f} {f1_cal:<12.4f} {f1_cal - f1_orig:>+10.4f}")
+
+    # Decisión basada en Brier Score (más importante para betting)
+    if brier_calibrado < brier_original:
+        print(f"\n✅ Calibración MEJORA probabilidades (Brier -{mejora_brier:.4f})")
+        print(f"   → Guardando modelo CALIBRADO (mejor para value betting)")
+        return modelo_calibrado, probs_calibradas, True
+    else:
+        print(f"\n⚠️  Calibración NO mejora probabilidades (Brier +{abs(mejora_brier):.4f})")
+        print(f"   → Guardando modelo ORIGINAL (ya produce buenas probabilidades)")
+        return modelo, probs_original, False
 
 # ============================================================================
 # COMPARACIÓN Y SELECCIÓN DEL MEJOR
@@ -580,29 +637,31 @@ def main():
         mejor_key, mejor_modelo, X_train, y_train, X_test, y_test
     )
     
-    # Calibrar probabilidades
-    modelo_calibrado, probs_calibradas = calibrar_modelo(
+    # Calibrar probabilidades — decide automáticamente si calibrar o no
+    modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
         modelo_final, X_train, y_train, X_test, y_test
     )
 
-    nombre_final = f"{mejor_modelo['nombre']} {'(Calibrado)' if mejor_key == 'RF_Optuna' else '(Opt+Cal)'}"
+    tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
+    nombre_final = f"{mejor_modelo['nombre']} {tag_cal}"
 
     # Visualizaciones (usa modelo base para feature_importances_)
     visualizar_resultados(y_test, pred_final, nombre_final, features, modelo_final)
 
-    # Guardar modelo 
-    guardar_modelo_final(modelo_final, features, nombre_final)
+    # Guardar el modelo que ganó la comparación de calibración
+    guardar_modelo_final(modelo_a_guardar, features, nombre_final)
 
-    # Resumen — se reportan las metricas del modelo calibrado (consistente con lo guardado)
-    acc_final = mejor_modelo['accuracy']
-    f1_final = mejor_modelo['f1_score']
+    # Métricas reales del modelo guardado
+    pred_guardado = modelo_a_guardar.predict(X_test)
+    acc_final = accuracy_score(y_test, pred_guardado)
+    f1_final = f1_score(y_test, pred_guardado, average='weighted')
 
     print("\n" + "="*70)
     print("✅ ENTRENAMIENTO COMPLETADO")
     print("="*70)
     print(f"\n🏆 Modelo guardado: {nombre_final}")
-    print(f"📊 Accuracy (calibrado): {acc_final:.2%}")
-    print(f"📊 F1-Score (calibrado): {f1_final:.4f}")
+    print(f"📊 Accuracy: {acc_final:.2%}")
+    print(f"📊 F1-Score: {f1_final:.4f}")
 
     if mejor_key == 'RF_Optuna':
         print(f"\n⭐ Pesos Optuna utilizados:")
@@ -622,7 +681,7 @@ def main():
     print(f"\n📁 Archivos guardados en {RUTA_MODELOS}")
     print(f"\n➡️  Siguiente: python 03_entrenar_sin_cuotas.py  o  python predecir_jornada_completa.py\n")
 
-    return modelo_calibrado, features
+    return modelo_a_guardar, features
 
 
 if __name__ == "__main__":

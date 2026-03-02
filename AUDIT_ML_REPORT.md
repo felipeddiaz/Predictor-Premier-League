@@ -410,25 +410,13 @@ WF_VAL_SIZE = 0.15
 
 ## 7. BUGS Y PROBLEMAS DE CÓDIGO (PRIORIDAD: ALTA)
 
-### 7.1 Bug: Modelo Guardado No Es el Calibrado
+### 7.1 ~~Bug: Modelo Guardado No Es el Calibrado~~ (CORREGIDO)
 
-En `02_entrenar_modelo.py`:
-```python
-# Línea 579: obtiene modelo_final (NO calibrado)
-modelo_final, pred_final, mejorado = optimizar_modelo_adicional(...)
-
-# Línea 584: calibra
-modelo_calibrado, probs_calibradas = calibrar_modelo(modelo_final, ...)
-
-# Línea 594: ¡GUARDA EL NO CALIBRADO!
-guardar_modelo_final(modelo_final, features, nombre_final)
-
-# Línea 597-598: ¡REPORTA MÉTRICAS DEL NO CALIBRADO TAMBIÉN!
-acc_final = mejor_modelo['accuracy']
-f1_final = mejor_modelo['f1_score']
-```
-
-**Fix:** Decidir si se quiere calibrar o no. Si sí, guardar `modelo_calibrado` y reportar sus métricas. Si no, eliminar el paso de calibración.
+**Estado: RESUELTO.** Se refactorizó `calibrar_modelo()` para:
+1. Usar `TimeSeriesSplit(n_splits=3)` en vez de KFold (respeta causalidad temporal).
+2. Evaluar con **Brier Score y Log Loss** (métricas de calidad probabilística), no F1.
+3. Comparar automáticamente calibrado vs original y guardar el que tenga mejor Brier Score.
+4. Reportar métricas reales del modelo guardado (no del modelo descartado).
 
 ### 7.2 Bug: Features Fantasma en Config
 
