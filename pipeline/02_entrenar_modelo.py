@@ -608,16 +608,90 @@ def visualizar_resultados(y_test, predictions, nombre_modelo, features, modelo):
 
 
 # ============================================================================
+# CALIBRAR SHRINKAGE (FACTOR_CONSERVADOR)
+# ============================================================================
+
+def calibrar_shrinkage(modelo, X_val, y_val):
+    """
+    Encuentra el alpha óptimo para el ajuste conservador de probabilidades.
+
+    probs_adj = alpha * probs_modelo + (1-alpha) * [1/3, 1/3, 1/3]
+
+    Grid search sobre alpha in [0.50, 0.55, ..., 1.00] minimizando Brier Score.
+    También prueba Temperature Scaling (un solo parámetro T) como alternativa.
+
+    Retorna (alpha_optimo, mejor_brier, metodo) donde metodo es 'shrinkage' o 'temperature'.
+    """
+    print("\n" + "="*70)
+    print("CALIBRACION DE SHRINKAGE (FACTOR_CONSERVADOR)")
+    print("="*70)
+
+    probs_raw = modelo.predict_proba(X_val)
+    uniforme = np.array([1/3, 1/3, 1/3])
+
+    # Grid search: shrinkage
+    mejor_alpha = 1.0
+    mejor_brier_shrink = float('inf')
+    resultados_alpha = []
+
+    for alpha_int in range(50, 101, 5):
+        alpha = alpha_int / 100.0
+        probs_adj = alpha * probs_raw + (1 - alpha) * uniforme
+        probs_adj = probs_adj / probs_adj.sum(axis=1, keepdims=True)
+        bs = _brier_multiclase(y_val, probs_adj)
+        resultados_alpha.append((alpha, bs))
+        if bs < mejor_brier_shrink:
+            mejor_brier_shrink = bs
+            mejor_alpha = alpha
+
+    # Temperature Scaling: divide logits por T, luego softmax
+    # Buscar T in [0.5, 0.6, ..., 2.0]
+    mejor_T = 1.0
+    mejor_brier_temp = float('inf')
+
+    eps = 1e-15
+    logits = np.log(np.clip(probs_raw, eps, 1.0))
+
+    for T_int in range(50, 201, 10):
+        T = T_int / 100.0
+        scaled = np.exp(logits / T)
+        probs_temp = scaled / scaled.sum(axis=1, keepdims=True)
+        bs = _brier_multiclase(y_val, probs_temp)
+        if bs < mejor_brier_temp:
+            mejor_brier_temp = bs
+            mejor_T = T
+
+    # Reportar
+    brier_raw = _brier_multiclase(y_val, probs_raw)
+
+    print(f"\n   Brier Score RAW (sin ajuste):       {brier_raw:.4f}")
+    print(f"\n   Shrinkage grid search:")
+    for alpha, bs in resultados_alpha:
+        marker = " <-- mejor" if abs(alpha - mejor_alpha) < 0.01 else ""
+        print(f"     alpha={alpha:.2f}  Brier={bs:.4f}{marker}")
+
+    print(f"\n   Mejor shrinkage: alpha={mejor_alpha:.2f} -> Brier={mejor_brier_shrink:.4f}")
+    print(f"   Temperature Scaling: T={mejor_T:.2f} -> Brier={mejor_brier_temp:.4f}")
+
+    if mejor_brier_temp < mejor_brier_shrink:
+        print(f"\n   -> Temperature Scaling es mejor (T={mejor_T:.2f})")
+        return mejor_alpha, mejor_brier_shrink, mejor_T, mejor_brier_temp, 'temperature'
+    else:
+        print(f"\n   -> Shrinkage es mejor (alpha={mejor_alpha:.2f})")
+        return mejor_alpha, mejor_brier_shrink, mejor_T, mejor_brier_temp, 'shrinkage'
+
+
+# ============================================================================
 # GUARDAR MODELO FINAL
 # ============================================================================
 
-def guardar_modelo_final(modelo, features, nombre_modelo):
+def guardar_modelo_final(modelo, features, nombre_modelo, alpha_shrinkage=0.60):
     """Guarda el modelo final."""
-    
+
     print("\n" + "="*70)
     print("FASE 5: GUARDANDO MODELO")
     print("="*70)
-    
+
     # Usar rutas de config.py (unica fuente de verdad)
     joblib.dump(modelo, ARCHIVO_MODELO)
     print(f"✅ Modelo: {ARCHIVO_MODELO}")
@@ -632,9 +706,11 @@ def guardar_modelo_final(modelo, features, nombre_modelo):
         'pesos_optuna': PESOS_OPTIMOS,
         'params_optuna': PARAMS_OPTIMOS,
         'params_xgb': PARAMS_XGB,
+        'alpha_shrinkage': alpha_shrinkage,
     }
     joblib.dump(metadata, ARCHIVO_METADATA)
     print(f"✅ Metadata: {ARCHIVO_METADATA}")
+    print(f"   alpha_shrinkage: {alpha_shrinkage:.2f}")
 
 
 # ============================================================================
@@ -824,11 +900,14 @@ def main():
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
     nombre_final = f"{mejor_modelo['nombre']} {tag_cal}"
 
+    # Calibrar shrinkage (FACTOR_CONSERVADOR)
+    alpha_opt, _, _, _, metodo = calibrar_shrinkage(modelo_a_guardar, _X_te_cal, y_test)
+
     # Visualizaciones
     visualizar_resultados(y_test, pred_final, nombre_final, features, modelo_final)
 
     # Guardar modelo
-    guardar_modelo_final(modelo_a_guardar, features, nombre_final)
+    guardar_modelo_final(modelo_a_guardar, features, nombre_final, alpha_shrinkage=alpha_opt)
 
     # Métricas finales (probabilísticas + clasificación)
     probs_final = modelo_a_guardar.predict_proba(_X_te_cal)

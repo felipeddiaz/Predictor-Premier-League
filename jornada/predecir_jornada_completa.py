@@ -124,7 +124,15 @@ def _mostrar_resumen_consola(predicciones, predictor: Predictor):
             prob = p.prob_visitante
             prob_orig = p.prob_visitante_original
 
-        info = predictor.calcular_value_bet(prob, cuota)
+        # Eliminar vig para calcular edge real
+        from core.sistema_expected_value import eliminar_vig
+        fair_h, fair_d, fair_a = eliminar_vig(
+            p.partido.cuota_h, p.partido.cuota_d, p.partido.cuota_a
+        )
+        fair_map = {'Local': fair_h, 'Empate': fair_d, 'Visitante': fair_a}
+        prob_fair = fair_map[p.resultado_predicho]
+
+        info = predictor.calcular_value_bet(prob, cuota, prob_fair=prob_fair)
 
         if info:
             value_bets.append({
@@ -138,7 +146,7 @@ def _mostrar_resumen_consola(predicciones, predictor: Predictor):
                 **info,
             })
         else:
-            prob_mercado = 1 / cuota
+            prob_mercado = prob_fair
             edge_pct = (prob - prob_mercado) / prob_mercado if prob_mercado > 0 else 0
             razones = []
             if edge_pct < UMBRAL_EDGE_MINIMO:

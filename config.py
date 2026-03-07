@@ -141,11 +141,14 @@ PARAMS_XGB = {
 # PARÁMETROS DE VALUE BETTING
 # ============================================================================
 
-# Capa 1: Ajuste conservador
-FACTOR_CONSERVADOR = 0.60       # 40% de regresión hacia distribución uniforme
+# Capa 1: Ajuste conservador (shrinkage hacia distribución uniforme)
+# probs_adj = alpha * probs_modelo + (1-alpha) * [1/3, 1/3, 1/3]
+# Valor por defecto. Se re-calibra empíricamente por calibrar_shrinkage()
+# en 02/03_entrenar*.py buscando el alpha que minimiza Brier Score.
+FACTOR_CONSERVADOR = 0.60       # Valor inicial; se sobreescribe en metadata
 
 # Capa 2: Filtros de calidad
-UMBRAL_EDGE_MINIMO = 0.10       # Edge mínimo requerido (10%)
+UMBRAL_EDGE_MINIMO = 0.05       # Edge mínimo requerido (5%) — post vig-removal, 2-5% es significativo
 CUOTA_MAXIMA = 5.0              # No apostar en underdogs extremos
 PROBABILIDAD_MINIMA = 0.35      # Probabilidad mínima del modelo
 

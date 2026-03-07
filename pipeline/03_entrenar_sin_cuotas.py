@@ -580,10 +580,80 @@ def visualizar_resultados(y_test, predictions, nombre_modelo, features, modelo):
 
 
 # ============================================================================
+# CALIBRAR SHRINKAGE (FACTOR_CONSERVADOR)
+# ============================================================================
+
+def calibrar_shrinkage(modelo, X_val, y_val):
+    """
+    Encuentra el alpha óptimo para el ajuste conservador de probabilidades.
+
+    probs_adj = alpha * probs_modelo + (1-alpha) * [1/3, 1/3, 1/3]
+
+    Grid search sobre alpha in [0.50, 0.55, ..., 1.00] minimizando Brier Score.
+    También prueba Temperature Scaling como alternativa.
+
+    Retorna (alpha_optimo, mejor_brier_shrink, mejor_T, mejor_brier_temp, metodo).
+    """
+    print("\n" + "=" * 70)
+    print("CALIBRACION DE SHRINKAGE (FACTOR_CONSERVADOR)")
+    print("=" * 70)
+
+    probs_raw = modelo.predict_proba(X_val)
+    uniforme = np.array([1/3, 1/3, 1/3])
+
+    mejor_alpha = 1.0
+    mejor_brier_shrink = float('inf')
+    resultados_alpha = []
+
+    for alpha_int in range(50, 101, 5):
+        alpha = alpha_int / 100.0
+        probs_adj = alpha * probs_raw + (1 - alpha) * uniforme
+        probs_adj = probs_adj / probs_adj.sum(axis=1, keepdims=True)
+        bs = _brier_multiclase(y_val, probs_adj)
+        resultados_alpha.append((alpha, bs))
+        if bs < mejor_brier_shrink:
+            mejor_brier_shrink = bs
+            mejor_alpha = alpha
+
+    mejor_T = 1.0
+    mejor_brier_temp = float('inf')
+    eps = 1e-15
+    logits = np.log(np.clip(probs_raw, eps, 1.0))
+
+    for T_int in range(50, 201, 10):
+        T = T_int / 100.0
+        scaled = np.exp(logits / T)
+        probs_temp = scaled / scaled.sum(axis=1, keepdims=True)
+        bs = _brier_multiclase(y_val, probs_temp)
+        if bs < mejor_brier_temp:
+            mejor_brier_temp = bs
+            mejor_T = T
+
+    brier_raw = _brier_multiclase(y_val, probs_raw)
+
+    print(f"\n   Brier Score RAW (sin ajuste):       {brier_raw:.4f}")
+    print(f"\n   Shrinkage grid search:")
+    for alpha, bs in resultados_alpha:
+        marker = " <-- mejor" if abs(alpha - mejor_alpha) < 0.01 else ""
+        print(f"     alpha={alpha:.2f}  Brier={bs:.4f}{marker}")
+
+    print(f"\n   Mejor shrinkage: alpha={mejor_alpha:.2f} -> Brier={mejor_brier_shrink:.4f}")
+    print(f"   Temperature Scaling: T={mejor_T:.2f} -> Brier={mejor_brier_temp:.4f}")
+
+    if mejor_brier_temp < mejor_brier_shrink:
+        print(f"\n   -> Temperature Scaling es mejor (T={mejor_T:.2f})")
+    else:
+        print(f"\n   -> Shrinkage es mejor (alpha={mejor_alpha:.2f})")
+
+    metodo = 'temperature' if mejor_brier_temp < mejor_brier_shrink else 'shrinkage'
+    return mejor_alpha, mejor_brier_shrink, mejor_T, mejor_brier_temp, metodo
+
+
+# ============================================================================
 # GUARDAR MODELO
 # ============================================================================
 
-def guardar_modelo(modelo, features):
+def guardar_modelo(modelo, features, alpha_shrinkage=0.60):
     """Guarda el modelo calibrado y la lista de features."""
 
     print("\n" + "=" * 70)
@@ -595,6 +665,7 @@ def guardar_modelo(modelo, features):
 
     joblib.dump(features, ARCHIVO_FEATURES_VB)
     print(f"   Features: {ARCHIVO_FEATURES_VB}")
+    print(f"   alpha_shrinkage: {alpha_shrinkage:.2f}")
 
 
 # ============================================================================
@@ -651,6 +722,9 @@ def main():
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
     nombre_final = f"{mejor['nombre']} {tag_cal}"
 
+    # Calibrar shrinkage (FACTOR_CONSERVADOR)
+    alpha_opt, _, _, _, metodo = calibrar_shrinkage(modelo_a_guardar, _X_te_cal, y_test)
+
     # Evaluación value betting (diferencial exclusivo del 03)
     evaluar_value_betting(modelo_a_guardar, _X_te_cal, y_test, df_test)
 
@@ -658,7 +732,7 @@ def main():
     visualizar_resultados(y_test, mejor['predicciones'], nombre_final, features, mejor['modelo'])
 
     # Guardar modelo
-    guardar_modelo(modelo_a_guardar, features)
+    guardar_modelo(modelo_a_guardar, features, alpha_shrinkage=alpha_opt)
 
     # Métricas finales
     probs_final = modelo_a_guardar.predict_proba(_X_te_cal)

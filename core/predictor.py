@@ -58,10 +58,15 @@ except ImportError:
     PDF_AVAILABLE = False
 
 try:
-    from core.sistema_expected_value import calcular_ev, kelly_criterion, analizar_apuesta  # noqa: F401
+    from core.sistema_expected_value import calcular_ev, kelly_criterion, analizar_apuesta, eliminar_vig  # noqa: F401
     EV_AVAILABLE = True
 except ImportError:
     EV_AVAILABLE = False
+
+    def eliminar_vig(cuota_h, cuota_d, cuota_a):
+        p_h, p_d, p_a = 1/cuota_h, 1/cuota_d, 1/cuota_a
+        t = p_h + p_d + p_a
+        return p_h/t, p_d/t, p_a/t
 
 
 # ============================================================================
@@ -427,7 +432,8 @@ class Predictor:
     # VALUE BETTING — 3 CAPAS
     # -------------------------------------------------------------------------
 
-    def calcular_value_bet(self, prob_modelo: float, cuota_mercado: float) -> dict | None:
+    def calcular_value_bet(self, prob_modelo: float, cuota_mercado: float,
+                           prob_fair: float | None = None) -> dict | None:
         """
         Aplica el filtro de 3 capas a una probabilidad y cuota.
 
@@ -435,9 +441,13 @@ class Predictor:
         Capa 2: filtros de edge, cuota maxima y probabilidad minima.
         Capa 3: sizing por Kelly fraccional con tope de stake.
 
+        Args:
+            prob_fair: probabilidad sin vig (de eliminar_vig). Si None,
+                       usa 1/cuota (con vig — sobreestima edge).
+
         Retorna dict con info de la apuesta, o None si no pasa los filtros.
         """
-        prob_mercado = 1 / cuota_mercado
+        prob_mercado = prob_fair if prob_fair is not None else (1.0 / cuota_mercado)
         edge = prob_modelo - prob_mercado
         edge_pct = edge / prob_mercado if prob_mercado > 0 else 0
 

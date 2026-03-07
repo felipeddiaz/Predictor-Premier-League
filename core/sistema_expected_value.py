@@ -18,43 +18,57 @@ from config import ARCHIVO_FEATURES, RUTA_MODELOS
 RUTA_DATOS = ARCHIVO_FEATURES
 
 # ============================================================================
+# VIG REMOVAL
+# ============================================================================
+
+def eliminar_vig(cuota_h: float, cuota_d: float, cuota_a: float) -> tuple:
+    """
+    Elimina el margen de la casa (vig/overround) de las cuotas.
+
+    Las cuotas incluyen ~5% de margen. Para calcular el edge real
+    hay que normalizar las probabilidades implícitas para que sumen 1.
+
+    Returns:
+        (prob_h_fair, prob_d_fair, prob_a_fair): sin vig
+    """
+    prob_h = 1.0 / cuota_h
+    prob_d = 1.0 / cuota_d
+    prob_a = 1.0 / cuota_a
+    total = prob_h + prob_d + prob_a  # ~1.05 (el overround)
+    return prob_h / total, prob_d / total, prob_a / total
+
+
+# ============================================================================
 # CÁLCULO DE EXPECTED VALUE (EV)
 # ============================================================================
 
-def calcular_ev(prob_modelo, cuota, stake=1.0):
+def calcular_ev(prob_modelo, cuota, stake=1.0, prob_fair=None):
     """
     Calcula el Expected Value de una apuesta.
-    
+
     Args:
         prob_modelo (float): Probabilidad según tu modelo (0-1)
         cuota (float): Cuota ofrecida (formato decimal)
-        stake (float): Cantidad apostada (default 1€)
-        
+        stake (float): Cantidad apostada (default 1)
+        prob_fair (float): Probabilidad implícita sin vig. Si es None,
+                           usa 1/cuota (con vig incluido — menos preciso).
+
     Returns:
         dict: EV, ganancia esperada, y análisis
     """
-    
-    # Probabilidad de perder
     prob_perder = 1 - prob_modelo
-    
-    # Ganancia si aciertas (cuota × stake - stake)
     ganancia_si_gana = (cuota * stake) - stake
-    
-    # Pérdida si fallas (pierdes tu stake)
     perdida_si_pierde = stake
-    
-    # FÓRMULA DEL EV
+
     ev = (prob_modelo * ganancia_si_gana) - (prob_perder * perdida_si_pierde)
-    
-    # ROI (Return on Investment)
     roi = (ev / stake) * 100
-    
-    # Probabilidad implícita de la casa
-    prob_casa = 1 / cuota
-    
-    # Edge (ventaja sobre la casa)
+
+    # Probabilidad implícita: usar fair (sin vig) si está disponible
+    prob_casa = prob_fair if prob_fair is not None else (1.0 / cuota)
+
+    # Edge = ventaja real sobre el mercado (sin vig)
     edge = prob_modelo - prob_casa
-    
+
     return {
         'ev': ev,
         'roi': roi,
@@ -110,25 +124,58 @@ def kelly_criterion(prob_modelo, cuota, kelly_fraction=0.25):
 # ANÁLISIS COMPLETO DE APUESTA
 # ============================================================================
 
-def analizar_apuesta(prediccion, cuota, stake=10, bankroll=1000):
+def kelly_simultaneo(apuestas: list, kelly_fraction: float = 0.25) -> list:
+    """
+    Ajusta los stakes de Kelly para apuestas simultáneas.
+
+    Kelly estándar asume apuestas secuenciales. Con N apuestas simultáneas
+    en una jornada, el riesgo agregado es mayor. Ajustamos:
+
+        f_simultáneo = f_kelly / sqrt(N)
+
+    Args:
+        apuestas: lista de dicts con 'kelly_safe' y otros campos
+        kelly_fraction: fracción de Kelly usada (default 0.25)
+
+    Returns:
+        misma lista con 'kelly_safe' y 'stake' ajustados
+    """
+    n = len(apuestas)
+    if n <= 1:
+        return apuestas
+
+    factor = 1.0 / np.sqrt(n)
+
+    for apuesta in apuestas:
+        apuesta['kelly_safe_original'] = apuesta.get('kelly_safe', 0)
+        apuesta['kelly_safe'] = apuesta['kelly_safe_original'] * factor
+        if 'stake' in apuesta and 'kelly_safe_original' in apuesta:
+            # Recalcular stake con el factor ajustado
+            if apuesta['kelly_safe_original'] > 0:
+                apuesta['stake'] = apuesta['stake'] * factor
+
+    return apuestas
+
+
+def analizar_apuesta(prediccion, cuota, stake=10, bankroll=1000, prob_fair=None):
     """
     Análisis completo de una apuesta con EV y Kelly.
-    
+
     Args:
         prediccion (dict): Resultado de predicción con probabilidades
         cuota (float): Cuota ofrecida
         stake (float): Apuesta base
         bankroll (float): Capital total disponible
-        
+        prob_fair (float): Probabilidad sin vig (de eliminar_vig)
+
     Returns:
         dict: Análisis completo con recomendación
     """
-    
     prob = prediccion['confianza']
-    
-    # Calcular EV
-    ev_result = calcular_ev(prob, cuota, stake)
-    
+
+    # Calcular EV (con prob_fair para edge sin vig)
+    ev_result = calcular_ev(prob, cuota, stake, prob_fair=prob_fair)
+
     # Calcular Kelly
     kelly_result = kelly_criterion(prob, cuota)
     
@@ -322,20 +369,24 @@ def analizar_jornada_con_ev(partidos, modelo, features, df, bankroll=1000, fn_pr
         if pred is None:
             continue
         
+        # Eliminar vig para calcular edge real
+        fair_h, fair_d, fair_a = eliminar_vig(
+            partido['cuota_h'], partido['cuota_d'], partido['cuota_a']
+        )
+
         # Analizar cada posible resultado
-        # Evaluar los 3 outcomes independientemente del predicho
         analisis_opciones = [
             ('Local', pred['local'], analizar_apuesta(
                 {'confianza': pred['prob_local']}, partido['cuota_h'],
-                stake=10, bankroll=bankroll
+                stake=10, bankroll=bankroll, prob_fair=fair_h
             )),
             ('Empate', 'Empate', analizar_apuesta(
                 {'confianza': pred['prob_empate']}, partido['cuota_d'],
-                stake=10, bankroll=bankroll
+                stake=10, bankroll=bankroll, prob_fair=fair_d
             )),
             ('Visitante', pred['visitante'], analizar_apuesta(
                 {'confianza': pred['prob_visitante']}, partido['cuota_a'],
-                stake=10, bankroll=bankroll
+                stake=10, bankroll=bankroll, prob_fair=fair_a
             )),
         ]
 
@@ -377,7 +428,11 @@ def analizar_jornada_con_ev(partidos, modelo, features, df, bankroll=1000, fn_pr
     print("="*70)
     
     apuestas_recomendadas = [r for r in resultados_ev if r['ev'] > 0 and r['edge'] > 0.03]
-    
+
+    # Ajustar Kelly para apuestas simultáneas (sqrt(N) reduction)
+    if len(apuestas_recomendadas) > 1:
+        apuestas_recomendadas = kelly_simultaneo(apuestas_recomendadas)
+
     if apuestas_recomendadas:
         apuestas_recomendadas_sorted = sorted(apuestas_recomendadas, key=lambda x: x['ev'], reverse=True)
         
