@@ -4,14 +4,20 @@ Premier League Match Predictor
 02 - ENTRENAMIENTO DE MODELOS (VERSION OPTIMIZADA CON PESOS OPTUNA + XGBOOST)
 
 Entrena cuatro variantes (RF basico, RF balanceado, RF Optuna, XGBoost),
-selecciona la mejor por F1-Score ponderado y aplica calibracion Platt
-Scaling para obtener probabilidades realistas.
+selecciona la mejor por Log Loss (calidad probabilistica) y aplica
+calibracion Platt Scaling para obtener probabilidades realistas.
+
+Metricas de optimizacion:
+    Primaria:    Log Loss (calidad probabilistica)
+    Secundaria:  Brier Score (error cuadratico de probs)
+    Terciaria:   ROI simulado (value betting)
+    Referencia:  F1-weighted, Accuracy
 
 Pipeline:
     datos/procesados/premier_league_con_features.csv
-    → features en memoria (xG rolling, tabla, cuotas derivadas)
-    → 80/20 split temporal
-    → RF basico + RF balanced + RF Optuna + XGBoost (PARAMS_XGB)
+    → features en memoria (tabla, cuotas, AH, rolling, forma, pinnacle, arbitro)
+    → walk-forward season-by-season (diagnostico de consistencia)
+    → 80/20 split temporal → entrenar 4 modelos → seleccionar por Log Loss
     → CalibratedClassifierCV (sigmoid)
     → modelos/modelo_final_optimizado.pkl
 """
@@ -148,176 +154,162 @@ def cargar_datos():
         pct = count / len(y) * 100
         print(f"   {nombre}: {count} ({pct:.1f}%)")
     
-    return X, X_filled, y, features
+    return X, X_filled, y, features, df
+
+# ============================================================================
+# MÉTRICAS
+# ============================================================================
+
+def _brier_multiclase(y_true, probs):
+    """Brier Score multiclase: promedio del Brier por clase (one-vs-rest)."""
+    bs = 0.0
+    for clase in range(3):
+        y_bin = (y_true == clase).astype(int)
+        bs += brier_score_loss(y_bin, probs[:, clase])
+    return bs / 3
+
+
+def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=0.10):
+    """
+    ROI simulado con apuestas planas sobre value bets.
+
+    Para cada partido donde max(prob_modelo) - prob_mercado > edge_minimo,
+    apuesta 1 unidad al resultado con mayor edge. Calcula el ROI total.
+
+    Si df_cuotas es None (no hay cuotas disponibles en el split),
+    retorna None.
+    """
+    if df_cuotas is None:
+        return None
+
+    cuota_cols = ['B365H', 'B365D', 'B365A']
+    if not all(c in df_cuotas.columns for c in cuota_cols):
+        return None
+
+    cuotas = df_cuotas[cuota_cols].values  # shape (n, 3)
+    apostado = 0.0
+    ganancia = 0.0
+
+    for i in range(len(y_true)):
+        # Probabilidades del mercado (implícitas, sin normalizar)
+        prob_mercado = 1.0 / cuotas[i]
+        if np.any(np.isnan(prob_mercado)) or np.any(cuotas[i] <= 1.0):
+            continue
+
+        # Edge por resultado
+        edges = probs[i] - prob_mercado
+        mejor_resultado = int(np.argmax(edges))
+        mejor_edge = edges[mejor_resultado]
+
+        if mejor_edge >= edge_minimo:
+            apostado += 1.0
+            if y_true.iloc[i] == mejor_resultado:
+                ganancia += cuotas[i][mejor_resultado] - 1.0
+            else:
+                ganancia -= 1.0
+
+    if apostado == 0:
+        return None
+
+    return ganancia / apostado
+
+
+def _evaluar_modelo(modelo, X_test, y_test, nombre, df_cuotas=None):
+    """Evalúa un modelo con todas las métricas (probabilísticas + clasificación)."""
+    pred = modelo.predict(X_test)
+    probs = modelo.predict_proba(X_test)
+
+    acc = accuracy_score(y_test, pred)
+    f1 = f1_score(y_test, pred, average='weighted')
+    ll = log_loss(y_test, probs)
+    bs = _brier_multiclase(y_test, probs)
+    roi = _roi_simulado(y_test, probs, df_cuotas)
+
+    return {
+        'modelo': modelo,
+        'predicciones': pred,
+        'probs': probs,
+        'accuracy': acc,
+        'f1_score': f1,
+        'log_loss': ll,
+        'brier_score': bs,
+        'roi': roi,
+        'nombre': nombre,
+    }
+
 
 # ============================================================================
 # ENTRENAMIENTO DE MODELOS
 # ============================================================================
 
 def entrenar_modelos(X_train, y_train, X_test, y_test,
-                     X_train_filled=None, X_test_filled=None):
-    """Entrena los modelos RF (con fillna) y XGBoost (con NaN nativo)."""
-    # RF no soporta NaN → usa versión filled; XGBoost sí soporta NaN
+                     X_train_filled=None, X_test_filled=None,
+                     df_cuotas_test=None):
+    """Entrena los modelos RF (con fillna) y XGBoost (con NaN nativo).
+
+    Métricas primarias: Log Loss, Brier Score (calidad probabilística).
+    Métricas de referencia: F1-weighted, Accuracy (clasificación).
+    Métrica terciaria: ROI simulado (si hay cuotas disponibles).
+    """
     if X_train_filled is None:
         X_train_filled = X_train.fillna(0)
     if X_test_filled is None:
         X_test_filled = X_test.fillna(0)
-    
+
     resultados = {}
-    
-    # -------------------------------------------------------------------------
-    # MODELO 1: Random Forest Básico (baseline)
-    # -------------------------------------------------------------------------
+
+    def _print_metricas(r):
+        roi_str = f" | ROI: {r['roi']:+.2%}" if r['roi'] is not None else ""
+        print(f"✅ Log Loss: {r['log_loss']:.4f} | Brier: {r['brier_score']:.4f} "
+              f"| F1: {r['f1_score']:.4f} | Acc: {r['accuracy']:.2%}{roi_str}")
+
+    # --- MODELO 1: Random Forest Básico ---
     print("\n" + "="*70)
     print("MODELO 1: RANDOM FOREST BÁSICO (Baseline)")
     print("="*70)
-    
     rf_basico = RandomForestClassifier(
-        n_estimators=100, 
-        min_samples_leaf=5, 
-        random_state=42, 
-        n_jobs=-1
+        n_estimators=100, min_samples_leaf=5, random_state=42, n_jobs=-1
     )
     rf_basico.fit(X_train_filled, y_train)
-    pred_basico = rf_basico.predict(X_test_filled)
-    
-    acc = accuracy_score(y_test, pred_basico)
-    f1 = f1_score(y_test, pred_basico, average='weighted')
-    
-    resultados['RF_Basico'] = {
-        'modelo': rf_basico,
-        'predicciones': pred_basico,
-        'accuracy': acc,
-        'f1_score': f1,
-        'nombre': 'Random Forest Básico'
-    }
-    
-    print(f"✅ Accuracy: {acc:.2%} | F1-Score: {f1:.4f}")
-    
-    # -------------------------------------------------------------------------
-    # MODELO 2: Random Forest Balanceado (auto)
-    # -------------------------------------------------------------------------
+    resultados['RF_Basico'] = _evaluar_modelo(
+        rf_basico, X_test_filled, y_test, 'Random Forest Básico', df_cuotas_test)
+    _print_metricas(resultados['RF_Basico'])
+
+    # --- MODELO 2: Random Forest Balanceado ---
     print("\n" + "="*70)
     print("MODELO 2: RANDOM FOREST BALANCEADO (Auto)")
     print("="*70)
-    
     rf_balanceado = RandomForestClassifier(
-        n_estimators=100, 
-        min_samples_leaf=5, 
-        class_weight='balanced',
-        random_state=42, 
-        n_jobs=-1
+        n_estimators=100, min_samples_leaf=5, class_weight='balanced',
+        random_state=42, n_jobs=-1
     )
     rf_balanceado.fit(X_train_filled, y_train)
-    pred_balanceado = rf_balanceado.predict(X_test_filled)
-    
-    acc = accuracy_score(y_test, pred_balanceado)
-    f1 = f1_score(y_test, pred_balanceado, average='weighted')
-    
-    resultados['RF_Balanceado'] = {
-        'modelo': rf_balanceado,
-        'predicciones': pred_balanceado,
-        'accuracy': acc,
-        'f1_score': f1,
-        'nombre': 'Random Forest Balanceado'
-    }
-    
-    print(f"✅ Accuracy: {acc:.2%} | F1-Score: {f1:.4f}")
-    
-    # -------------------------------------------------------------------------
-    # MODELO 3: Random Forest con PESOS OPTUNA (el mejor)
-    # -------------------------------------------------------------------------
+    resultados['RF_Balanceado'] = _evaluar_modelo(
+        rf_balanceado, X_test_filled, y_test, 'Random Forest Balanceado', df_cuotas_test)
+    _print_metricas(resultados['RF_Balanceado'])
+
+    # --- MODELO 3: Random Forest Optuna ---
     print("\n" + "="*70)
-    print("MODELO 3: RANDOM FOREST CON PESOS OPTUNA ⭐")
+    print("MODELO 3: RANDOM FOREST CON PESOS OPTUNA")
     print("="*70)
-    print(f"   Pesos optimizados:")
-    print(f"   • Local (0): {PESOS_OPTIMOS[0]:.4f}")
-    print(f"   • Empate (1): {PESOS_OPTIMOS[1]:.4f}")
-    print(f"   • Visitante (2): {PESOS_OPTIMOS[2]:.4f}")
-    print(f"   Hiperparámetros:")
-    print(f"   • n_estimators: {PARAMS_OPTIMOS['n_estimators']}")
-    print(f"   • max_depth: {PARAMS_OPTIMOS['max_depth']}")
-    print(f"   • min_samples_leaf: {PARAMS_OPTIMOS['min_samples_leaf']}")
-    
     rf_optuna = RandomForestClassifier(**PARAMS_OPTIMOS)
     rf_optuna.fit(X_train_filled, y_train)
-    pred_optuna = rf_optuna.predict(X_test_filled)
-    
-    acc = accuracy_score(y_test, pred_optuna)
-    f1 = f1_score(y_test, pred_optuna, average='weighted')
-    
-    resultados['RF_Optuna'] = {
-        'modelo': rf_optuna,
-        'predicciones': pred_optuna,
-        'accuracy': acc,
-        'f1_score': f1,
-        'nombre': 'Random Forest Optuna'
-    }
-    
-    print(f"\n✅ Accuracy: {acc:.2%} | F1-Score: {f1:.4f}")
-    
-    # Mostrar recall por clase
-    cm = confusion_matrix(y_test, pred_optuna)
-    recall_local = cm[0,0] / cm[0].sum() if cm[0].sum() > 0 else 0
-    recall_empate = cm[1,1] / cm[1].sum() if cm[1].sum() > 0 else 0
-    recall_visitante = cm[2,2] / cm[2].sum() if cm[2].sum() > 0 else 0
-    
-    print(f"\n📊 Recall por clase:")
-    print(f"   Local: {recall_local:.2%}")
-    print(f"   Empate: {recall_empate:.2%}")
-    print(f"   Visitante: {recall_visitante:.2%}")
+    resultados['RF_Optuna'] = _evaluar_modelo(
+        rf_optuna, X_test_filled, y_test, 'Random Forest Optuna', df_cuotas_test)
+    _print_metricas(resultados['RF_Optuna'])
 
-    # -------------------------------------------------------------------------
-    # MODELO 4: XGBoost con pesos de clase (PARAMS_XGB de config.py)
-    # -------------------------------------------------------------------------
+    # --- MODELO 4: XGBoost ---
     print("\n" + "="*70)
-    print("MODELO 4: XGBOOST ⚡")
+    print("MODELO 4: XGBOOST")
     print("="*70)
-    print(f"   Pesos XGB optimizados:")
-    print(f"   • Local (0): {PESOS_XGB[0]:.4f}")
-    print(f"   • Empate (1): {PESOS_XGB[1]:.4f}")
-    print(f"   • Visitante (2): {PESOS_XGB[2]:.4f}")
-    print(f"   Hiperparámetros:")
-    print(f"   • n_estimators: {PARAMS_XGB['n_estimators']}")
-    print(f"   • max_depth: {PARAMS_XGB['max_depth']}")
-    print(f"   • learning_rate: {PARAMS_XGB['learning_rate']}")
-    print(f"   • subsample: {PARAMS_XGB['subsample']}")
-    print(f"   • colsample_bytree: {PARAMS_XGB['colsample_bytree']}")
-    print(f"   • colsample_bylevel: {PARAMS_XGB.get('colsample_bylevel', 'N/A')}")
-
-    # XGBoost multiclase no acepta class_weight dict — se usan sample_weight
-    # basados en PESOS_XGB (optimizados especificamente para XGB)
     sample_weights_train = compute_sample_weight(
         class_weight=PESOS_XGB, y=y_train
     )
-
     xgb_model = XGBClassifier(**PARAMS_XGB)
     xgb_model.fit(X_train, y_train, sample_weight=sample_weights_train)
-    pred_xgb = xgb_model.predict(X_test)
-
-    acc = accuracy_score(y_test, pred_xgb)
-    f1 = f1_score(y_test, pred_xgb, average='weighted')
-
-    resultados['XGBoost'] = {
-        'modelo': xgb_model,
-        'predicciones': pred_xgb,
-        'accuracy': acc,
-        'f1_score': f1,
-        'nombre': 'XGBoost'
-    }
-
-    print(f"\n✅ Accuracy: {acc:.2%} | F1-Score: {f1:.4f}")
-
-    # Recall por clase
-    cm_xgb = confusion_matrix(y_test, pred_xgb)
-    recall_local = cm_xgb[0,0] / cm_xgb[0].sum() if cm_xgb[0].sum() > 0 else 0
-    recall_empate = cm_xgb[1,1] / cm_xgb[1].sum() if cm_xgb[1].sum() > 0 else 0
-    recall_visitante = cm_xgb[2,2] / cm_xgb[2].sum() if cm_xgb[2].sum() > 0 else 0
-
-    print(f"\n📊 Recall por clase:")
-    print(f"   Local: {recall_local:.2%}")
-    print(f"   Empate: {recall_empate:.2%}")
-    print(f"   Visitante: {recall_visitante:.2%}")
+    resultados['XGBoost'] = _evaluar_modelo(
+        xgb_model, X_test, y_test, 'XGBoost', df_cuotas_test)
+    _print_metricas(resultados['XGBoost'])
 
     return resultados
 
@@ -414,34 +406,47 @@ def calibrar_modelo(modelo, X_train, y_train, X_test, y_test):
 # ============================================================================
 
 def seleccionar_mejor_modelo(resultados, y_test):
-    """Compara modelos y selecciona el mejor según F1-Score."""
-    
+    """Compara modelos y selecciona el mejor según Log Loss (calidad probabilística)."""
+
     print("\n" + "="*70)
     print("FASE 2: COMPARACIÓN DE MODELOS")
     print("="*70)
-    
-    print(f"\n{'Modelo':<40} {'Accuracy':<12} {'F1-Score':<12}")
-    print("-" * 65)
-    
+
+    header = f"{'Modelo':<30} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}"
+    roi_disponible = any(r['roi'] is not None for r in resultados.values())
+    if roi_disponible:
+        header += f" {'ROI':>8}"
+    print(f"\n{header}")
+    print("-" * len(header))
+
     for key, datos in resultados.items():
-        print(f"{datos['nombre']:<40} {datos['accuracy']:>10.2%}  {datos['f1_score']:>10.4f}")
-    
-    # Elegir mejor por F1-Score
-    mejor_key = max(resultados.items(), key=lambda x: x[1]['f1_score'])[0]
+        linea = (f"{datos['nombre']:<30} {datos['log_loss']:>9.4f} "
+                 f"{datos['brier_score']:>7.4f} {datos['f1_score']:>7.4f} "
+                 f"{datos['accuracy']:>6.2%}")
+        if roi_disponible:
+            roi_str = f"{datos['roi']:>+7.2%}" if datos['roi'] is not None else f"{'N/A':>8}"
+            linea += f" {roi_str}"
+        print(linea)
+
+    # Elegir mejor por Log Loss (menor = mejor calidad probabilística)
+    mejor_key = min(resultados.items(), key=lambda x: x[1]['log_loss'])[0]
     mejor = resultados[mejor_key]
-    
-    print("\n" + "🏆" * 30)
-    print(f"GANADOR: {mejor['nombre']}")
-    print(f"   Accuracy: {mejor['accuracy']:.2%}")
-    print(f"   F1-Score: {mejor['f1_score']:.4f}")
-    print("🏆" * 30)
-    
+
+    print(f"\n{'='*60}")
+    print(f"GANADOR: {mejor['nombre']}  (Log Loss: {mejor['log_loss']:.4f})")
+    print(f"   Brier Score: {mejor['brier_score']:.4f}")
+    print(f"   F1-Score:    {mejor['f1_score']:.4f} (referencia)")
+    print(f"   Accuracy:    {mejor['accuracy']:.2%} (referencia)")
+    if mejor['roi'] is not None:
+        print(f"   ROI sim.:    {mejor['roi']:+.2%}")
+    print(f"{'='*60}")
+
     # Reporte detallado
     print(f"\n📊 REPORTE DETALLADO:")
     print("-" * 65)
     target_names = ['Local', 'Empate', 'Visitante']
     print(classification_report(y_test, mejor['predicciones'], target_names=target_names))
-    
+
     return mejor_key, mejor
 
 
@@ -504,42 +509,44 @@ def optimizar_modelo_adicional(mejor_key, mejor_modelo, X_train, y_train, X_test
         verbose=2,
         random_state=42,
         n_jobs=-1,
-        scoring='f1_weighted'
+        scoring='neg_log_loss'   # optimizar calidad probabilística, no F1
     )
-    
+
     # RF no soporta NaN — usar versión filled
     _X_tr = X_train_filled if X_train_filled is not None else X_train.fillna(0)
     _X_te = X_test_filled if X_test_filled is not None else X_test.fillna(0)
     random_search.fit(_X_tr, y_train)
 
-    # Evaluar
+    # Evaluar con métricas probabilísticas
     modelo_optimizado = random_search.best_estimator_
+    probs_opt = modelo_optimizado.predict_proba(_X_te)
     pred_optimizado = modelo_optimizado.predict(_X_te)
-    
-    acc_opt = accuracy_score(y_test, pred_optimizado)
+    ll_opt = log_loss(y_test, probs_opt)
+    bs_opt = _brier_multiclase(y_test, probs_opt)
     f1_opt = f1_score(y_test, pred_optimizado, average='weighted')
-    
+
     print("\n✅ OPTIMIZACIÓN COMPLETADA")
     print("="*70)
     print("\n📋 MEJORES PARÁMETROS:")
     for param, value in random_search.best_params_.items():
         print(f"   {param}: {value}")
-    
+
+    ll_antes = mejor_modelo['log_loss']
+    bs_antes = mejor_modelo['brier_score']
+
     print("\n📊 COMPARACIÓN ANTES/DESPUÉS:")
-    print(f"{'Métrica':<15} {'Antes':<15} {'Después':<15} {'Cambio':<10}")
+    print(f"{'Métrica':<15} {'Antes':>13} {'Después':>13} {'Cambio':>10}")
     print("-" * 55)
-    
-    cambio_acc = acc_opt - mejor_modelo['accuracy']
-    cambio_f1 = f1_opt - mejor_modelo['f1_score']
-    
-    print(f"{'Accuracy':<15} {mejor_modelo['accuracy']:>13.2%} {acc_opt:>13.2%} {cambio_acc:>+9.2%}")
-    print(f"{'F1-Score':<15} {mejor_modelo['f1_score']:>13.4f} {f1_opt:>13.4f} {cambio_f1:>+9.4f}")
-    
-    if f1_opt > mejor_modelo['f1_score']:
-        print("\n🎉 ¡El modelo mejoró con la optimización!")
+    print(f"{'Log Loss':<15} {ll_antes:>13.4f} {ll_opt:>13.4f} {ll_opt - ll_antes:>+10.4f}")
+    print(f"{'Brier Score':<15} {bs_antes:>13.4f} {bs_opt:>13.4f} {bs_opt - bs_antes:>+10.4f}")
+    print(f"{'F1 (ref.)':<15} {mejor_modelo['f1_score']:>13.4f} {f1_opt:>13.4f} {f1_opt - mejor_modelo['f1_score']:>+10.4f}")
+
+    # Decisión por Log Loss (menor = mejor)
+    if ll_opt < ll_antes:
+        print(f"\n   Optimización MEJORA Log Loss ({ll_antes:.4f} → {ll_opt:.4f})")
         return modelo_optimizado, pred_optimizado, True
     else:
-        print("\n⚠️  Sin mejora significativa. Usando el original.")
+        print("\n   Sin mejora en Log Loss. Usando el original.")
         return mejor_modelo['modelo'], mejor_modelo['predicciones'], False
 
 
@@ -631,6 +638,134 @@ def guardar_modelo_final(modelo, features, nombre_modelo):
 
 
 # ============================================================================
+# WALK-FORWARD SEASON-BY-SEASON
+# ============================================================================
+
+def _asignar_temporada(dates: pd.Series) -> pd.Series:
+    """Asigna temporada tipo '2020-21' basándose en la fecha."""
+    return dates.apply(
+        lambda d: f"{d.year}-{str(d.year+1)[-2:]}" if d.month >= 8
+        else f"{d.year-1}-{str(d.year)[-2:]}"
+    )
+
+
+def walk_forward_temporal(df, features):
+    """
+    Validación walk-forward expandida season-by-season.
+
+    Train: 2016-2020  →  Test: 2020-21
+    Train: 2016-2021  →  Test: 2021-22
+    Train: 2016-2022  →  Test: 2022-23
+    Train: 2016-2023  →  Test: 2023-24
+    Train: 2016-2024  →  Test: 2024-25
+
+    Entrena XGBoost (mejor modelo actual) en cada fold y reporta
+    métricas probabilísticas por temporada. Revela si el rendimiento
+    es consistente o depende de una temporada anómala.
+    """
+    print("\n" + "="*70)
+    print("WALK-FORWARD TEMPORAL (season-by-season)")
+    print("="*70)
+
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'])
+    df['_Season'] = _asignar_temporada(df['Date'])
+
+    temporadas = sorted(df['_Season'].unique())
+    print(f"   Temporadas disponibles: {', '.join(temporadas)}")
+
+    # Definir folds: test = cada temporada desde 2020-21
+    test_seasons = [s for s in temporadas if s >= '2020-21']
+    if not test_seasons:
+        print("   No hay temporadas >= 2020-21 para walk-forward")
+        return []
+
+    resultados_wf = []
+
+    for test_season in test_seasons:
+        # Train = todas las temporadas anteriores
+        train_mask = df['_Season'] < test_season
+        test_mask = df['_Season'] == test_season
+
+        if train_mask.sum() == 0 or test_mask.sum() == 0:
+            continue
+
+        X_train = df.loc[train_mask, features]
+        y_train = df.loc[train_mask, 'FTR_numeric']
+        X_test = df.loc[test_mask, features]
+        y_test = df.loc[test_mask, 'FTR_numeric']
+
+        # Cuotas para ROI
+        df_cuotas_test = df.loc[test_mask] if 'B365H' in df.columns else None
+
+        # Entrenar XGBoost
+        sample_weights = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
+        modelo = XGBClassifier(**PARAMS_XGB)
+        modelo.fit(X_train, y_train, sample_weight=sample_weights)
+
+        probs = modelo.predict_proba(X_test)
+        pred = modelo.predict(X_test)
+
+        ll = log_loss(y_test, probs)
+        bs = _brier_multiclase(y_test, probs)
+        f1 = f1_score(y_test, pred, average='weighted')
+        acc = accuracy_score(y_test, pred)
+        roi = _roi_simulado(y_test, probs, df_cuotas_test)
+
+        fold = {
+            'season': test_season,
+            'train_size': train_mask.sum(),
+            'test_size': test_mask.sum(),
+            'log_loss': ll,
+            'brier_score': bs,
+            'f1_score': f1,
+            'accuracy': acc,
+            'roi': roi,
+        }
+        resultados_wf.append(fold)
+
+    # Imprimir tabla de resultados
+    print(f"\n{'Test Season':<12} {'Train':>6} {'Test':>5} "
+          f"{'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7} {'ROI':>8}")
+    print("-" * 75)
+
+    for r in resultados_wf:
+        roi_str = f"{r['roi']:>+7.2%}" if r['roi'] is not None else f"{'N/A':>8}"
+        print(f"{r['season']:<12} {r['train_size']:>6} {r['test_size']:>5} "
+              f"{r['log_loss']:>9.4f} {r['brier_score']:>7.4f} "
+              f"{r['f1_score']:>7.4f} {r['accuracy']:>6.2%} {roi_str}")
+
+    # Promedios
+    avg_ll = np.mean([r['log_loss'] for r in resultados_wf])
+    avg_bs = np.mean([r['brier_score'] for r in resultados_wf])
+    avg_f1 = np.mean([r['f1_score'] for r in resultados_wf])
+    avg_acc = np.mean([r['accuracy'] for r in resultados_wf])
+    rois = [r['roi'] for r in resultados_wf if r['roi'] is not None]
+    avg_roi = np.mean(rois) if rois else None
+
+    roi_avg_str = f"{avg_roi:>+7.2%}" if avg_roi is not None else f"{'N/A':>8}"
+    print("-" * 75)
+    print(f"{'PROMEDIO':<12} {'':>6} {'':>5} "
+          f"{avg_ll:>9.4f} {avg_bs:>7.4f} {avg_f1:>7.4f} {avg_acc:>6.2%} {roi_avg_str}")
+
+    # Desviación estándar para ver consistencia
+    std_ll = np.std([r['log_loss'] for r in resultados_wf])
+    std_bs = np.std([r['brier_score'] for r in resultados_wf])
+    print(f"{'STD':<12} {'':>6} {'':>5} "
+          f"{std_ll:>9.4f} {std_bs:>7.4f}")
+
+    # Diagnóstico
+    if std_ll > 0.05:
+        print("\n   ALERTA: Log Loss varía significativamente entre temporadas.")
+        print("   El modelo puede no ser estable.")
+    else:
+        print("\n   Log Loss consistente entre temporadas.")
+
+    df.drop(columns=['_Season'], inplace=True, errors='ignore')
+    return resultados_wf
+
+
+# ============================================================================
 # MAIN
 # ============================================================================
 
@@ -646,36 +781,39 @@ def main():
     resultado = cargar_datos()
     if resultado[0] is None:
         return None, None
-    
-    X, X_filled, y, features = resultado
 
-    # Split temporal (shuffle=False mantiene orden)
+    X, X_filled, y, features, df = resultado
+
+    # ── Walk-forward temporal (diagnóstico de consistencia) ───────────────
+    walk_forward_temporal(df, features)
+
+    # ── Split 80/20 para entrenamiento final ──────────────────────────────
     pct_label = f"{int(TEST_SIZE*100)}"
     print(f"\n🔪 División de datos ({100-int(TEST_SIZE*100)}/{pct_label} temporal)")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, shuffle=False
     )
-    # Split paralelo para RF (fillna=0) usando mismos indices
     X_train_filled = X_filled.loc[X_train.index]
     X_test_filled = X_filled.loc[X_test.index]
+    df_cuotas_test = df.loc[X_test.index] if 'B365H' in df.columns else None
     print(f"   Entrenamiento: {len(X_train)} partidos")
     print(f"   Prueba: {len(X_test)} partidos")
 
     # Entrenar modelos (RF con filled, XGBoost con NaN nativo)
     resultados = entrenar_modelos(X_train, y_train, X_test, y_test,
-                                  X_train_filled, X_test_filled)
-    
-    # Seleccionar mejor
+                                  X_train_filled, X_test_filled,
+                                  df_cuotas_test)
+
+    # Seleccionar mejor (por Log Loss)
     mejor_key, mejor_modelo = seleccionar_mejor_modelo(resultados, y_test)
-    
-    # Optimización adicional (solo si no ganó Optuna)
+
+    # Optimización adicional (solo si no ganó Optuna/XGBoost)
     modelo_final, pred_final, mejorado = optimizar_modelo_adicional(
         mejor_key, mejor_modelo, X_train, y_train, X_test, y_test,
         X_train_filled, X_test_filled
     )
-    
-    # Calibrar probabilidades — decide automáticamente si calibrar o no
-    # RF necesita fillna, XGBoost maneja NaN nativamente
+
+    # Calibrar probabilidades
     es_xgb = 'XGBoost' in mejor_modelo['nombre'] or hasattr(modelo_final, 'get_booster')
     _X_tr_cal = X_train if es_xgb else X_train_filled
     _X_te_cal = X_test if es_xgb else X_test_filled
@@ -686,41 +824,35 @@ def main():
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
     nombre_final = f"{mejor_modelo['nombre']} {tag_cal}"
 
-    # Visualizaciones (usa modelo base para feature_importances_)
+    # Visualizaciones
     visualizar_resultados(y_test, pred_final, nombre_final, features, modelo_final)
 
-    # Guardar el modelo que ganó la comparación de calibración
+    # Guardar modelo
     guardar_modelo_final(modelo_a_guardar, features, nombre_final)
 
-    # Métricas reales del modelo guardado
+    # Métricas finales (probabilísticas + clasificación)
+    probs_final = modelo_a_guardar.predict_proba(_X_te_cal)
     pred_guardado = modelo_a_guardar.predict(_X_te_cal)
-    acc_final = accuracy_score(y_test, pred_guardado)
+    ll_final = log_loss(y_test, probs_final)
+    bs_final = _brier_multiclase(y_test, probs_final)
     f1_final = f1_score(y_test, pred_guardado, average='weighted')
+    acc_final = accuracy_score(y_test, pred_guardado)
+    roi_final = _roi_simulado(y_test, probs_final, df_cuotas_test)
 
     print("\n" + "="*70)
-    print("✅ ENTRENAMIENTO COMPLETADO")
+    print("ENTRENAMIENTO COMPLETADO")
     print("="*70)
-    print(f"\n🏆 Modelo guardado: {nombre_final}")
-    print(f"📊 Accuracy: {acc_final:.2%}")
-    print(f"📊 F1-Score: {f1_final:.4f}")
+    print(f"\n   Modelo guardado: {nombre_final}")
+    print(f"\n   Métricas primarias (calidad probabilística):")
+    print(f"   Log Loss:    {ll_final:.4f}")
+    print(f"   Brier Score: {bs_final:.4f}")
+    if roi_final is not None:
+        print(f"   ROI sim.:    {roi_final:+.2%}")
+    print(f"\n   Métricas de referencia (clasificación):")
+    print(f"   Accuracy:    {acc_final:.2%}")
+    print(f"   F1-Score:    {f1_final:.4f}")
 
-    if mejor_key == 'RF_Optuna':
-        print(f"\n⭐ Pesos Optuna utilizados:")
-        print(f"   Local: {PESOS_OPTIMOS[0]:.4f}")
-        print(f"   Empate: {PESOS_OPTIMOS[1]:.4f}")
-        print(f"   Visitante: {PESOS_OPTIMOS[2]:.4f}")
-    elif mejor_key == 'XGBoost':
-        print(f"\n⚡ Parámetros XGBoost utilizados:")
-        print(f"   n_estimators: {PARAMS_XGB['n_estimators']}")
-        print(f"   max_depth: {PARAMS_XGB['max_depth']}")
-        print(f"   learning_rate: {PARAMS_XGB['learning_rate']}")
-        print(f"\n⚖️  Pesos XGB:")
-        print(f"   Local: {PESOS_XGB[0]:.4f}")
-        print(f"   Empate: {PESOS_XGB[1]:.4f}")
-        print(f"   Visitante: {PESOS_XGB[2]:.4f}")
-
-    print(f"\n📁 Archivos guardados en {RUTA_MODELOS}")
-    print(f"\n➡️  Siguiente: python 03_entrenar_sin_cuotas.py  o  python predecir_jornada_completa.py\n")
+    print(f"\n   Archivos guardados en {RUTA_MODELOS}\n")
 
     return modelo_a_guardar, features
 
