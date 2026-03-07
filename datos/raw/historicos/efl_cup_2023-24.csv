@@ -1,0 +1,84 @@
+Season,Date,Team,Comp,Venue,Opponent
+2023-24,2023-09-27,Arsenal,EFL Cup,Away,Brentford
+2023-24,2023-11-01,Arsenal,EFL Cup,Away,West Ham
+2023-24,2023-09-27,Aston Villa,EFL Cup,Home,Everton
+2023-24,2023-08-29,Bournemouth,EFL Cup,Away,Swansea
+2023-24,2023-09-27,Bournemouth,EFL Cup,Home,Stoke
+2023-24,2023-11-01,Bournemouth,EFL Cup,Home,Liverpool
+2023-24,2023-08-29,Brentford,EFL Cup,Away,Newport County
+2023-24,2023-09-27,Brentford,EFL Cup,Home,Arsenal
+2023-24,2023-09-27,Brighton,EFL Cup,Away,Chelsea
+2023-24,2023-08-30,Burnley,EFL Cup,Away,Nott'm Forest
+2023-24,2023-09-26,Burnley,EFL Cup,Away,Salford City
+2023-24,2023-11-01,Burnley,EFL Cup,Away,Everton
+2023-24,2023-08-09,Cardiff,EFL Cup,Home,Colchester
+2023-24,2023-08-29,Cardiff,EFL Cup,Away,Birmingham
+2023-24,2023-09-27,Cardiff,EFL Cup,Away,Blackburn
+2023-24,2023-08-30,Chelsea,EFL Cup,Home,AFC Wimbledon
+2023-24,2023-09-27,Chelsea,EFL Cup,Home,Brighton
+2023-24,2023-11-01,Chelsea,EFL Cup,Home,Blackburn
+2023-24,2023-12-19,Chelsea,EFL Cup,Home,Newcastle
+2023-24,2024-01-09,Chelsea,EFL Cup,Away,Middlesbrough
+2023-24,2024-01-23,Chelsea,EFL Cup,Home,Middlesbrough
+2023-24,2024-02-25,Chelsea,EFL Cup,Home,Liverpool
+2023-24,2023-08-29,Crystal Palace,EFL Cup,Away,Plymouth
+2023-24,2023-09-26,Crystal Palace,EFL Cup,Away,Man United
+2023-24,2023-08-30,Everton,EFL Cup,Away,Doncaster
+2023-24,2023-09-27,Everton,EFL Cup,Away,Aston Villa
+2023-24,2023-11-01,Everton,EFL Cup,Home,Burnley
+2023-24,2023-12-19,Everton,EFL Cup,Home,Fulham
+2023-24,2023-08-29,Fulham,EFL Cup,Home,Tottenham
+2023-24,2023-09-27,Fulham,EFL Cup,Home,Norwich
+2023-24,2023-11-01,Fulham,EFL Cup,Away,Ipswich
+2023-24,2023-12-19,Fulham,EFL Cup,Away,Everton
+2023-24,2024-01-10,Fulham,EFL Cup,Away,Liverpool
+2023-24,2024-01-24,Fulham,EFL Cup,Home,Liverpool
+2023-24,2023-08-08,Huddersfield,EFL Cup,Home,Middlesbrough
+2023-24,2023-08-08,Hull,EFL Cup,Home,Doncaster
+2023-24,2023-08-09,Ipswich,EFL Cup,Home,Bristol Rovers
+2023-24,2023-08-29,Ipswich,EFL Cup,Away,Reading
+2023-24,2023-09-26,Ipswich,EFL Cup,Home,Wolves
+2023-24,2023-11-01,Ipswich,EFL Cup,Home,Fulham
+2023-24,2023-08-09,Leeds,EFL Cup,Home,Shrewsbury
+2023-24,2023-08-29,Leeds,EFL Cup,Away,Salford City
+2023-24,2023-08-09,Leicester,EFL Cup,Away,Burton Albion
+2023-24,2023-08-29,Leicester,EFL Cup,Away,Tranmere
+2023-24,2023-09-27,Leicester,EFL Cup,Away,Liverpool
+2023-24,2023-09-27,Liverpool,EFL Cup,Home,Leicester
+2023-24,2023-11-01,Liverpool,EFL Cup,Away,Bournemouth
+2023-24,2023-12-20,Liverpool,EFL Cup,Home,West Ham
+2023-24,2024-01-10,Liverpool,EFL Cup,Home,Fulham
+2023-24,2024-01-24,Liverpool,EFL Cup,Away,Fulham
+2023-24,2024-02-25,Liverpool,EFL Cup,Away,Chelsea
+2023-24,2023-08-29,Luton,EFL Cup,Home,Gillingham
+2023-24,2023-09-26,Luton,EFL Cup,Away,Exeter City
+2023-24,2023-09-27,Man City,EFL Cup,Away,Newcastle
+2023-24,2023-09-26,Man United,EFL Cup,Home,Crystal Palace
+2023-24,2023-11-01,Man United,EFL Cup,Home,Newcastle
+2023-24,2023-08-08,Middlesbrough,EFL Cup,Away,Huddersfield
+2023-24,2023-08-29,Middlesbrough,EFL Cup,Away,Bolton
+2023-24,2023-09-26,Middlesbrough,EFL Cup,Away,Bradford
+2023-24,2023-10-31,Middlesbrough,EFL Cup,Away,Exeter City
+2023-24,2023-12-19,Middlesbrough,EFL Cup,Away,Port Vale
+2023-24,2024-01-09,Middlesbrough,EFL Cup,Home,Chelsea
+2023-24,2024-01-23,Middlesbrough,EFL Cup,Away,Chelsea
+2023-24,2023-09-27,Newcastle,EFL Cup,Home,Man City
+2023-24,2023-11-01,Newcastle,EFL Cup,Away,Man United
+2023-24,2023-12-19,Newcastle,EFL Cup,Away,Chelsea
+2023-24,2023-08-30,Nott'm Forest,EFL Cup,Home,Burnley
+2023-24,2023-08-30,Sheffield United,EFL Cup,Home,Lincoln
+2023-24,2023-08-08,Southampton,EFL Cup,Away,Gillingham
+2023-24,2023-08-08,Stoke,EFL Cup,Home,West Brom
+2023-24,2023-08-29,Stoke,EFL Cup,Home,Rotherham
+2023-24,2023-09-27,Stoke,EFL Cup,Away,Bournemouth
+2023-24,2023-08-08,Sunderland,EFL Cup,Home,Crewe
+2023-24,2023-08-08,Swansea,EFL Cup,Home,Northampton
+2023-24,2023-08-29,Swansea,EFL Cup,Home,Bournemouth
+2023-24,2023-08-29,Tottenham,EFL Cup,Away,Fulham
+2023-24,2023-08-08,Watford,EFL Cup,Away,Stevenage
+2023-24,2023-08-08,West Brom,EFL Cup,Away,Stoke
+2023-24,2023-09-27,West Ham,EFL Cup,Away,Lincoln
+2023-24,2023-11-01,West Ham,EFL Cup,Home,Arsenal
+2023-24,2023-12-20,West Ham,EFL Cup,Away,Liverpool
+2023-24,2023-08-29,Wolves,EFL Cup,Home,Blackpool
+2023-24,2023-09-26,Wolves,EFL Cup,Away,Ipswich

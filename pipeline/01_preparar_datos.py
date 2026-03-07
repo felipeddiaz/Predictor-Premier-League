@@ -23,7 +23,7 @@ from config import (
     MISSING_THRESHOLD,
     COLUMNAS_ESENCIALES,
 )
-from utils import calcular_h2h_features, agregar_xg_rolling, merge_xg_data
+from utils import calcular_h2h_features, agregar_xg_rolling, merge_xg_data, agregar_features_descanso
 
 warnings.filterwarnings('ignore')
 
@@ -398,6 +398,9 @@ def main():
         # Paso 5 (opcional): merge xG raw + rolling — importados de utils
         df_final_h2h = merge_xg_data(df_final_h2h)
         df_final_h2h = agregar_xg_rolling(df_final_h2h)
+
+        # Paso 6: Features de descanso y fatiga (requiere datos/raw/fbref_fixtures.csv)
+        df_final_h2h = agregar_features_descanso(df_final_h2h)
 
         # Backup del archivo anterior si existe
         if os.path.exists(ARCHIVO_FEATURES):

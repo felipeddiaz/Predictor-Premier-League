@@ -36,7 +36,7 @@ Estructura del CSV resultante (compatible con utils.agregar_features_descanso):
     2024-25, 2024-10-05, Arsenal, Premier League, Away, Man City
 
 Requisitos:
-    pip install requests pandas
+    pip install requests pandas python-dotenv
 """
 
 import argparse
@@ -45,6 +45,13 @@ import sys
 import time
 import requests
 import pandas as pd
+
+# Cargar variables de entorno desde .env (si existe)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
+except ImportError:
+    pass  # python-dotenv no instalado, se usará solo la variable de entorno del sistema
 
 # ---------------------------------------------------------------------------
 # Rutas
