@@ -99,6 +99,26 @@ PARAMS_OPTIMOS_VB = {
     'n_jobs': -1
 }
 
+# Hiperparámetros XGBoost para el modelo SIN cuotas (03_entrenar_sin_cuotas.py)
+# Valores iniciales = mismos que PARAMS_XGB. Sin cuotas el modelo necesita
+# más regularización para no sobreajustar a features más ruidosas.
+PARAMS_XGB_VB = {
+    'n_estimators': 500,
+    'max_depth': 5,
+    'learning_rate': 0.01,
+    'subsample': 0.6,
+    'colsample_bytree': 0.7,
+    'colsample_bylevel': 0.6,
+    'reg_alpha': 1.0,
+    'reg_lambda': 3.0,
+    'min_child_weight': 25,
+    'gamma': 1.5,
+    'early_stopping_rounds': 50,
+    'random_state': RANDOM_SEED,
+    'n_jobs': -1,
+    'eval_metric': 'mlogloss',
+}
+
 # Hiperparámetros XGBoost para el modelo CON cuotas (02_entrenar_modelo.py)
 # Optimizados por búsqueda en grilla sobre test=15% temporal, F1=0.5697 -> 0.5726
 PARAMS_XGB = {
