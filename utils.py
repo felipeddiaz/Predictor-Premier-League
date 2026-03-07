@@ -217,7 +217,42 @@ def agregar_xg_rolling(df: pd.DataFrame, window: int = ROLLING_WINDOW) -> pd.Dat
     df['xG_Diff'] = df['HT_xG_Avg'] - df['AT_xG_Avg']
     df['xG_Total'] = df['HT_xG_Avg'] + df['AT_xG_Avg']
 
-    xg_cols = ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg', 'xG_Diff', 'xG_Total']
+    # ── xG Global: rolling usando TODOS los partidos (home+away) ──────────
+    # El venue-específico de arriba solo usa ~19 partidos/temporada por venue.
+    # El global duplica la muestra efectiva → rolling más estable.
+    home_xg = df[['Date', 'HomeTeam', 'Home_xG', 'Away_xG']].copy()
+    home_xg.columns = ['Date', 'Team', 'xGF', 'xGA']
+
+    away_xg = df[['Date', 'AwayTeam', 'Away_xG', 'Home_xG']].copy()
+    away_xg.columns = ['Date', 'Team', 'xGF', 'xGA']
+
+    long_xg = pd.concat([home_xg, away_xg], ignore_index=True)
+    long_xg = long_xg.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    def _roll(s, w=window):
+        return s.shift(1).rolling(w, min_periods=1).mean()
+
+    grp_xg = long_xg.groupby('Team')
+    long_xg['xGF_global'] = grp_xg['xGF'].transform(_roll)
+    long_xg['xGA_global'] = grp_xg['xGA'].transform(_roll)
+
+    # Separar home/away para merge
+    n_home = len(df)
+    home_global = long_xg.iloc[:n_home][['xGF_global', 'xGA_global']].copy()
+    home_global.index = df.index
+    away_global = long_xg.iloc[n_home:][['xGF_global', 'xGA_global']].copy()
+    away_global.index = df.index
+
+    df['HT_xG_Global'] = home_global['xGF_global']
+    df['AT_xG_Global'] = away_global['xGF_global']
+    df['HT_xGA_Global'] = home_global['xGA_global']
+    df['AT_xGA_Global'] = away_global['xGA_global']
+    df['xG_Global_Diff'] = df['HT_xG_Global'] - df['AT_xG_Global']
+
+    xg_cols = ['HT_xG_Avg', 'AT_xG_Avg', 'HT_xGA_Avg', 'AT_xGA_Avg',
+               'xG_Diff', 'xG_Total',
+               'HT_xG_Global', 'AT_xG_Global', 'HT_xGA_Global', 'AT_xGA_Global',
+               'xG_Global_Diff']
     df[xg_cols] = df[xg_cols].fillna(0)
 
     con_xg = (df['HT_xG_Avg'] > 0).sum()
@@ -720,6 +755,93 @@ def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
     # Limpiar columnas temporales
     df.drop(columns=['_HT_gd', '_AT_gd', '_AT_htr'], inplace=True, errors='ignore')
 
+    return df
+
+
+# ============================================================================
+# FEATURES MULTI-ESCALA (rolling window=10)
+# ============================================================================
+
+ROLLING_WINDOW_LONG = 10
+
+def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Agrega features rolling con ventana larga (10 partidos) para capturar
+    tendencias de medio plazo complementarias a la ventana corta (5).
+
+    Features calculadas:
+      - HT_Pts10       : puntos local en últimos 10 partidos (cualquier venue)
+      - AT_Pts10       : puntos visitante en últimos 10 partidos
+      - HT_GoalsFor10  : goles marcados local en últimos 10 partidos
+      - AT_GoalsFor10  : goles marcados visitante en últimos 10 partidos
+      - HT_xG_Avg_10   : xG promedio local en últimos 10 partidos (global)
+      - AT_xG_Avg_10   : xG promedio visitante en últimos 10 partidos (global)
+
+    Usa formato long (home+away) y shift(1) para evitar leakage.
+    """
+    w = ROLLING_WINDOW_LONG
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    print(f"\n🔧 Calculando features multi-escala (window={w})...")
+
+    # ── Formato long: una fila por equipo por partido ─────────────────────
+    home = df[['Date', 'HomeTeam', 'FTHG', 'FTAG']].copy()
+    home.columns = ['Date', 'Team', 'GF', 'GA']
+
+    away = df[['Date', 'AwayTeam', 'FTAG', 'FTHG']].copy()
+    away.columns = ['Date', 'Team', 'GF', 'GA']
+
+    for sub in (home, away):
+        sub['GF'] = pd.to_numeric(sub['GF'], errors='coerce').fillna(0)
+        sub['GA'] = pd.to_numeric(sub['GA'], errors='coerce').fillna(0)
+        sub['Pts'] = np.where(sub['GF'] > sub['GA'], 3,
+                     np.where(sub['GF'] == sub['GA'], 1, 0))
+
+    long_df = pd.concat([home, away], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    grp = long_df.groupby('Team')
+    long_df['Pts_10']     = grp['Pts'].transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
+    long_df['GoalsFor_10'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
+
+    # Separar home/away
+    n = len(df)
+    home_stats = long_df.iloc[:n][['Pts_10', 'GoalsFor_10']].copy()
+    home_stats.index = df.index
+    away_stats = long_df.iloc[n:][['Pts_10', 'GoalsFor_10']].copy()
+    away_stats.index = df.index
+
+    df['HT_Pts10']       = home_stats['Pts_10'].fillna(0)
+    df['AT_Pts10']       = away_stats['Pts_10'].fillna(0)
+    df['HT_GoalsFor10']  = home_stats['GoalsFor_10'].fillna(0)
+    df['AT_GoalsFor10']  = away_stats['GoalsFor_10'].fillna(0)
+
+    # ── xG rolling window=10 (solo si hay datos de xG) ───────────────────
+    if 'Home_xG' in df.columns and 'Away_xG' in df.columns:
+        home_xg = df[['Date', 'HomeTeam', 'Home_xG']].copy()
+        home_xg.columns = ['Date', 'Team', 'xGF']
+        away_xg = df[['Date', 'AwayTeam', 'Away_xG']].copy()
+        away_xg.columns = ['Date', 'Team', 'xGF']
+
+        long_xg = pd.concat([home_xg, away_xg], ignore_index=True)
+        long_xg = long_xg.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+        long_xg['xGF_10'] = long_xg.groupby('Team')['xGF'].transform(
+            lambda x: x.shift(1).rolling(w, min_periods=1).mean()
+        )
+
+        df['HT_xG_Avg_10'] = long_xg.iloc[:n]['xGF_10'].values
+        df['AT_xG_Avg_10'] = long_xg.iloc[n:]['xGF_10'].values
+    else:
+        df['HT_xG_Avg_10'] = 0.0
+        df['AT_xG_Avg_10'] = 0.0
+
+    multi_cols = ['HT_Pts10', 'AT_Pts10', 'HT_GoalsFor10', 'AT_GoalsFor10',
+                  'HT_xG_Avg_10', 'AT_xG_Avg_10']
+    for col in multi_cols:
+        df[col] = df[col].fillna(0)
+
+    print(f"   ✅ Features multi-escala: {len(multi_cols)} columnas agregadas")
     return df
 
 

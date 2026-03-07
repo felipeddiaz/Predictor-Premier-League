@@ -173,6 +173,20 @@ FEATURES_XG = [
     'xG_Diff', 'xG_Total',
 ]
 
+# xG Global: rolling usando TODOS los partidos (home+away), no solo venue-específico
+FEATURES_XG_GLOBAL = [
+    'HT_xG_Global', 'AT_xG_Global',
+    'HT_xGA_Global', 'AT_xGA_Global',
+    'xG_Global_Diff',
+]
+
+# Multi-escala: rolling window=10 para tendencias de medio plazo
+FEATURES_MULTI_ESCALA = [
+    'HT_Pts10', 'AT_Pts10',
+    'HT_GoalsFor10', 'AT_GoalsFor10',
+    'HT_xG_Avg_10', 'AT_xG_Avg_10',
+]
+
 FEATURES_H2H = [
     
     'H2H_Matches', 
@@ -270,13 +284,16 @@ FEATURES_DESCANSO = [
 # Modelo estructural (sin cuotas) — usado por 03_entrenar_sin_cuotas.py
 FEATURES_ESTRUCTURALES = (
     FEATURES_BASE             # 10: rendimiento, forma W/D/L
-    + FEATURES_XG             #  6: xG rolling
-    + FEATURES_H2H            #  9: historial directo + derivadas
+    + FEATURES_XG             #  6: xG rolling (venue-específico)
+    + FEATURES_XG_GLOBAL      #  5: xG rolling global (todas las venues)
+    + FEATURES_MULTI_ESCALA   #  6: rolling window=10 (medio plazo)
+    + FEATURES_H2H            #  5: historial directo
+    + FEATURES_H2H_DERIVADAS  #  4: derivadas H2H
     + FEATURES_TABLA          # 11: posición, puntos, presión
-    + FEATURES_FORMA_MOMENTUM #  6: forma específica local/visitante + momentum
-    + FEATURES_REFEREE        #  4: árbitro
+    + FEATURES_FORMA_MOMENTUM # 15: forma específica local/visitante + momentum
+    + FEATURES_REFEREE        #  5: árbitro
     + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
-    # Total: 53 features — cero cuotas, cero señales de mercado
+    # Total: 74 features — cero cuotas, cero señales de mercado
 )
 
 ALL_FEATURES = (
@@ -284,6 +301,8 @@ ALL_FEATURES = (
     + FEATURES_CUOTAS
     + FEATURES_CUOTAS_DERIVADAS
     + FEATURES_XG
+    + FEATURES_XG_GLOBAL
+    + FEATURES_MULTI_ESCALA
     + FEATURES_H2H
     + FEATURES_H2H_DERIVADAS
     + FEATURES_TABLA

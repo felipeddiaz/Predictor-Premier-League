@@ -54,6 +54,8 @@ from config import (
     FEATURES_REFEREE,
     FEATURES_FORMA_MOMENTUM,
     FEATURES_DESCANSO,
+    FEATURES_XG_GLOBAL,
+    FEATURES_MULTI_ESCALA,
     TEST_SIZE,
     RANDOM_SEED,
 )
@@ -62,6 +64,7 @@ from utils import (
     agregar_features_cuotas_derivadas,
     agregar_features_asian_handicap,
     agregar_features_rolling_extra,
+    agregar_features_multi_escala,
     agregar_features_forma_momentum,
     agregar_features_pinnacle_move,
     agregar_features_arbitro,
@@ -97,6 +100,7 @@ def cargar_datos():
     df = agregar_features_cuotas_derivadas(df)
     df = agregar_features_asian_handicap(df)
     df = agregar_features_rolling_extra(df)
+    df = agregar_features_multi_escala(df)
     df = agregar_features_forma_momentum(df)
     df = agregar_features_pinnacle_move(df)
     df = agregar_features_arbitro(df)
@@ -118,6 +122,8 @@ def cargar_datos():
     print(f"   • Pinnacle: {len([f for f in FEATURES_PINNACLE if f in features])}")
     print(f"   • Referee: {len([f for f in FEATURES_REFEREE if f in features])}")
     print(f"   • Forma/Momentum: {len([f for f in FEATURES_FORMA_MOMENTUM if f in features])}")
+    print(f"   • xG Global: {len([f for f in FEATURES_XG_GLOBAL if f in features])}")
+    print(f"   • Multi-escala (w=10): {len([f for f in FEATURES_MULTI_ESCALA if f in features])}")
     print(f"   • Descanso/Fatiga: {len([f for f in FEATURES_DESCANSO if f in features])}")
 
     # Info de H2H

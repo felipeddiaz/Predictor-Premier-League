@@ -166,6 +166,7 @@ class Predictor:
                 df_enriq = utils.agregar_features_cuotas_derivadas(df_enriq)
                 df_enriq = utils.agregar_features_asian_handicap(df_enriq)
                 df_enriq = utils.agregar_features_rolling_extra(df_enriq)
+                df_enriq = utils.agregar_features_multi_escala(df_enriq)
                 df_enriq = utils.agregar_features_forma_momentum(df_enriq)
                 df_enriq = utils.agregar_features_descanso(df_enriq)
             self._df_enriquecido = df_enriq
@@ -232,6 +233,15 @@ class Predictor:
             datos['HT_xGA_Avg'] = stats_local.get('xGA_Avg', 0)
             datos['AT_xGA_Avg'] = stats_visitante.get('xGA_Avg', 0)
 
+        # xG global (todas las venues)
+        if 'xG_Global' in stats_local and 'xG_Global' in stats_visitante:
+            datos['HT_xG_Global'] = stats_local.get('xG_Global', 0)
+            datos['AT_xG_Global'] = stats_visitante.get('xG_Global', 0)
+            datos['xG_Global_Diff'] = datos['HT_xG_Global'] - datos['AT_xG_Global']
+        if 'xGA_Global' in stats_local and 'xGA_Global' in stats_visitante:
+            datos['HT_xGA_Global'] = stats_local.get('xGA_Global', 0)
+            datos['AT_xGA_Global'] = stats_visitante.get('xGA_Global', 0)
+
         # Features de tabla (posicion, puntos, presion) y forma/momentum
         # Extraidas del historico enriquecido por _obtener_stats_equipo
         _MAPEO_HT = {
@@ -244,6 +254,10 @@ class Predictor:
             'HT_GoalsAgainst5':'GoalsAgainst5',
             'HT_HomeGoals5':  'HomeGoals5',
             'HT_Streak':      'Streak',
+            # multi-escala (window=10)
+            'HT_Pts10':       'Pts10',
+            'HT_GoalsFor10':  'GoalsFor10',
+            'HT_xG_Avg_10':   'xG_Avg_10',
         }
         _MAPEO_AT = {
             'AT_Points':      'Points',
@@ -255,6 +269,10 @@ class Predictor:
             'AT_GoalsAgainst5':'GoalsAgainst5',
             'AT_AwayGoals5':  'AwayGoals5',
             'AT_Streak':      'Streak',
+            # multi-escala (window=10)
+            'AT_Pts10':       'Pts10',
+            'AT_GoalsFor10':  'GoalsFor10',
+            'AT_xG_Avg_10':   'xG_Avg_10',
         }
         for feat_modelo, stat_key in _MAPEO_HT.items():
             if stat_key in stats_local:
@@ -613,6 +631,10 @@ class Predictor:
         'GoalsAgainst5':      ('HT_GoalsAgainst5',      'AT_GoalsAgainst5'),
         'HomeGoals5':         ('HT_HomeGoals5',         'AT_AwayGoals5'),
         'Streak':             ('HT_Streak',             'AT_Streak'),
+        # multi-escala (window=10)
+        'Pts10':              ('HT_Pts10',              'AT_Pts10'),
+        'GoalsFor10':         ('HT_GoalsFor10',         'AT_GoalsFor10'),
+        'xG_Avg_10':          ('HT_xG_Avg_10',         'AT_xG_Avg_10'),
     }
     _FEATURES_ENRIQUECIDAS_AT = {
         # features de tabla (AT = equipo que va a jugar de visitante)
@@ -627,6 +649,10 @@ class Predictor:
         'GoalsAgainst5':      ('AT_GoalsAgainst5',      'HT_GoalsAgainst5'),
         'AwayGoals5':         ('AT_AwayGoals5',         'HT_HomeGoals5'),
         'Streak':             ('AT_Streak',             'HT_Streak'),
+        # multi-escala (window=10)
+        'Pts10':              ('AT_Pts10',              'HT_Pts10'),
+        'GoalsFor10':         ('AT_GoalsFor10',         'HT_GoalsFor10'),
+        'xG_Avg_10':          ('AT_xG_Avg_10',         'HT_xG_Avg_10'),
     }
 
     def _obtener_stats_equipo(self, equipo: str, es_local: bool) -> dict | None:
@@ -652,7 +678,12 @@ class Predictor:
                 stats['xG_Avg'] = ultimo['HT_xG_Avg'] if jugaba_local else ultimo['AT_xG_Avg']
             if 'HT_xGA_Avg' in ultimo.index:
                 stats['xGA_Avg'] = ultimo['HT_xGA_Avg'] if jugaba_local else ultimo['AT_xGA_Avg']
-            # Features enriquecidas (tabla + forma/momentum)
+            # xG global (todas las venues)
+            if 'HT_xG_Global' in ultimo.index:
+                stats['xG_Global'] = ultimo['HT_xG_Global'] if jugaba_local else ultimo['AT_xG_Global']
+            if 'HT_xGA_Global' in ultimo.index:
+                stats['xGA_Global'] = ultimo['HT_xGA_Global'] if jugaba_local else ultimo['AT_xGA_Global']
+            # Features enriquecidas (tabla + forma/momentum + multi-escala)
             for feat_key, (col_home, col_away) in self._FEATURES_ENRIQUECIDAS_HT.items():
                 col = col_home if jugaba_local else col_away
                 if col in ultimo.index:
@@ -667,7 +698,12 @@ class Predictor:
                 stats['xG_Avg'] = ultimo['AT_xG_Avg'] if not jugaba_local else ultimo['HT_xG_Avg']
             if 'AT_xGA_Avg' in ultimo.index:
                 stats['xGA_Avg'] = ultimo['AT_xGA_Avg'] if not jugaba_local else ultimo['HT_xGA_Avg']
-            # Features enriquecidas (tabla + forma/momentum)
+            # xG global (todas las venues)
+            if 'AT_xG_Global' in ultimo.index:
+                stats['xG_Global'] = ultimo['AT_xG_Global'] if not jugaba_local else ultimo['HT_xG_Global']
+            if 'AT_xGA_Global' in ultimo.index:
+                stats['xGA_Global'] = ultimo['AT_xGA_Global'] if not jugaba_local else ultimo['HT_xGA_Global']
+            # Features enriquecidas (tabla + forma/momentum + multi-escala)
             for feat_key, (col_away_col, col_home_col) in self._FEATURES_ENRIQUECIDAS_AT.items():
                 col = col_away_col if not jugaba_local else col_home_col
                 if col in ultimo.index:
