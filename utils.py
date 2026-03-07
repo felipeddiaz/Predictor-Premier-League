@@ -573,7 +573,7 @@ def calcular_h2h_features(
         'H2H_Goal_Diff': home_goals_avg - away_goals_avg,
         'H2H_Win_Advantage': wins - losses,
         'H2H_Total_Goals_Avg': home_goals_avg + away_goals_avg,
-        'H2H_Home_Consistent': 1 if win_rate >= 0.6 else 0,
+        'H2H_Home_Consistent': (wins + draws) / total if total > 0 else 0.5,
     }
 
 

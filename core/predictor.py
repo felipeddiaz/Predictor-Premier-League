@@ -167,6 +167,7 @@ class Predictor:
                 df_enriq = utils.agregar_features_asian_handicap(df_enriq)
                 df_enriq = utils.agregar_features_rolling_extra(df_enriq)
                 df_enriq = utils.agregar_features_forma_momentum(df_enriq)
+                df_enriq = utils.agregar_features_descanso(df_enriq)
             self._df_enriquecido = df_enriq
         except Exception as e:
             print(f"Advertencia: no se pudo enriquecer el historico ({e}). Usando CSV base.")
@@ -290,6 +291,9 @@ class Predictor:
 
         # Asian Handicap — solo si el partido incluye cuotas AH
         datos.update(self._transformar_asian_handicap(partido, features_cuotas))
+
+        # Features de descanso — calcular desde el último partido de cada equipo
+        datos.update(self._calcular_descanso_prediccion(local, visitante))
 
         datos_filtrado = {k: v for k, v in datos.items() if k in self._features}
         # No hacemos fillna(0) aqui: el ensemble maneja NaN internamente
@@ -535,6 +539,62 @@ class Predictor:
             'AH_Market_Conf': float(ah_market_conf),
             'AH_Close_Move_H': 0.0,     # sin cierre disponible
             'AH_Close_Move_A': 0.0,
+        }
+
+    def _calcular_descanso_prediccion(self, local: str, visitante: str) -> dict:
+        """
+        Calcula features de descanso para predicción en vivo.
+
+        Usa el histórico enriquecido para encontrar la fecha del último
+        partido de cada equipo, y asume la fecha actual como fecha del
+        partido a predecir. Si fbref_fixtures.csv está disponible, usa
+        todas las competiciones; si no, solo datos PL.
+        """
+        import os
+        from datetime import datetime
+
+        defaults = {
+            'HT_Days_Rest': 7.0, 'AT_Days_Rest': 7.0, 'Rest_Diff': 0.0,
+            'HT_Had_Europa': 0.0, 'AT_Had_Europa': 0.0,
+            'HT_Games_15d': 2.0, 'AT_Games_15d': 2.0,
+        }
+
+        df_enriq = getattr(self, '_df_enriquecido', None)
+        if df_enriq is None or 'HT_Days_Rest' not in df_enriq.columns:
+            return defaults
+
+        hoy = pd.Timestamp(datetime.now().date())
+
+        def _rest_para_equipo(equipo):
+            partidos = df_enriq[
+                (df_enriq['HomeTeam'] == equipo) | (df_enriq['AwayTeam'] == equipo)
+            ]
+            if len(partidos) == 0:
+                return 7.0, 0.0, 2.0
+
+            ultimo = partidos.iloc[-1]
+            fecha_ultimo = pd.to_datetime(ultimo['Date'])
+            days_rest = max(1.0, float((hoy - fecha_ultimo).days))
+
+            # Had_Europa: revisar si el equipo tuvo partido europeo en últimos 4 días
+            # desde el último partido del enriquecido
+            prefix = 'HT' if ultimo['HomeTeam'] == equipo else 'AT'
+            had_europa = float(ultimo.get(f'{prefix}_Had_Europa', 0.0))
+            games_15d = float(ultimo.get(f'{prefix}_Games_15d', 2.0))
+
+            return days_rest, had_europa, games_15d
+
+        ht_rest, ht_europa, ht_games = _rest_para_equipo(local)
+        at_rest, at_europa, at_games = _rest_para_equipo(visitante)
+
+        return {
+            'HT_Days_Rest': ht_rest,
+            'AT_Days_Rest': at_rest,
+            'Rest_Diff': ht_rest - at_rest,
+            'HT_Had_Europa': ht_europa,
+            'AT_Had_Europa': at_europa,
+            'HT_Games_15d': ht_games,
+            'AT_Games_15d': at_games,
         }
 
     # Mapeo de features del modelo al nombre de columna en el DataFrame enriquecido.

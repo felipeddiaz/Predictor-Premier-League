@@ -53,11 +53,11 @@ from config import (
     FEATURES_PINNACLE,
     FEATURES_REFEREE,
     FEATURES_FORMA_MOMENTUM,
+    FEATURES_DESCANSO,
     TEST_SIZE,
     RANDOM_SEED,
 )
 from utils import (
-    agregar_xg_rolling,
     agregar_features_tabla,
     agregar_features_cuotas_derivadas,
     agregar_features_asian_handicap,
@@ -92,7 +92,7 @@ def cargar_datos():
     print(f"✅ Cargados: {len(df)} partidos")
     
     # Agregar features calculadas en memoria (funciones canonicas de utils.py)
-    df = agregar_xg_rolling(df)
+    # Nota: xG rolling ya se calcula en 01_preparar_datos.py y se guarda al CSV
     df = agregar_features_tabla(df)
     df = agregar_features_cuotas_derivadas(df)
     df = agregar_features_asian_handicap(df)
@@ -118,7 +118,8 @@ def cargar_datos():
     print(f"   • Pinnacle: {len([f for f in FEATURES_PINNACLE if f in features])}")
     print(f"   • Referee: {len([f for f in FEATURES_REFEREE if f in features])}")
     print(f"   • Forma/Momentum: {len([f for f in FEATURES_FORMA_MOMENTUM if f in features])}")
-    
+    print(f"   • Descanso/Fatiga: {len([f for f in FEATURES_DESCANSO if f in features])}")
+
     # Info de H2H
     if 'H2H_Available' in features:
         con_h2h = df['H2H_Available'].sum()
@@ -127,7 +128,10 @@ def cargar_datos():
         print(f"   Partidos CON H2H: {con_h2h} ({con_h2h/len(df)*100:.1f}%)")
         print(f"   Partidos SIN H2H: {sin_h2h} ({sin_h2h/len(df)*100:.1f}%)")
     
-    X = df[features].fillna(0)
+    # X con NaN para XGBoost (maneja NaN nativamente)
+    # X_filled para Random Forest (no soporta NaN)
+    X = df[features]
+    X_filled = X.fillna(0)
     y = df['FTR_numeric']
     
     # Distribución
@@ -138,14 +142,20 @@ def cargar_datos():
         pct = count / len(y) * 100
         print(f"   {nombre}: {count} ({pct:.1f}%)")
     
-    return X, y, features
+    return X, X_filled, y, features
 
 # ============================================================================
 # ENTRENAMIENTO DE MODELOS
 # ============================================================================
 
-def entrenar_modelos(X_train, y_train, X_test, y_test):
-    """Entrena los modelos RF y devuelve resultados."""
+def entrenar_modelos(X_train, y_train, X_test, y_test,
+                     X_train_filled=None, X_test_filled=None):
+    """Entrena los modelos RF (con fillna) y XGBoost (con NaN nativo)."""
+    # RF no soporta NaN → usa versión filled; XGBoost sí soporta NaN
+    if X_train_filled is None:
+        X_train_filled = X_train.fillna(0)
+    if X_test_filled is None:
+        X_test_filled = X_test.fillna(0)
     
     resultados = {}
     
@@ -162,8 +172,8 @@ def entrenar_modelos(X_train, y_train, X_test, y_test):
         random_state=42, 
         n_jobs=-1
     )
-    rf_basico.fit(X_train, y_train)
-    pred_basico = rf_basico.predict(X_test)
+    rf_basico.fit(X_train_filled, y_train)
+    pred_basico = rf_basico.predict(X_test_filled)
     
     acc = accuracy_score(y_test, pred_basico)
     f1 = f1_score(y_test, pred_basico, average='weighted')
@@ -192,8 +202,8 @@ def entrenar_modelos(X_train, y_train, X_test, y_test):
         random_state=42, 
         n_jobs=-1
     )
-    rf_balanceado.fit(X_train, y_train)
-    pred_balanceado = rf_balanceado.predict(X_test)
+    rf_balanceado.fit(X_train_filled, y_train)
+    pred_balanceado = rf_balanceado.predict(X_test_filled)
     
     acc = accuracy_score(y_test, pred_balanceado)
     f1 = f1_score(y_test, pred_balanceado, average='weighted')
@@ -224,8 +234,8 @@ def entrenar_modelos(X_train, y_train, X_test, y_test):
     print(f"   • min_samples_leaf: {PARAMS_OPTIMOS['min_samples_leaf']}")
     
     rf_optuna = RandomForestClassifier(**PARAMS_OPTIMOS)
-    rf_optuna.fit(X_train, y_train)
-    pred_optuna = rf_optuna.predict(X_test)
+    rf_optuna.fit(X_train_filled, y_train)
+    pred_optuna = rf_optuna.predict(X_test_filled)
     
     acc = accuracy_score(y_test, pred_optuna)
     f1 = f1_score(y_test, pred_optuna, average='weighted')
@@ -433,7 +443,8 @@ def seleccionar_mejor_modelo(resultados, y_test):
 # OPTIMIZACIÓN ADICIONAL (opcional)
 # ============================================================================
 
-def optimizar_modelo_adicional(mejor_key, mejor_modelo, X_train, y_train, X_test, y_test):
+def optimizar_modelo_adicional(mejor_key, mejor_modelo, X_train, y_train, X_test, y_test,
+                               X_train_filled=None, X_test_filled=None):
     """
     Optimización adicional con RandomizedSearchCV.
     Solo se ejecuta si el modelo ganador NO es el de Optuna (ya está optimizado).
@@ -490,11 +501,14 @@ def optimizar_modelo_adicional(mejor_key, mejor_modelo, X_train, y_train, X_test
         scoring='f1_weighted'
     )
     
-    random_search.fit(X_train, y_train)
-    
+    # RF no soporta NaN — usar versión filled
+    _X_tr = X_train_filled if X_train_filled is not None else X_train.fillna(0)
+    _X_te = X_test_filled if X_test_filled is not None else X_test.fillna(0)
+    random_search.fit(_X_tr, y_train)
+
     # Evaluar
     modelo_optimizado = random_search.best_estimator_
-    pred_optimizado = modelo_optimizado.predict(X_test)
+    pred_optimizado = modelo_optimizado.predict(_X_te)
     
     acc_opt = accuracy_score(y_test, pred_optimizado)
     f1_opt = f1_score(y_test, pred_optimizado, average='weighted')
@@ -627,31 +641,40 @@ def main():
     if resultado[0] is None:
         return None, None
     
-    X, y, features = resultado
-    
+    X, X_filled, y, features = resultado
+
     # Split temporal (shuffle=False mantiene orden)
     pct_label = f"{int(TEST_SIZE*100)}"
     print(f"\n🔪 División de datos ({100-int(TEST_SIZE*100)}/{pct_label} temporal)")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, shuffle=False
     )
+    # Split paralelo para RF (fillna=0) usando mismos indices
+    X_train_filled = X_filled.loc[X_train.index]
+    X_test_filled = X_filled.loc[X_test.index]
     print(f"   Entrenamiento: {len(X_train)} partidos")
     print(f"   Prueba: {len(X_test)} partidos")
-    
-    # Entrenar modelos (incluyendo el de Optuna)
-    resultados = entrenar_modelos(X_train, y_train, X_test, y_test)
+
+    # Entrenar modelos (RF con filled, XGBoost con NaN nativo)
+    resultados = entrenar_modelos(X_train, y_train, X_test, y_test,
+                                  X_train_filled, X_test_filled)
     
     # Seleccionar mejor
     mejor_key, mejor_modelo = seleccionar_mejor_modelo(resultados, y_test)
     
     # Optimización adicional (solo si no ganó Optuna)
     modelo_final, pred_final, mejorado = optimizar_modelo_adicional(
-        mejor_key, mejor_modelo, X_train, y_train, X_test, y_test
+        mejor_key, mejor_modelo, X_train, y_train, X_test, y_test,
+        X_train_filled, X_test_filled
     )
     
     # Calibrar probabilidades — decide automáticamente si calibrar o no
+    # RF necesita fillna, XGBoost maneja NaN nativamente
+    es_xgb = 'XGBoost' in mejor_modelo['nombre'] or hasattr(modelo_final, 'get_booster')
+    _X_tr_cal = X_train if es_xgb else X_train_filled
+    _X_te_cal = X_test if es_xgb else X_test_filled
     modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
-        modelo_final, X_train, y_train, X_test, y_test
+        modelo_final, _X_tr_cal, y_train, _X_te_cal, y_test
     )
 
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
@@ -664,7 +687,7 @@ def main():
     guardar_modelo_final(modelo_a_guardar, features, nombre_final)
 
     # Métricas reales del modelo guardado
-    pred_guardado = modelo_a_guardar.predict(X_test)
+    pred_guardado = modelo_a_guardar.predict(_X_te_cal)
     acc_final = accuracy_score(y_test, pred_guardado)
     f1_final = f1_score(y_test, pred_guardado, average='weighted')
 
