@@ -34,6 +34,9 @@ ARCHIVO_FEATURES_PKL = os.path.join(RUTA_MODELOS, 'features.pkl')
 ARCHIVO_METADATA = os.path.join(RUTA_MODELOS, 'metadata.pkl')
 ARCHIVO_MODELO_VB = os.path.join(RUTA_MODELOS, 'modelo_value_betting.pkl')
 ARCHIVO_FEATURES_VB = os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')
+ARCHIVO_MODELO_EMPATES = os.path.join(RUTA_MODELOS, 'modelo_empates.pkl')
+ARCHIVO_FEATURES_EMPATES = os.path.join(RUTA_MODELOS, 'features_empates.pkl')
+ARCHIVO_METADATA_EMPATES = os.path.join(RUTA_MODELOS, 'metadata_empates.pkl')
 
 # ============================================================================
 # PARÁMETROS DE FEATURE ENGINEERING
@@ -318,6 +321,43 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
     # Total: 74 features — cero cuotas, cero señales de mercado
 )
+
+# Features específicas para el modelo de empates (04_entrenar_empates.py)
+# Señales que discriminan empates: equipos parejos, xG cercanos, H2H con empates
+FEATURES_EMPATES = (
+    FEATURES_BASE
+    + FEATURES_CUOTAS
+    + FEATURES_CUOTAS_DERIVADAS
+    + FEATURES_XG
+    + FEATURES_XG_GLOBAL
+    + FEATURES_H2H
+    + FEATURES_H2H_DERIVADAS
+    + FEATURES_TABLA
+    + FEATURES_ASIAN_HANDICAP
+    + FEATURES_DESCANSO
+)
+
+# Hiperparámetros para el modelo de empates (binario: Draw vs No-Draw)
+PARAMS_XGB_EMPATES = {
+    'n_estimators': 400,
+    'max_depth': 4,             # Poco profundo: evitar sobreajuste en clase minoritaria
+    'learning_rate': 0.01,
+    'subsample': 0.7,
+    'colsample_bytree': 0.7,
+    'colsample_bylevel': 0.6,
+    'reg_alpha': 1.5,
+    'reg_lambda': 3.0,
+    'min_child_weight': 25,
+    'gamma': 2.0,
+    'scale_pos_weight': 1.0,    # Se recalcula dinámicamente en el script
+    'random_state': RANDOM_SEED,
+    'n_jobs': -1,
+    'eval_metric': 'logloss',
+}
+
+# Umbral de probabilidad de empate para ajustar predicción del modelo principal
+# Si P(draw) del modelo de empates > este umbral, se activa el boost
+UMBRAL_DRAW_BOOST = 0.28
 
 ALL_FEATURES = (
     FEATURES_BASE

@@ -31,8 +31,12 @@ from config import (
     ARCHIVO_FEATURES_PKL,
     ARCHIVO_MODELO_VB,
     ARCHIVO_FEATURES_VB,
+    ARCHIVO_MODELO_EMPATES,
+    ARCHIVO_FEATURES_EMPATES,
+    ARCHIVO_METADATA_EMPATES,
     FACTOR_CONSERVADOR,
     UMBRAL_EDGE_MINIMO,
+    UMBRAL_DRAW_BOOST,
     CUOTA_MAXIMA,
     PROBABILIDAD_MINIMA,
     KELLY_FRACTION,
@@ -120,6 +124,10 @@ class Predictor:
         self._features = None
         self._df_historico = None
         self._bankroll = bankroll
+        # Modelo dedicado de empates (segunda capa)
+        self._modelo_empates = None
+        self._features_empates = None
+        self._umbral_empates = UMBRAL_DRAW_BOOST
 
     # -------------------------------------------------------------------------
     # CARGA
@@ -178,6 +186,17 @@ class Predictor:
         except Exception as e:
             print(f"Advertencia: no se pudo enriquecer el historico ({e}). Usando CSV base.")
             self._df_enriquecido = self._df_historico
+
+        # Cargar modelo de empates (opcional — mejora predicción de empates)
+        if os.path.exists(ARCHIVO_MODELO_EMPATES):
+            self._modelo_empates = joblib.load(ARCHIVO_MODELO_EMPATES)
+            self._features_empates = joblib.load(ARCHIVO_FEATURES_EMPATES) if os.path.exists(ARCHIVO_FEATURES_EMPATES) else None
+            if os.path.exists(ARCHIVO_METADATA_EMPATES):
+                meta_empates = joblib.load(ARCHIVO_METADATA_EMPATES)
+                self._umbral_empates = meta_empates.get('umbral_optimo', UMBRAL_DRAW_BOOST)
+            print(f"Modelo empates  : modelo_empates.pkl (umbral={self._umbral_empates:.3f})")
+        else:
+            print("Modelo empates  : no disponible (ejecutar 04_entrenar_empates.py)")
 
         print(f"Modelo cargado  : {os.path.basename(modelo_file)}")
         print(f"Features        : {len(self._features)}")
@@ -325,6 +344,9 @@ class Predictor:
 
         probs_originales = self._modelo.predict_proba(partido_df)[0]
         probs = self._ajustar_probabilidades_conservador(probs_originales)
+
+        # Segunda capa: modelo dedicado de empates
+        probs = self._aplicar_modelo_empates(probs, datos)
 
         idx_prediccion = int(np.argmax(probs))
         resultado_predicho = ['Local', 'Empate', 'Visitante'][idx_prediccion]
@@ -490,6 +512,101 @@ class Predictor:
         uniforme = np.array([1 / 3, 1 / 3, 1 / 3])
         ajustadas = FACTOR_CONSERVADOR * probabilidades + (1 - FACTOR_CONSERVADOR) * uniforme
         return ajustadas / ajustadas.sum()
+
+    def _aplicar_modelo_empates(self, probs: np.ndarray, datos: dict) -> np.ndarray:
+        """
+        Capa 2: ajusta probabilidades usando el modelo dedicado de empates.
+
+        Si el modelo de empates detecta alta P(draw), boostea la probabilidad
+        de empate del modelo principal redistributyendo proporcionalmente
+        desde las probabilidades de Local y Visitante.
+
+        Args:
+            probs: probabilidades [P(H), P(D), P(A)] del modelo principal
+            datos: diccionario de features del partido
+
+        Returns:
+            probs ajustadas (o sin cambios si no hay modelo de empates)
+        """
+        if self._modelo_empates is None or self._features_empates is None:
+            return probs
+
+        # Construir features para el modelo de empates
+        # Incluye features derivadas de paridad
+        datos_empates = dict(datos)
+
+        # Agregar features derivadas de empate que no están en datos
+        xg_h = datos.get('HT_xG_Avg', 0)
+        xg_a = datos.get('AT_xG_Avg', 0)
+        datos_empates['xG_Abs_Diff'] = abs(xg_h - xg_a)
+
+        goals_h = datos.get('HT_AvgGoals', 0)
+        goals_a = datos.get('AT_AvgGoals', 0)
+        datos_empates['Goals_Abs_Diff'] = abs(goals_h - goals_a)
+
+        pos_diff = datos.get('Position_Diff', 0)
+        datos_empates['Position_Abs_Diff'] = abs(pos_diff)
+
+        form_d_h = datos.get('HT_Form_D', 0)
+        form_d_a = datos.get('AT_Form_D', 0)
+        datos_empates['Form_Draw_Sum'] = form_d_h + form_d_a
+
+        # H2H Draw Rate
+        h2h_home_wr = datos.get('H2H_Home_Win_Rate', 0.4)
+        h2h_win_adv = datos.get('H2H_Win_Advantage', 0)
+        away_wr = max(0, h2h_home_wr - h2h_win_adv)
+        datos_empates['H2H_Draw_Rate'] = max(0, min(1, 1 - h2h_home_wr - away_wr))
+
+        # Cuota Draw Implied
+        prob_d = datos.get('Prob_D', 0.25)
+        prob_h = datos.get('Prob_H', 0.35)
+        prob_a = datos.get('Prob_A', 0.25)
+        total = prob_h + prob_d + prob_a
+        datos_empates['Cuota_Draw_Implied'] = prob_d / total if total > 0 else 0.25
+
+        # xG Low Total
+        xg_total = datos.get('xG_Total', 2.5)
+        datos_empates['xG_Low_Total'] = 1.0 if xg_total < 2.3 else 0.0  # Usar mediana aproximada
+
+        # Form Similarity
+        form_w_h = datos.get('HT_Form_W', 0)
+        form_w_a = datos.get('AT_Form_W', 0)
+        form_l_h = datos.get('HT_Form_L', 0)
+        form_l_a = datos.get('AT_Form_L', 0)
+        datos_empates['Form_Similarity'] = max(0, min(1, 1.0 - (abs(form_w_h - form_w_a) + abs(form_l_h - form_l_a)) / 10.0))
+
+        # Filtrar solo features del modelo de empates
+        datos_filtrado = {k: v for k, v in datos_empates.items() if k in self._features_empates}
+        partido_df = pd.DataFrame([datos_filtrado], columns=self._features_empates)
+
+        try:
+            p_draw = self._modelo_empates.predict_proba(partido_df)[0][1]
+        except Exception:
+            return probs
+
+        # Si P(draw) > umbral, boostear la probabilidad de empate
+        if p_draw > self._umbral_empates:
+            # Calcular boost proporcional al exceso sobre el umbral
+            # boost_factor escala de 0 (en el umbral) a ~0.15 (máximo boost)
+            exceso = p_draw - self._umbral_empates
+            boost_factor = min(exceso * 0.5, 0.15)
+
+            probs_ajustadas = probs.copy()
+            probs_ajustadas[1] += boost_factor  # Aumentar P(Draw)
+
+            # Redistribuir proporcionalmente desde H y A
+            reduccion = boost_factor
+            total_ha = probs[0] + probs[2]
+            if total_ha > 0:
+                probs_ajustadas[0] -= reduccion * (probs[0] / total_ha)
+                probs_ajustadas[2] -= reduccion * (probs[2] / total_ha)
+
+            # Normalizar
+            probs_ajustadas = np.clip(probs_ajustadas, 0.01, None)
+            probs_ajustadas = probs_ajustadas / probs_ajustadas.sum()
+            return probs_ajustadas
+
+        return probs
 
     def _transformar_cuotas(self, cuota_h: float, cuota_d: float, cuota_a: float) -> dict:
         """Convierte cuotas en features canonicas (identicas a las de entrenamiento)."""
