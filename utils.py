@@ -458,43 +458,32 @@ def agregar_features_cuotas_derivadas(df: pd.DataFrame) -> pd.DataFrame:
     que sean consistentes entre training y predicción. El margen de la casa
     queda así implícito en los valores.
 
-    Requiere columnas: B365H, B365D, B365A, B365CH, B365CD, B365CA.
+    P3-Audit: Ahora solo usa cuotas de APERTURA (B365H, B365D, B365A).
+    Las cuotas de cierre (B365CH/CD/CA) se eliminaron porque no están
+    disponibles al momento de apostar (leakage implícito).
+
+    Requiere columnas: B365H, B365D, B365A.
 
     Args:
         df: DataFrame con columnas de cuotas.
 
     Returns:
-        DataFrame con features de probabilidades y movimiento de mercado.
+        DataFrame con features de probabilidades derivadas de apertura.
     """
-    print("\n🔧 Calculando features derivadas de cuotas...")
+    print("\n   Calculando features derivadas de cuotas (solo apertura)...")
 
-    cols_necesarias = ['B365H', 'B365D', 'B365A', 'B365CH', 'B365CD', 'B365CA']
+    cols_necesarias = ['B365H', 'B365D', 'B365A']
     cols_faltantes = [c for c in cols_necesarias if c not in df.columns]
     if cols_faltantes:
-        print(f"   ⚠️  Faltan columnas: {cols_faltantes}")
+        print(f"   Faltan columnas: {cols_faltantes}")
         return df
 
-    # Probabilidades implícitas (apertura)
+    # Probabilidades implícitas (apertura solamente)
     df['Prob_H'] = 1 / df['B365H']
     df['Prob_D'] = 1 / df['B365D']
     df['Prob_A'] = 1 / df['B365A']
 
-    # Probabilidades implícitas (cierre)
-    prob_c_h = 1 / df['B365CH']
-    prob_c_d = 1 / df['B365CD']
-    prob_c_a = 1 / df['B365CA']
-
-    # Movimiento de mercado
-    df['Prob_Move_H'] = prob_c_h - df['Prob_H']
-    df['Prob_Move_D'] = prob_c_d - df['Prob_D']
-    df['Prob_Move_A'] = prob_c_a - df['Prob_A']
-    df['Market_Move_Strength'] = (
-        df['Prob_Move_H'].abs()
-        + df['Prob_Move_D'].abs()
-        + df['Prob_Move_A'].abs()
-    )
-
-    # Estructura del mercado
+    # Estructura del mercado (solo apertura)
     prob_max = df[['Prob_H', 'Prob_D', 'Prob_A']].max(axis=1)
     prob_min = df[['Prob_H', 'Prob_D', 'Prob_A']].min(axis=1)
     df['Prob_Spread'] = prob_max - prob_min
@@ -503,16 +492,14 @@ def agregar_features_cuotas_derivadas(df: pd.DataFrame) -> pd.DataFrame:
 
     features_nuevas = [
         'Prob_H', 'Prob_D', 'Prob_A',
-        'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-        'Market_Move_Strength', 'Prob_Spread',
-        'Market_Confidence', 'Home_Advantage_Prob',
+        'Prob_Spread', 'Market_Confidence', 'Home_Advantage_Prob',
     ]
     for col in features_nuevas:
         if col in df.columns:
             df[col] = df[col].fillna(0)
 
     con_datos = (df['Prob_H'] > 0).sum()
-    print(f"   ✅ Features de cuotas derivadas: {con_datos} partidos con datos")
+    print(f"   Features de cuotas derivadas (apertura): {con_datos} partidos con datos")
 
     return df
 
@@ -620,44 +607,39 @@ def agregar_features_asian_handicap(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calcula features derivadas del Asian Handicap a partir de columnas raw del CSV.
 
+    P3-Audit: Ahora solo usa columnas de APERTURA. Eliminadas AHCh, B365CAHH,
+    B365CAHA y todas las features derivadas de cierre (AH_Line_Move,
+    AH_Close_Move_H, AH_Close_Move_A) por no estar disponibles pre-partido.
+
     Columnas raw requeridas (football-data.co.uk):
         AHh        handicap apertura local  (ej: -1.5, 0.25, 1.0)
-        AHCh       handicap cierre local
         B365AHH    cuota Bet365 apertura local con handicap
         B365AHA    cuota Bet365 apertura visitante con handicap
-        B365CAHH   cuota Bet365 cierre local con handicap
-        B365CAHA   cuota Bet365 cierre visitante con handicap
         Prob_H     probabilidad implicita 1X2 local (de agregar_features_cuotas_derivadas)
         Prob_A     probabilidad implicita 1X2 visitante
 
     Features generadas:
         AH_Line          handicap de apertura (señal de fuerza relativa del mercado)
-        AH_Line_Move     AHCh - AHh: linea se movio hacia el local (>0) o visitante (<0)
         AH_Implied_Home  prob implicita local desde cuotas AH apertura (1/B365AHH normalizada)
         AH_Implied_Away  prob implicita visitante
         AH_Edge_Home     diferencia entre prob AH y prob 1X2 del mercado para el local
         AH_Market_Conf   que tan lejos esta la cuota de la linea justa (1.909 sin margen)
-        AH_Close_Move_H  movimiento cuota local apertura -> cierre
-        AH_Close_Move_A  movimiento cuota visitante apertura -> cierre
 
     No modifica el CSV. Se llama en memoria antes de entrenar/predecir.
     """
-    print("\nCalculando features Asian Handicap...")
+    print("\n   Calculando features Asian Handicap (solo apertura)...")
 
-    required = ['AHh', 'AHCh', 'B365AHH', 'B365AHA', 'B365CAHH', 'B365CAHA']
+    required = ['AHh', 'B365AHH', 'B365AHA']
     missing = [c for c in required if c not in df.columns]
     if missing:
         print(f"   AVISO: columnas AH no encontradas: {missing}. Saltando.")
-        for col in ['AH_Line', 'AH_Line_Move', 'AH_Implied_Home', 'AH_Implied_Away',
-                    'AH_Edge_Home', 'AH_Market_Conf', 'AH_Close_Move_H', 'AH_Close_Move_A']:
+        for col in ['AH_Line', 'AH_Implied_Home', 'AH_Implied_Away',
+                    'AH_Edge_Home', 'AH_Market_Conf']:
             df[col] = 0.0
         return df
 
-    # Linea de handicap
+    # Linea de handicap (apertura)
     df['AH_Line'] = df['AHh']
-
-    # Movimiento de linea: positivo = mercado favorece mas al local al cierre
-    df['AH_Line_Move'] = df['AHCh'] - df['AHh']
 
     # Probabilidades implicitas desde cuotas AH apertura
     # AH es mercado binario (sin empate): normalizamos las dos cuotas
@@ -668,11 +650,9 @@ def agregar_features_asian_handicap(df: pd.DataFrame) -> pd.DataFrame:
     df['AH_Implied_Away'] = (raw_a / total).fillna(0.5)
 
     # Edge AH vs mercado 1X2: diferencia entre lo que dice el AH y las cuotas 1X2
-    # Si Prob_H no existe (aun no se calcularon cuotas derivadas), usar 0
     if 'Prob_H' in df.columns and 'Prob_A' in df.columns:
         prob_1x2_h = df['Prob_H']
         prob_1x2_a = df['Prob_A']
-        # Normalizar 1X2 ignorando empate para comparar con AH binario
         total_1x2 = prob_1x2_h + prob_1x2_a
         prob_1x2_h_norm = (prob_1x2_h / total_1x2).fillna(0.5)
         df['AH_Edge_Home'] = df['AH_Implied_Home'] - prob_1x2_h_norm
@@ -680,23 +660,17 @@ def agregar_features_asian_handicap(df: pd.DataFrame) -> pd.DataFrame:
         df['AH_Edge_Home'] = 0.0
 
     # Confianza del mercado AH: distancia de la cuota ideal sin margen (1.909)
-    # Cuota mas baja que 1.909 = mercado tiene alta confianza en ese lado
     ah_fair = 1.909
     df['AH_Market_Conf'] = (ah_fair - df['B365AHH'].clip(upper=ah_fair)).fillna(0.0)
 
-    # Movimiento de cuotas apertura -> cierre
-    df['AH_Close_Move_H'] = df['B365CAHH'] - df['B365AHH']
-    df['AH_Close_Move_A'] = df['B365CAHA'] - df['B365AHA']
-
     # Rellenar posibles NaN residuales
-    ah_cols = ['AH_Line', 'AH_Line_Move', 'AH_Implied_Home', 'AH_Implied_Away',
-               'AH_Edge_Home', 'AH_Market_Conf', 'AH_Close_Move_H', 'AH_Close_Move_A']
+    ah_cols = ['AH_Line', 'AH_Implied_Home', 'AH_Implied_Away',
+               'AH_Edge_Home', 'AH_Market_Conf']
     df[ah_cols] = df[ah_cols].fillna(0.0)
 
     con_datos = (df['AH_Line'] != 0).sum()
-    print(f"   Asian Handicap: {con_datos} partidos con datos")
+    print(f"   Asian Handicap (apertura): {con_datos} partidos con datos")
     print(f"   Handicap promedio local: {df['AH_Line'].mean():.3f}")
-    print(f"   Movimiento de linea promedio: {df['AH_Line_Move'].mean():.3f}")
 
     return df
 
@@ -707,11 +681,10 @@ def agregar_features_asian_handicap(df: pd.DataFrame) -> pd.DataFrame:
 
 def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Agrega 4 features rolling que mejoran el F1 del modelo XGBoost:
+    Agrega 3 features rolling que mejoran el F1 del modelo XGBoost:
       - HT_Goals_Diff  : rolling-5 de diferencia de goles del local (como home)
       - AT_Goals_Diff  : rolling-5 de diferencia de goles del visitante (como away)
       - AT_HTR_Rate    : rolling-5 de % partidos ganando al descanso (visitante)
-      - PS_vs_Avg_H    : Pinnacle vs promedio de mercado (señal sharp money, local)
 
     Usa groupby+shift+rolling (vectorizado) para evitar loops lentos por equipo.
     El shift(1) garantiza que cada partido solo ve datos ANTERIORES a ese partido.
@@ -745,12 +718,7 @@ def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
         .fillna(0)
     )
 
-    # PS_vs_Avg_H: Pinnacle cierre vs promedio mercado cuota local (sharp money signal)
-    # Solo disponible en temporadas con cuotas de cierre (post-2020); 0 en las demas
-    if 'PSCH' in df.columns and 'AvgCH' in df.columns:
-        df['PS_vs_Avg_H'] = (df['PSCH'] - df['AvgCH']).fillna(0)
-    else:
-        df['PS_vs_Avg_H'] = 0.0
+    # P3-Audit: PS_vs_Avg_H eliminada (usaba PSCH cuota de cierre Pinnacle).
 
     # Limpiar columnas temporales
     df.drop(columns=['_HT_gd', '_AT_gd', '_AT_htr'], inplace=True, errors='ignore')
@@ -1131,51 +1099,41 @@ def agregar_features_forma_momentum(df: pd.DataFrame) -> pd.DataFrame:
 
 def agregar_features_pinnacle_move(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Agrega features de movimiento de linea Pinnacle (apertura → cierre).
+    Agrega features de probabilidades implícitas Pinnacle de APERTURA.
 
-    Disponibles en TODAS las temporadas (2016-2026):
-      - Pinnacle_Move_H  : PSCH - PSH  (cuota local subio=mercado mueve contra local)
-      - Pinnacle_Move_A  : PSCA - PSA  (cuota visitante subio=mercado mueve contra visitante)
-      - Pinnacle_Move_D  : PSCD - PSD
-      - Pinnacle_Sharp_H : prob implicita cierre Pinnacle local  (1/PSCH, normalizada)
-      - Pinnacle_Sharp_A : prob implicita cierre Pinnacle visitante
-      - Pinnacle_Conf    : max(Pinnacle_Sharp_H, Pinnacle_Sharp_A) - 1/3
-                           (confianza del mercado Pinnacle, analogo a Market_Confidence)
+    P3-Audit: Reemplaza la versión anterior que usaba cuotas de cierre (PSCH/PSCD/PSCA).
+    Las closing odds de Pinnacle no están disponibles al momento de apostar,
+    por lo que usarlas como features constituye leakage implícito.
 
-    La diferencia apertura-cierre de Pinnacle es la señal de 'dinero inteligente'
-    mas fiable del mercado: cuando la cuota BAJA de apertura a cierre, el mercado
-    recibio apuestas significativas en esa direccion.
+    Ahora solo usa cuotas de apertura (PSH/PSD/PSA), que SÍ están disponibles
+    antes del partido y representan la evaluación inicial del mercado más eficiente.
+
+    Features generadas:
+      - Pinnacle_Open_H : prob implícita apertura Pinnacle local (1/PSH, normalizada)
+      - Pinnacle_Open_A : prob implícita apertura Pinnacle visitante (1/PSA, normalizada)
+      - Pinnacle_Conf   : max(Open_H, Open_A) - 1/3 (confianza del mercado Pinnacle)
     """
-    cols_necesarias = ['PSH', 'PSD', 'PSA', 'PSCH', 'PSCD', 'PSCA']
+    cols_necesarias = ['PSH', 'PSD', 'PSA']
     disponibles = [c for c in cols_necesarias if c in df.columns]
 
-    if len(disponibles) < 6:
-        print(f"   Pinnacle Move: faltan columnas {set(cols_necesarias)-set(disponibles)}, saltando.")
-        for col in ['Pinnacle_Move_H', 'Pinnacle_Move_A', 'Pinnacle_Move_D',
-                    'Pinnacle_Sharp_H', 'Pinnacle_Sharp_A', 'Pinnacle_Conf']:
+    if len(disponibles) < 3:
+        print(f"   Pinnacle Opening: faltan columnas {set(cols_necesarias)-set(disponibles)}, saltando.")
+        for col in ['Pinnacle_Open_H', 'Pinnacle_Open_A', 'Pinnacle_Conf']:
             df[col] = 0.0
         return df
 
-    # Movimiento de linea: cuota_cierre - cuota_apertura
-    # Si la cuota SUBE (ej. PSH 2.0 → PSCH 2.2) significa que el mercado apostó
-    # contra ese resultado (menos dinero en local → cuota sube).
-    # Si BAJA (PSH 2.0 → PSCH 1.8) significa dinero inteligente aposto al local.
-    df['Pinnacle_Move_H'] = (df['PSCH'].fillna(df['PSH']) - df['PSH']).fillna(0)
-    df['Pinnacle_Move_A'] = (df['PSCA'].fillna(df['PSA']) - df['PSA']).fillna(0)
-    df['Pinnacle_Move_D'] = (df['PSCD'].fillna(df['PSD']) - df['PSD']).fillna(0)
-
-    # Probabilidades implicitas Pinnacle cierre (sin vig)
-    prob_h = 1.0 / df['PSCH'].replace(0, np.nan)
-    prob_d = 1.0 / df['PSCD'].replace(0, np.nan)
-    prob_a = 1.0 / df['PSCA'].replace(0, np.nan)
+    # Probabilidades implícitas Pinnacle apertura (normalizadas sin vig)
+    prob_h = 1.0 / df['PSH'].replace(0, np.nan)
+    prob_d = 1.0 / df['PSD'].replace(0, np.nan)
+    prob_a = 1.0 / df['PSA'].replace(0, np.nan)
     total  = (prob_h + prob_d + prob_a).replace(0, np.nan)
 
-    df['Pinnacle_Sharp_H'] = (prob_h / total).fillna(0)
-    df['Pinnacle_Sharp_A'] = (prob_a / total).fillna(0)
-    df['Pinnacle_Conf']    = (df[['Pinnacle_Sharp_H', 'Pinnacle_Sharp_A']].max(axis=1) - 1/3).fillna(0)
+    df['Pinnacle_Open_H'] = (prob_h / total).fillna(0)
+    df['Pinnacle_Open_A'] = (prob_a / total).fillna(0)
+    df['Pinnacle_Conf']   = (df[['Pinnacle_Open_H', 'Pinnacle_Open_A']].max(axis=1) - 1/3).fillna(0)
 
-    n_validos = df['Pinnacle_Move_H'].abs().gt(0).sum()
-    print(f"\n🔧 Pinnacle Move agregado: {n_validos} partidos con movimiento de linea")
+    n_validos = (df['Pinnacle_Open_H'] > 0).sum()
+    print(f"\n   Pinnacle Opening agregado: {n_validos} partidos con datos")
     return df
 
 

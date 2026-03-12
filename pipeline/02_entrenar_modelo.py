@@ -42,15 +42,20 @@ from config import (
     ARCHIVO_MODELO,
     ARCHIVO_FEATURES_PKL,
     ARCHIVO_METADATA,
+    ARCHIVO_MODELO_VB,
+    ARCHIVO_FEATURES_VB,
     PESOS_OPTIMOS,
     PESOS_XGB,
     PARAMS_OPTIMOS,
     PARAMS_XGB,
+    PARAMS_XGB_VB,
     ALL_FEATURES,
+    FEATURES_ESTRUCTURALES,
     FEATURES_BASE,
     FEATURES_CUOTAS,
     FEATURES_CUOTAS_DERIVADAS,
     FEATURES_XG,
+    FEATURES_XG_GLOBAL,
     FEATURES_H2H,
     FEATURES_H2H_DERIVADAS,
     FEATURES_TABLA,
@@ -60,7 +65,6 @@ from config import (
     FEATURES_REFEREE,
     FEATURES_FORMA_MOMENTUM,
     FEATURES_DESCANSO,
-    FEATURES_XG_GLOBAL,
     FEATURES_MULTI_ESCALA,
     TEST_SIZE,
     RANDOM_SEED,
@@ -889,12 +893,23 @@ def main():
         X_train_filled, X_test_filled
     )
 
-    # Calibrar probabilidades
+    # P2-Audit: Calibrar probabilidades usando un set de calibración separado.
+    # Antes se calibraba con el train completo y se evaluaba en test, lo que podía
+    # dar resultados inconsistentes. Ahora se separa un 20% del train como set de
+    # calibración, se entrena CalibratedClassifierCV en ese split, y se evalúa en test.
     es_xgb = 'XGBoost' in mejor_modelo['nombre'] or hasattr(modelo_final, 'get_booster')
     _X_tr_cal = X_train if es_xgb else X_train_filled
     _X_te_cal = X_test if es_xgb else X_test_filled
+
+    # Split de calibración: últimos 20% del train (temporal)
+    cal_split = int(len(_X_tr_cal) * 0.80)
+    X_cal_train = _X_tr_cal.iloc[:cal_split]
+    y_cal_train = y_train.iloc[:cal_split]
+    X_cal_val = _X_tr_cal.iloc[cal_split:]
+    y_cal_val = y_train.iloc[cal_split:]
+
     modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
-        modelo_final, _X_tr_cal, y_train, _X_te_cal, y_test
+        modelo_final, X_cal_train, y_cal_train, _X_te_cal, y_test
     )
 
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
@@ -932,6 +947,73 @@ def main():
     print(f"   F1-Score:    {f1_final:.4f}")
 
     print(f"\n   Archivos guardados en {RUTA_MODELOS}\n")
+
+    # ── P1-Audit: Entrenar modelo estructural (sin cuotas) ──────────────
+    print("\n" + "=" * 70)
+    print("P1-AUDIT: ENTRENAMIENTO MODELO ESTRUCTURAL (SIN CUOTAS)")
+    print("=" * 70)
+    print("Este modelo usa SOLO features estructurales (forma, xG, H2H, tabla,")
+    print("referee, descanso). Las cuotas NO entran en el entrenamiento.")
+    print("Si este modelo encuentra edge, la ventaja es estructural.\n")
+
+    features_estr = [f for f in FEATURES_ESTRUCTURALES if f in df.columns]
+    print(f"   Features estructurales: {len(features_estr)} (sin cuotas)")
+
+    X_estr = df[features_estr]
+    X_estr_filled = X_estr.fillna(0)
+    X_estr_train = X_estr.iloc[X_train.index]
+    X_estr_test = X_estr.iloc[X_test.index]
+    X_estr_train_filled = X_estr_filled.iloc[X_train.index]
+    X_estr_test_filled = X_estr_filled.iloc[X_test.index]
+
+    # Entrenar XGBoost estructural
+    sample_weights_estr = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
+    xgb_estr = XGBClassifier(**PARAMS_XGB_VB)
+    xgb_estr.fit(X_estr_train, y_train, sample_weight=sample_weights_estr,
+                 eval_set=[(X_estr_test, y_test)], verbose=False)
+
+    probs_estr = xgb_estr.predict_proba(X_estr_test)
+    pred_estr = xgb_estr.predict(X_estr_test)
+    ll_estr = log_loss(y_test, probs_estr)
+    bs_estr = _brier_multiclase(y_test, probs_estr)
+    f1_estr = f1_score(y_test, pred_estr, average='weighted')
+    acc_estr = accuracy_score(y_test, pred_estr)
+
+    print(f"   Log Loss:    {ll_estr:.4f}")
+    print(f"   Brier Score: {bs_estr:.4f}")
+    print(f"   F1-Score:    {f1_estr:.4f}")
+    print(f"   Accuracy:    {acc_estr:.2%}")
+
+    # Calibrar modelo estructural
+    tscv_estr = TimeSeriesSplit(n_splits=3)
+    cal_estr = CalibratedClassifierCV(estimator=xgb_estr, method='sigmoid', cv=tscv_estr)
+    cal_estr.fit(X_estr_train, y_train)
+    probs_cal_estr = cal_estr.predict_proba(X_estr_test)
+    bs_cal_estr = _brier_multiclase(y_test, probs_cal_estr)
+
+    if bs_cal_estr < bs_estr:
+        modelo_estr_final = cal_estr
+        print(f"   Calibración mejora Brier ({bs_estr:.4f} -> {bs_cal_estr:.4f})")
+    else:
+        modelo_estr_final = xgb_estr
+        print(f"   Calibración no mejora, guardando original")
+
+    # Guardar modelo estructural
+    joblib.dump(modelo_estr_final, ARCHIVO_MODELO_VB)
+    joblib.dump(features_estr, ARCHIVO_FEATURES_VB)
+    print(f"\n   Modelo estructural: {ARCHIVO_MODELO_VB}")
+    print(f"   Features:           {ARCHIVO_FEATURES_VB}")
+
+    # Comparación final
+    print(f"\n   COMPARACION FINAL:")
+    print(f"   {'Modelo':<30} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}")
+    print(f"   {'-'*60}")
+    print(f"   {'Con cuotas (apertura)':<30} {ll_final:>9.4f} {bs_final:>7.4f} {f1_final:>7.4f} {acc_final:>6.2%}")
+    print(f"   {'Estructural (sin cuotas)':<30} {ll_estr:>9.4f} {bs_estr:>7.4f} {f1_estr:>7.4f} {acc_estr:>6.2%}")
+    diff_ll = ll_estr - ll_final
+    print(f"\n   Delta Log Loss: {diff_ll:+.4f} (positivo = modelo con cuotas es mejor)")
+    print(f"   Si el delta es grande, el modelo principal depende del mercado.")
+    print(f"   Si el delta es pequeño, hay edge estructural real.")
 
     return modelo_a_guardar, features
 

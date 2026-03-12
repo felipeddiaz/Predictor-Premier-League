@@ -178,13 +178,16 @@ FEATURES_BASE = [
 
 FEATURES_CUOTAS = [
     'B365H', 'B365D', 'B365A',
-    'B365CH', 'B365CD', 'B365CA',
+    # P3-Audit: Eliminadas B365CH/CD/CA (cuotas de cierre).
+    # Las closing odds no están disponibles al momento de apostar,
+    # usarlas como features introduce leakage implícito.
 ]
 
 FEATURES_CUOTAS_DERIVADAS = [
     'Prob_H', 'Prob_D', 'Prob_A',
-    'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
-    'Market_Move_Strength',
+    # P3-Audit: Eliminadas Prob_Move_H/D/A y Market_Move_Strength.
+    # Estas dependían de cuotas de cierre (B365CH/CD/CA) que no están
+    # disponibles al momento de la decisión de apuesta.
     'Prob_Spread',
     'Market_Confidence',
     'Home_Advantage_Prob',
@@ -235,14 +238,12 @@ FEATURES_TABLA = [
 
 FEATURES_ASIAN_HANDICAP = [
     'AHh',                    # Handicap apertura (raw)
-    'AHCh',                   # Handicap cierre (raw)
-    'AH_Line_Move',           # Movimiento de línea: AHCh - AHh
-    'AH_Implied_Home',        # Prob implícita local desde cuotas AH
-    'AH_Implied_Away',        # Prob implícita visitante desde cuotas AH
+    # P3-Audit: Eliminadas AHCh, AH_Line_Move, AH_Close_Move_H, AH_Close_Move_A.
+    # Todas dependían de líneas/cuotas de cierre no disponibles pre-partido.
+    'AH_Implied_Home',        # Prob implícita local desde cuotas AH apertura
+    'AH_Implied_Away',        # Prob implícita visitante desde cuotas AH apertura
     'AH_Edge_Home',           # Edge: prob AH vs prob 1X2 para local
     'AH_Market_Conf',         # Confianza del mercado AH
-    'AH_Close_Move_H',        # Movimiento cuota local apertura→cierre
-    'AH_Close_Move_A',        # Movimiento cuota visitante apertura→cierre
 ]
 
 # Features rolling extra — calculadas en utils.agregar_features_rolling_extra()
@@ -250,17 +251,17 @@ FEATURES_ROLLING_EXTRA = [
     'HT_Goals_Diff',   # Diferencia de goles rolling (local como home)
     'AT_Goals_Diff',   # Diferencia de goles rolling (visitante como away)
     'AT_HTR_Rate',     # % partidos ganando al descanso (visitante)
-    'PS_vs_Avg_H',     # Pinnacle vs mercado promedio local (sharp signal)
+    # P3-Audit: Eliminada PS_vs_Avg_H (usaba PSCH cuota de cierre Pinnacle)
 ]
 
-# Features Pinnacle (sharp money) — calculadas en utils.agregar_features_pinnacle_move()
+# Features Pinnacle (apertura) — calculadas en utils.agregar_features_pinnacle_opening()
+# P3-Audit: Reemplazadas features de cierre (PSCH/PSCD/PSCA) por apertura (PSH/PSD/PSA).
+# Las probabilidades de apertura Pinnacle SÍ están disponibles antes de apostar
+# y son una señal valiosa del mercado más eficiente.
 FEATURES_PINNACLE = [
-    'Pinnacle_Move_H',     # Movimiento línea local (PSCH - PSH)
-    'Pinnacle_Move_D',     # Movimiento línea empate (PSCD - PSD)
-    'Pinnacle_Move_A',     # Movimiento línea visitante (PSCA - PSA)
-    'Pinnacle_Sharp_H',    # Prob implícita cierre Pinnacle local (normalizada)
-    'Pinnacle_Sharp_A',    # Prob implícita cierre Pinnacle visitante (normalizada)
-    'Pinnacle_Conf',       # Confianza mercado Pinnacle: max(Sharp_H, Sharp_A) - 1/3
+    'Pinnacle_Open_H',     # Prob implícita apertura Pinnacle local (normalizada)
+    'Pinnacle_Open_A',     # Prob implícita apertura Pinnacle visitante (normalizada)
+    'Pinnacle_Conf',       # Confianza mercado Pinnacle: max(Open_H, Open_A) - 1/3
 ]
 
 # Features de árbitro — calculadas en utils.agregar_features_arbitro()
@@ -304,22 +305,9 @@ FEATURES_DESCANSO = [
     'AT_Games_15d',   # Partidos del visitante en los últimos 15 días
 ]
 
-# Modelo estructural (sin cuotas) — usado por 03_entrenar_sin_cuotas.py
-FEATURES_ESTRUCTURALES = (
-    FEATURES_BASE             # 10: rendimiento, forma W/D/L
-    + FEATURES_XG             #  6: xG rolling (venue-específico)
-    + FEATURES_XG_GLOBAL      #  5: xG rolling global (todas las venues)
-    + FEATURES_MULTI_ESCALA   #  6: rolling window=10 (medio plazo)
-    + FEATURES_H2H            #  5: historial directo
-    + FEATURES_H2H_DERIVADAS  #  4: derivadas H2H
-    + FEATURES_TABLA          # 11: posición, puntos, presión
-    + FEATURES_FORMA_MOMENTUM # 15: forma específica local/visitante + momentum
-    + FEATURES_REFEREE        #  5: árbitro
-    + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
-    # Total: 74 features — cero cuotas, cero señales de mercado
-)
-
-ALL_FEATURES = (
+# P1-Audit: Features con cuotas de apertura (sin closing lines)
+# Usadas por el modelo principal (02_entrenar_modelo.py)
+FEATURES_CON_CUOTAS_APERTURA = (
     FEATURES_BASE
     + FEATURES_CUOTAS
     + FEATURES_CUOTAS_DERIVADAS
@@ -336,3 +324,21 @@ ALL_FEATURES = (
     + FEATURES_FORMA_MOMENTUM
     + FEATURES_DESCANSO
 )
+
+# Modelo estructural (sin cuotas) — usado por 03_entrenar_sin_cuotas.py
+FEATURES_ESTRUCTURALES = (
+    FEATURES_BASE             # 10: rendimiento, forma W/D/L
+    + FEATURES_XG             #  6: xG rolling (venue-específico)
+    + FEATURES_XG_GLOBAL      #  5: xG rolling global (todas las venues)
+    + FEATURES_MULTI_ESCALA   #  6: rolling window=10 (medio plazo)
+    + FEATURES_H2H            #  5: historial directo
+    + FEATURES_H2H_DERIVADAS  #  4: derivadas H2H
+    + FEATURES_TABLA          # 11: posición, puntos, presión
+    + FEATURES_FORMA_MOMENTUM # 15: forma específica local/visitante + momentum
+    + FEATURES_REFEREE        #  5: árbitro
+    + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
+    # Total: 74 features — cero cuotas, cero señales de mercado
+)
+
+# P3-Audit: ALL_FEATURES ahora apunta a la versión limpia (solo apertura).
+ALL_FEATURES = FEATURES_CON_CUOTAS_APERTURA
