@@ -985,8 +985,13 @@ def main():
     print(f"   Accuracy:    {acc_estr:.2%}")
 
     # Calibrar modelo estructural
+    # CalibratedClassifierCV refits internally without eval_set, so we need
+    # a version of XGBoost without early_stopping_rounds
+    params_no_es = {k: v for k, v in PARAMS_XGB_VB.items() if k != 'early_stopping_rounds'}
+    xgb_estr_for_cal = XGBClassifier(**params_no_es)
+    xgb_estr_for_cal.fit(X_estr_train, y_train, sample_weight=sample_weights_estr)
     tscv_estr = TimeSeriesSplit(n_splits=3)
-    cal_estr = CalibratedClassifierCV(estimator=xgb_estr, method='sigmoid', cv=tscv_estr)
+    cal_estr = CalibratedClassifierCV(estimator=xgb_estr_for_cal, method='sigmoid', cv=tscv_estr)
     cal_estr.fit(X_estr_train, y_train)
     probs_cal_estr = cal_estr.predict_proba(X_estr_test)
     bs_cal_estr = _brier_multiclase(y_test, probs_cal_estr)
