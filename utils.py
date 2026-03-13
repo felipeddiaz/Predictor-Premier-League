@@ -23,6 +23,33 @@ warnings.filterwarnings('ignore')
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 
+class StackingMetaLearner(BaseEstimator, ClassifierMixin):
+    """
+    Stacking ensemble serializable via joblib.
+
+    RF + XGBoost como base learners, LogisticRegression como meta-learner
+    sobre las probabilidades concatenadas.
+    """
+    def __init__(self, rf_model=None, xgb_model=None, meta_model=None,
+                 features=None):
+        self.rf_model = rf_model
+        self.xgb_model = xgb_model
+        self.meta_model = meta_model
+        self.features = features
+        self.classes_ = np.array([0, 1, 2])
+
+    def predict_proba(self, X):
+        X_fill = X.fillna(0) if hasattr(X, 'fillna') else X
+        probs_rf = self.rf_model.predict_proba(X_fill)
+        probs_xgb = self.xgb_model.predict_proba(X)
+        meta_X = np.hstack([probs_rf, probs_xgb])
+        return self.meta_model.predict_proba(meta_X)
+
+    def predict(self, X):
+        probs = self.predict_proba(X)
+        return self.classes_[np.argmax(probs, axis=1)]
+
+
 class EnsembleLGBM_XGB(BaseEstimator, ClassifierMixin):
     """
     Ensemble de votacion ponderada entre LightGBM y XGBoost.
@@ -1368,5 +1395,95 @@ def agregar_features_descanso(df: pd.DataFrame,
           f"({con_datos/total*100:.1f}%)")
     print(f"   Partidos con contexto europeo: {europa_partidos} "
           f"({europa_partidos/total*100:.1f}%)")
+
+    return df
+
+
+# ============================================================================
+# ELO RATINGS
+# ============================================================================
+
+def agregar_features_elo(df: pd.DataFrame,
+                         k: float = 20.0,
+                         home_advantage: float = 50.0,
+                         initial_elo: float = 1500.0,
+                         season_regression: float = 0.33) -> pd.DataFrame:
+    """
+    Calcula Elo ratings incrementales para cada equipo y genera features.
+
+    El sistema Elo asigna un rating numérico a cada equipo y lo actualiza
+    después de cada partido. Es una feature compacta que resume la fuerza
+    histórica del equipo.
+
+    Features generadas:
+        HT_Elo: Elo del local ANTES del partido
+        AT_Elo: Elo del visitante ANTES del partido
+        Elo_Diff: HT_Elo - AT_Elo
+        Elo_WinProb_H: Probabilidad implícita Elo de victoria local
+    """
+    print("   Calculando Elo ratings...")
+
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    elos = {}
+
+    def _get_elo(team):
+        return elos.get(team, initial_elo)
+
+    def _expected(elo_a, elo_b):
+        return 1.0 / (1.0 + 10.0 ** ((elo_b - elo_a) / 400.0))
+
+    prev_season = None
+    ht_elo_list = []
+    at_elo_list = []
+
+    for _, row in df.iterrows():
+        home = row['HomeTeam']
+        away = row['AwayTeam']
+        date = row['Date']
+
+        # Regresión al inicio de nueva temporada (agosto)
+        if pd.notna(date):
+            month = date.month
+            year = date.year
+            season_key = f"{year}" if month >= 8 else f"{year - 1}"
+            if prev_season is not None and season_key != prev_season:
+                mean_elo = np.mean(list(elos.values())) if elos else initial_elo
+                for team in list(elos.keys()):
+                    elos[team] = elos[team] + season_regression * (mean_elo - elos[team])
+            prev_season = season_key
+
+        elo_h = _get_elo(home)
+        elo_a = _get_elo(away)
+        ht_elo_list.append(elo_h)
+        at_elo_list.append(elo_a)
+
+        # Actualizar Elo con resultado
+        fthg = row.get('FTHG', np.nan)
+        ftag = row.get('FTAG', np.nan)
+
+        if pd.notna(fthg) and pd.notna(ftag):
+            if fthg > ftag:
+                s_h, s_a = 1.0, 0.0
+            elif fthg < ftag:
+                s_h, s_a = 0.0, 1.0
+            else:
+                s_h, s_a = 0.5, 0.5
+
+            exp_h = _expected(elo_h + home_advantage, elo_a)
+            exp_a = 1.0 - exp_h
+
+            elos[home] = elo_h + k * (s_h - exp_h)
+            elos[away] = elo_a + k * (s_a - exp_a)
+
+    df['HT_Elo'] = ht_elo_list
+    df['AT_Elo'] = at_elo_list
+    df['Elo_Diff'] = df['HT_Elo'] - df['AT_Elo']
+    df['Elo_WinProb_H'] = 1.0 / (1.0 + 10.0 ** (-(df['Elo_Diff'] + home_advantage) / 400.0))
+
+    print(f"   Elo: {len(elos)} equipos rastreados, "
+          f"rango [{min(elos.values()):.0f} - {max(elos.values()):.0f}]")
 
     return df

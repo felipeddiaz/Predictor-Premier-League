@@ -52,6 +52,7 @@ COLUMNAS_ESENCIALES = ['FTHG', 'FTAG', 'HS', 'AS', 'HST', 'AST']
 
 RANDOM_SEED = 42
 TEST_SIZE = 0.20            # 80/20 split temporal
+N_FEATURES_SELECCION = 35   # Seleccionar top-N features por importancia XGBoost
 
 # Pesos de clase optimizados por Optuna (100 trials RF, maximizando F1 weighted)
 PESOS_OPTIMOS = {
@@ -292,6 +293,14 @@ FEATURES_FORMA_MOMENTUM = [
     'AT_AwayGoals5',       # Goles visitante en últimos 5 fuera
 ]
 
+# Features Elo — calculadas en utils.agregar_features_elo()
+FEATURES_ELO = [
+    'HT_Elo',          # Elo del local antes del partido
+    'AT_Elo',          # Elo del visitante antes del partido
+    'Elo_Diff',        # HT_Elo - AT_Elo
+    'Elo_WinProb_H',   # Prob implícita Elo de victoria local
+]
+
 # Features de descanso y fatiga (requieren datos/raw/fbref_fixtures.csv)
 # Generadas por: python herramientas/descargar_fixtures_europeos.py
 # Fuente: UCL + UEL + FA Cup + EFL Cup (2016-2025)
@@ -323,6 +332,7 @@ FEATURES_CON_CUOTAS_APERTURA = (
     + FEATURES_REFEREE
     + FEATURES_FORMA_MOMENTUM
     + FEATURES_DESCANSO
+    + FEATURES_ELO
 )
 
 # Modelo estructural (sin cuotas) — usado por 03_entrenar_sin_cuotas.py
@@ -337,7 +347,8 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_FORMA_MOMENTUM # 15: forma específica local/visitante + momentum
     + FEATURES_REFEREE        #  5: árbitro
     + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
-    # Total: 74 features — cero cuotas, cero señales de mercado
+    + FEATURES_ELO            #  4: Elo ratings
+    # Total: 78 features — cero cuotas, cero señales de mercado
 )
 
 # P3-Audit: ALL_FEATURES ahora apunta a la versión limpia (solo apertura).
