@@ -679,6 +679,136 @@ def evaluar_value_betting(modelo, X_test, y_test, df_test):
 
 
 # ============================================================================
+# WALK-FORWARD SEASON-BY-SEASON
+# ============================================================================
+
+def _asignar_temporada(dates):
+    """Asigna temporada tipo '2020-21' basándose en la fecha."""
+    return dates.apply(
+        lambda d: f"{d.year}-{str(d.year+1)[-2:]}" if d.month >= 8
+        else f"{d.year-1}-{str(d.year)[-2:]}"
+    )
+
+
+def walk_forward_temporal(df, features, modelo_key=None):
+    """
+    Validación walk-forward expandida season-by-season (sin cuotas).
+
+    Train: 2016-2020  →  Test: 2020-21
+    Train: 2016-2021  →  Test: 2021-22
+    ...
+
+    Entrena XGBoost (PARAMS_XGB_VB) en cada fold y reporta métricas
+    probabilísticas + ROI (1X2 + DC fallback) por temporada.
+    """
+    print("\n" + "="*70)
+    print("WALK-FORWARD TEMPORAL (season-by-season)")
+    print("="*70)
+
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'])
+    df['_Season'] = _asignar_temporada(df['Date'])
+
+    temporadas = sorted(df['_Season'].unique())
+    print(f"   Temporadas disponibles: {', '.join(temporadas)}")
+
+    # Definir folds: test = cada temporada desde 2020-21
+    test_seasons = [s for s in temporadas if s >= '2020-21']
+    if not test_seasons:
+        print("   No hay temporadas >= 2020-21 para walk-forward")
+        return []
+
+    resultados_wf = []
+
+    for test_season in test_seasons:
+        train_mask = df['_Season'] < test_season
+        test_mask = df['_Season'] == test_season
+
+        if train_mask.sum() == 0 or test_mask.sum() == 0:
+            continue
+
+        X_train = df.loc[train_mask, features]
+        y_train = df.loc[train_mask, 'FTR_numeric']
+        X_test = df.loc[test_mask, features]
+        y_test = df.loc[test_mask, 'FTR_numeric']
+
+        # Cuotas para ROI
+        df_cuotas_test = df.loc[test_mask] if 'B365H' in df.columns else None
+
+        # Entrenar XGBoost con params del modelo sin cuotas
+        sample_weights = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
+        modelo = XGBClassifier(**PARAMS_XGB_VB)
+        modelo.fit(X_train, y_train, sample_weight=sample_weights,
+                   eval_set=[(X_test, y_test)], verbose=False)
+
+        probs = modelo.predict_proba(X_test)
+        pred = modelo.predict(X_test)
+
+        ll = log_loss(y_test, probs)
+        bs = _brier_multiclase(y_test, probs)
+        f1 = f1_score(y_test, pred, average='weighted')
+        acc = accuracy_score(y_test, pred)
+        roi_result = _roi_simulado(y_test, probs, df_cuotas_test)
+
+        roi = roi_result['roi'] if roi_result is not None else None
+        n_1x2 = roi_result['n_1x2'] if roi_result is not None else 0
+        n_dc = roi_result['n_dc'] if roi_result is not None else 0
+
+        fold = {
+            'season': test_season,
+            'train_size': train_mask.sum(),
+            'test_size': test_mask.sum(),
+            'log_loss': ll,
+            'brier_score': bs,
+            'f1_score': f1,
+            'accuracy': acc,
+            'roi': roi,
+            'n_1x2': n_1x2,
+            'n_dc': n_dc,
+        }
+        resultados_wf.append(fold)
+
+    # Imprimir tabla
+    print(f"\n{'Season':<12} {'Train':>6} {'Test':>5} "
+          f"{'LogLoss':>8} {'Brier':>7} {'F1':>6} {'Acc':>6} "
+          f"{'ROI':>8} {'1X2':>4} {'DC':>4}")
+    print("-" * 85)
+
+    for r in resultados_wf:
+        roi_str = f"{r['roi']:>+7.2%}" if r['roi'] is not None else f"{'N/A':>8}"
+        print(f"{r['season']:<12} {r['train_size']:>6} {r['test_size']:>5} "
+              f"{r['log_loss']:>8.4f} {r['brier_score']:>7.4f} "
+              f"{r['f1_score']:>6.4f} {r['accuracy']:>5.2%} {roi_str} "
+              f"{r['n_1x2']:>4} {r['n_dc']:>4}")
+
+    # Promedios
+    avg_ll = np.mean([r['log_loss'] for r in resultados_wf])
+    avg_bs = np.mean([r['brier_score'] for r in resultados_wf])
+    avg_f1 = np.mean([r['f1_score'] for r in resultados_wf])
+    avg_acc = np.mean([r['accuracy'] for r in resultados_wf])
+    rois = [r['roi'] for r in resultados_wf if r['roi'] is not None]
+    avg_roi = np.mean(rois) if rois else None
+
+    roi_avg_str = f"{avg_roi:>+7.2%}" if avg_roi is not None else f"{'N/A':>8}"
+    print("-" * 85)
+    print(f"{'PROMEDIO':<12} {'':>6} {'':>5} "
+          f"{avg_ll:>8.4f} {avg_bs:>7.4f} {avg_f1:>6.4f} {avg_acc:>5.2%} {roi_avg_str}")
+
+    std_ll = np.std([r['log_loss'] for r in resultados_wf])
+    std_bs = np.std([r['brier_score'] for r in resultados_wf])
+    print(f"{'STD':<12} {'':>6} {'':>5} "
+          f"{std_ll:>8.4f} {std_bs:>7.4f}")
+
+    if std_ll > 0.05:
+        print("\n   ALERTA: Log Loss varía significativamente entre temporadas.")
+    else:
+        print("\n   Log Loss consistente entre temporadas.")
+
+    df.drop(columns=['_Season'], inplace=True, errors='ignore')
+    return resultados_wf
+
+
+# ============================================================================
 # VISUALIZACIONES
 # ============================================================================
 
@@ -876,8 +1006,8 @@ def main():
     # Evaluación value betting (diferencial exclusivo del 03)
     evaluar_value_betting(modelo_a_guardar, _X_te_cal, y_test, df_test)
 
-    # Walk-forward temporal (TODO: portar desde 02_entrenar_modelo.py)
-    # walk_forward_temporal(df, features, modelo_key=mejor_key)
+    # Walk-forward temporal
+    walk_forward_temporal(df, features, modelo_key=mejor_key)
 
     # Visualizaciones (usa modelo base para feature_importances_)
     visualizar_resultados(y_test, mejor['predicciones'], nombre_final, features, mejor['modelo'])
