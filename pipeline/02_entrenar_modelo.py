@@ -77,10 +77,12 @@ from utils import (
     agregar_features_asian_handicap,
     agregar_features_rolling_extra,
     agregar_features_multi_escala,
+    agregar_features_ewm,
     agregar_features_forma_momentum,
     agregar_features_pinnacle_move,
     agregar_features_arbitro,
     agregar_features_elo,
+    agregar_features_sor,
 )
 
 warnings.filterwarnings('ignore')
@@ -114,10 +116,12 @@ def cargar_datos():
     df = agregar_features_asian_handicap(df)
     df = agregar_features_rolling_extra(df)
     df = agregar_features_multi_escala(df)
+    df = agregar_features_ewm(df)
     df = agregar_features_forma_momentum(df)
     df = agregar_features_pinnacle_move(df)
     df = agregar_features_arbitro(df)
     df = agregar_features_elo(df)
+    df = agregar_features_sor(df)
 
     # Filtrar solo las que existen en el DataFrame
     # Usa ALL_FEATURES de config.py como lista canonica unica
@@ -182,7 +186,7 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=0.10):
     """
     ROI simulado con apuestas planas sobre value bets.
 
-    Para cada partido donde max(prob_modelo) - prob_mercado > edge_minimo,
+    Para cada partido donde max(prob_modelo) - prob_mercado_fair > edge_minimo,
     apuesta 1 unidad al resultado con mayor edge. Calcula el ROI total.
 
     Si df_cuotas es None (no hay cuotas disponibles en el split),
@@ -200,10 +204,16 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=0.10):
     ganancia = 0.0
 
     for i in range(len(y_true)):
-        # Probabilidades del mercado (implícitas, sin normalizar)
-        prob_mercado = 1.0 / cuotas[i]
-        if np.any(np.isnan(prob_mercado)) or np.any(cuotas[i] <= 1.0):
+        # Probabilidades del mercado SIN vig (normalizadas)
+        prob_raw = 1.0 / cuotas[i]
+        if np.any(np.isnan(prob_raw)) or np.any(cuotas[i] <= 1.0):
             continue
+
+        total = prob_raw.sum()
+        if total <= 0:
+            continue
+
+        prob_mercado = prob_raw / total
 
         # Edge por resultado
         edges = probs[i] - prob_mercado

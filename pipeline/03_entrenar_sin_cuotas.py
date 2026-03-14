@@ -72,7 +72,17 @@ from config import (
     RANDOM_SEED,
     UMBRAL_EDGE_MINIMO,
 )
-from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_elo
+from utils import (
+    agregar_xg_rolling,
+    agregar_features_tabla,
+    agregar_features_multi_escala,
+    agregar_features_ewm,
+    agregar_features_forma_momentum,
+    agregar_features_descanso,
+    agregar_features_arbitro,
+    agregar_features_elo,
+    agregar_features_sor,
+)
 
 warnings.filterwarnings('ignore')
 
@@ -181,7 +191,13 @@ def cargar_datos():
     # Features calculadas en memoria (funciones canónicas de utils.py)
     df = agregar_xg_rolling(df)
     df = agregar_features_tabla(df)
+    df = agregar_features_multi_escala(df)
+    df = agregar_features_ewm(df)
+    df = agregar_features_forma_momentum(df)
+    df = agregar_features_descanso(df)
+    df = agregar_features_arbitro(df)
     df = agregar_features_elo(df)
+    df = agregar_features_sor(df)
 
     # Solo partidos con H2H disponible
     if 'H2H_Available' in df.columns:

@@ -172,8 +172,11 @@ class Predictor:
                 df_enriq = utils.agregar_features_asian_handicap(df_enriq)
                 df_enriq = utils.agregar_features_rolling_extra(df_enriq)
                 df_enriq = utils.agregar_features_multi_escala(df_enriq)
+                df_enriq = utils.agregar_features_ewm(df_enriq)
                 df_enriq = utils.agregar_features_forma_momentum(df_enriq)
                 df_enriq = utils.agregar_features_descanso(df_enriq)
+                df_enriq = utils.agregar_features_elo(df_enriq)
+                df_enriq = utils.agregar_features_sor(df_enriq)
             self._df_enriquecido = df_enriq
         except Exception as e:
             print(f"Advertencia: no se pudo enriquecer el historico ({e}). Usando CSV base.")
@@ -260,9 +263,22 @@ class Predictor:
             'HT_HomeGoals5':  'HomeGoals5',
             'HT_Streak':      'Streak',
             # multi-escala (window=10)
+            'HT_Pts3':        'Pts3',
+            'HT_GoalsFor3':   'GoalsFor3',
+            'HT_xG_Avg_3':    'xG_Avg_3',
             'HT_Pts10':       'Pts10',
             'HT_GoalsFor10':  'GoalsFor10',
             'HT_xG_Avg_10':   'xG_Avg_10',
+            'HT_Form_Momentum': 'Form_Momentum',
+            # EWM
+            'HT_Pts_EWM5':    'Pts_EWM5',
+            'HT_GoalsFor_EWM5': 'GoalsFor_EWM5',
+            'HT_GoalsAgainst_EWM5': 'GoalsAgainst_EWM5',
+            'HT_ShotsTarget_EWM5': 'ShotsTarget_EWM5',
+            'HT_xG_EWM5':     'xG_EWM5',
+            'HT_xGA_EWM5':    'xGA_EWM5',
+            # SoR
+            'HT_SoR5':        'SoR5',
         }
         _MAPEO_AT = {
             'AT_Points':      'Points',
@@ -275,9 +291,22 @@ class Predictor:
             'AT_AwayGoals5':  'AwayGoals5',
             'AT_Streak':      'Streak',
             # multi-escala (window=10)
+            'AT_Pts3':        'Pts3',
+            'AT_GoalsFor3':   'GoalsFor3',
+            'AT_xG_Avg_3':    'xG_Avg_3',
             'AT_Pts10':       'Pts10',
             'AT_GoalsFor10':  'GoalsFor10',
             'AT_xG_Avg_10':   'xG_Avg_10',
+            'AT_Form_Momentum': 'Form_Momentum',
+            # EWM
+            'AT_Pts_EWM5':    'Pts_EWM5',
+            'AT_GoalsFor_EWM5': 'GoalsFor_EWM5',
+            'AT_GoalsAgainst_EWM5': 'GoalsAgainst_EWM5',
+            'AT_ShotsTarget_EWM5': 'ShotsTarget_EWM5',
+            'AT_xG_EWM5':     'xG_EWM5',
+            'AT_xGA_EWM5':    'xGA_EWM5',
+            # SoR
+            'AT_SoR5':        'SoR5',
         }
         for feat_modelo, stat_key in _MAPEO_HT.items():
             if stat_key in stats_local:
@@ -576,6 +605,7 @@ class Predictor:
             'HT_Days_Rest': 7.0, 'AT_Days_Rest': 7.0, 'Rest_Diff': 0.0,
             'HT_Had_Europa': 0.0, 'AT_Had_Europa': 0.0,
             'HT_Games_15d': 2.0, 'AT_Games_15d': 2.0,
+            'Calendar_Congestion_Diff': 0.0,
         }
 
         df_enriq = getattr(self, '_df_enriquecido', None)
@@ -614,6 +644,7 @@ class Predictor:
             'AT_Had_Europa': at_europa,
             'HT_Games_15d': ht_games,
             'AT_Games_15d': at_games,
+            'Calendar_Congestion_Diff': ht_games - at_games,
         }
 
     # Mapeo de features del modelo al nombre de columna en el DataFrame enriquecido.
@@ -633,9 +664,22 @@ class Predictor:
         'HomeGoals5':         ('HT_HomeGoals5',         'AT_AwayGoals5'),
         'Streak':             ('HT_Streak',             'AT_Streak'),
         # multi-escala (window=10)
+        'Pts3':               ('HT_Pts3',              'AT_Pts3'),
+        'GoalsFor3':          ('HT_GoalsFor3',         'AT_GoalsFor3'),
+        'xG_Avg_3':           ('HT_xG_Avg_3',          'AT_xG_Avg_3'),
         'Pts10':              ('HT_Pts10',              'AT_Pts10'),
         'GoalsFor10':         ('HT_GoalsFor10',         'AT_GoalsFor10'),
         'xG_Avg_10':          ('HT_xG_Avg_10',         'AT_xG_Avg_10'),
+        'Form_Momentum':      ('HT_Form_Momentum',     'AT_Form_Momentum'),
+        # EWM
+        'Pts_EWM5':           ('HT_Pts_EWM5',          'AT_Pts_EWM5'),
+        'GoalsFor_EWM5':      ('HT_GoalsFor_EWM5',     'AT_GoalsFor_EWM5'),
+        'GoalsAgainst_EWM5':  ('HT_GoalsAgainst_EWM5', 'AT_GoalsAgainst_EWM5'),
+        'ShotsTarget_EWM5':   ('HT_ShotsTarget_EWM5',  'AT_ShotsTarget_EWM5'),
+        'xG_EWM5':            ('HT_xG_EWM5',           'AT_xG_EWM5'),
+        'xGA_EWM5':           ('HT_xGA_EWM5',          'AT_xGA_EWM5'),
+        # SoR
+        'SoR5':               ('HT_SoR5',              'AT_SoR5'),
     }
     _FEATURES_ENRIQUECIDAS_AT = {
         # features de tabla (AT = equipo que va a jugar de visitante)
@@ -651,9 +695,22 @@ class Predictor:
         'AwayGoals5':         ('AT_AwayGoals5',         'HT_HomeGoals5'),
         'Streak':             ('AT_Streak',             'HT_Streak'),
         # multi-escala (window=10)
+        'Pts3':               ('AT_Pts3',              'HT_Pts3'),
+        'GoalsFor3':          ('AT_GoalsFor3',         'HT_GoalsFor3'),
+        'xG_Avg_3':           ('AT_xG_Avg_3',          'HT_xG_Avg_3'),
         'Pts10':              ('AT_Pts10',              'HT_Pts10'),
         'GoalsFor10':         ('AT_GoalsFor10',         'HT_GoalsFor10'),
         'xG_Avg_10':          ('AT_xG_Avg_10',         'HT_xG_Avg_10'),
+        'Form_Momentum':      ('AT_Form_Momentum',     'HT_Form_Momentum'),
+        # EWM
+        'Pts_EWM5':           ('AT_Pts_EWM5',          'HT_Pts_EWM5'),
+        'GoalsFor_EWM5':      ('AT_GoalsFor_EWM5',     'HT_GoalsFor_EWM5'),
+        'GoalsAgainst_EWM5':  ('AT_GoalsAgainst_EWM5', 'HT_GoalsAgainst_EWM5'),
+        'ShotsTarget_EWM5':   ('AT_ShotsTarget_EWM5',  'HT_ShotsTarget_EWM5'),
+        'xG_EWM5':            ('AT_xG_EWM5',           'HT_xG_EWM5'),
+        'xGA_EWM5':           ('AT_xGA_EWM5',          'HT_xGA_EWM5'),
+        # SoR
+        'SoR5':               ('AT_SoR5',              'HT_SoR5'),
     }
 
     def _obtener_stats_equipo(self, equipo: str, es_local: bool) -> dict | None:

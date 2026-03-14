@@ -146,10 +146,10 @@ PARAMS_XGB = {
 # probs_adj = alpha * probs_modelo + (1-alpha) * [1/3, 1/3, 1/3]
 # Valor por defecto. Se re-calibra empíricamente por calibrar_shrinkage()
 # en 02/03_entrenar*.py buscando el alpha que minimiza Brier Score.
-FACTOR_CONSERVADOR = 0.60       # Valor inicial; se sobreescribe en metadata
+FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
-UMBRAL_EDGE_MINIMO = 0.05       # Edge mínimo requerido (5%) — post vig-removal, 2-5% es significativo
+UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
 CUOTA_MAXIMA = 5.0              # No apostar en underdogs extremos
 PROBABILIDAD_MINIMA = 0.35      # Probabilidad mínima del modelo
 
@@ -209,9 +209,24 @@ FEATURES_XG_GLOBAL = [
 
 # Multi-escala: rolling window=10 para tendencias de medio plazo
 FEATURES_MULTI_ESCALA = [
+    'HT_Pts3', 'AT_Pts3',
+    'HT_GoalsFor3', 'AT_GoalsFor3',
+    'HT_xG_Avg_3', 'AT_xG_Avg_3',
     'HT_Pts10', 'AT_Pts10',
     'HT_GoalsFor10', 'AT_GoalsFor10',
     'HT_xG_Avg_10', 'AT_xG_Avg_10',
+    'HT_Form_Momentum', 'AT_Form_Momentum',
+    'Form_Momentum_Diff',
+]
+
+# Features EWM (decay exponencial)
+FEATURES_EWM = [
+    'HT_Pts_EWM5', 'AT_Pts_EWM5',
+    'HT_GoalsFor_EWM5', 'AT_GoalsFor_EWM5',
+    'HT_GoalsAgainst_EWM5', 'AT_GoalsAgainst_EWM5',
+    'HT_ShotsTarget_EWM5', 'AT_ShotsTarget_EWM5',
+    'HT_xG_EWM5', 'AT_xG_EWM5',
+    'HT_xGA_EWM5', 'AT_xGA_EWM5',
 ]
 
 FEATURES_H2H = [
@@ -312,6 +327,12 @@ FEATURES_DESCANSO = [
     'AT_Had_Europa',  # 1 si el visitante jugó UCL/UEL en los últimos 4 días
     'HT_Games_15d',   # Partidos del local en los últimos 15 días
     'AT_Games_15d',   # Partidos del visitante en los últimos 15 días
+    'Calendar_Congestion_Diff',  # Diferencia de congestión de calendario
+]
+
+# Strength of Recent Schedule (SoR)
+FEATURES_SOR = [
+    'HT_SoR5', 'AT_SoR5'
 ]
 
 # P1-Audit: Features con cuotas de apertura (sin closing lines)
@@ -323,6 +344,7 @@ FEATURES_CON_CUOTAS_APERTURA = (
     + FEATURES_XG
     + FEATURES_XG_GLOBAL
     + FEATURES_MULTI_ESCALA
+    + FEATURES_EWM
     + FEATURES_H2H
     + FEATURES_H2H_DERIVADAS
     + FEATURES_TABLA
@@ -333,6 +355,7 @@ FEATURES_CON_CUOTAS_APERTURA = (
     + FEATURES_FORMA_MOMENTUM
     + FEATURES_DESCANSO
     + FEATURES_ELO
+    + FEATURES_SOR
 )
 
 # Modelo estructural (sin cuotas) — usado por 03_entrenar_sin_cuotas.py
@@ -341,6 +364,7 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_XG             #  6: xG rolling (venue-específico)
     + FEATURES_XG_GLOBAL      #  5: xG rolling global (todas las venues)
     + FEATURES_MULTI_ESCALA   #  6: rolling window=10 (medio plazo)
+    + FEATURES_EWM            # 12: decay exponencial (forma reciente)
     + FEATURES_H2H            #  5: historial directo
     + FEATURES_H2H_DERIVADAS  #  4: derivadas H2H
     + FEATURES_TABLA          # 11: posición, puntos, presión
@@ -348,6 +372,7 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_REFEREE        #  5: árbitro
     + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
     + FEATURES_ELO            #  4: Elo ratings
+    + FEATURES_SOR            #  2: strength of schedule
     # Total: 78 features — cero cuotas, cero señales de mercado
 )
 

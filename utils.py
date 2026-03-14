@@ -731,26 +731,30 @@ def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================================
 
 ROLLING_WINDOW_LONG = 10
+ROLLING_WINDOW_SHORT = 3
 
 def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Agrega features rolling con ventana larga (10 partidos) para capturar
-    tendencias de medio plazo complementarias a la ventana corta (5).
+    Agrega features rolling con ventana corta (3) y larga (10)
+    para capturar tendencias inmediatas y de medio plazo.
 
     Features calculadas:
-      - HT_Pts10       : puntos local en últimos 10 partidos (cualquier venue)
-      - AT_Pts10       : puntos visitante en últimos 10 partidos
-      - HT_GoalsFor10  : goles marcados local en últimos 10 partidos
-      - AT_GoalsFor10  : goles marcados visitante en últimos 10 partidos
-      - HT_xG_Avg_10   : xG promedio local en últimos 10 partidos (global)
-      - AT_xG_Avg_10   : xG promedio visitante en últimos 10 partidos (global)
+      - HT_Pts3 / AT_Pts3       : puntos últimos 3 partidos
+      - HT_GoalsFor3 / AT_GoalsFor3
+      - HT_xG_Avg_3 / AT_xG_Avg_3
+      - HT_Pts10 / AT_Pts10     : puntos últimos 10 partidos
+      - HT_GoalsFor10 / AT_GoalsFor10
+      - HT_xG_Avg_10 / AT_xG_Avg_10
+      - HT_Form_Momentum / AT_Form_Momentum (ratio corto/largo)
+      - Form_Momentum_Diff
 
     Usa formato long (home+away) y shift(1) para evitar leakage.
     """
-    w = ROLLING_WINDOW_LONG
+    w_long = ROLLING_WINDOW_LONG
+    w_short = ROLLING_WINDOW_SHORT
     df = df.sort_values('Date').reset_index(drop=True)
 
-    print(f"\n🔧 Calculando features multi-escala (window={w})...")
+    print(f"\n🔧 Calculando features multi-escala (window={w_short}/{w_long})...")
 
     # ── Formato long: una fila por equipo por partido ─────────────────────
     home = df[['Date', 'HomeTeam', 'FTHG', 'FTAG']].copy()
@@ -769,16 +773,22 @@ def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
     long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
 
     grp = long_df.groupby('Team')
-    long_df['Pts_10']     = grp['Pts'].transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
-    long_df['GoalsFor_10'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
+    long_df['Pts_3']      = grp['Pts'].transform(lambda x: x.shift(1).rolling(w_short, min_periods=1).sum())
+    long_df['GoalsFor_3'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w_short, min_periods=1).sum())
+    long_df['Pts_10']     = grp['Pts'].transform(lambda x: x.shift(1).rolling(w_long, min_periods=1).sum())
+    long_df['GoalsFor_10'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w_long, min_periods=1).sum())
 
     # Separar home/away
     n = len(df)
-    home_stats = long_df.iloc[:n][['Pts_10', 'GoalsFor_10']].copy()
+    home_stats = long_df.iloc[:n][['Pts_3', 'GoalsFor_3', 'Pts_10', 'GoalsFor_10']].copy()
     home_stats.index = df.index
-    away_stats = long_df.iloc[n:][['Pts_10', 'GoalsFor_10']].copy()
+    away_stats = long_df.iloc[n:][['Pts_3', 'GoalsFor_3', 'Pts_10', 'GoalsFor_10']].copy()
     away_stats.index = df.index
 
+    df['HT_Pts3']        = home_stats['Pts_3'].fillna(0)
+    df['AT_Pts3']        = away_stats['Pts_3'].fillna(0)
+    df['HT_GoalsFor3']   = home_stats['GoalsFor_3'].fillna(0)
+    df['AT_GoalsFor3']   = away_stats['GoalsFor_3'].fillna(0)
     df['HT_Pts10']       = home_stats['Pts_10'].fillna(0)
     df['AT_Pts10']       = away_stats['Pts_10'].fillna(0)
     df['HT_GoalsFor10']  = home_stats['GoalsFor_10'].fillna(0)
@@ -794,22 +804,127 @@ def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
         long_xg = pd.concat([home_xg, away_xg], ignore_index=True)
         long_xg = long_xg.sort_values(['Team', 'Date']).reset_index(drop=True)
 
+        long_xg['xGF_3'] = long_xg.groupby('Team')['xGF'].transform(
+            lambda x: x.shift(1).rolling(w_short, min_periods=1).mean()
+        )
         long_xg['xGF_10'] = long_xg.groupby('Team')['xGF'].transform(
-            lambda x: x.shift(1).rolling(w, min_periods=1).mean()
+            lambda x: x.shift(1).rolling(w_long, min_periods=1).mean()
         )
 
+        df['HT_xG_Avg_3'] = long_xg.iloc[:n]['xGF_3'].values
+        df['AT_xG_Avg_3'] = long_xg.iloc[n:]['xGF_3'].values
         df['HT_xG_Avg_10'] = long_xg.iloc[:n]['xGF_10'].values
         df['AT_xG_Avg_10'] = long_xg.iloc[n:]['xGF_10'].values
     else:
+        df['HT_xG_Avg_3'] = 0.0
+        df['AT_xG_Avg_3'] = 0.0
         df['HT_xG_Avg_10'] = 0.0
         df['AT_xG_Avg_10'] = 0.0
 
-    multi_cols = ['HT_Pts10', 'AT_Pts10', 'HT_GoalsFor10', 'AT_GoalsFor10',
-                  'HT_xG_Avg_10', 'AT_xG_Avg_10']
+    # Momentum ratio: forma corta vs larga
+    eps = 1e-6
+    df['HT_Form_Momentum'] = (df['HT_Pts3'] / max(w_short, 1)) / ((df['HT_Pts10'] / max(w_long, 1)) + eps)
+    df['AT_Form_Momentum'] = (df['AT_Pts3'] / max(w_short, 1)) / ((df['AT_Pts10'] / max(w_long, 1)) + eps)
+    df['Form_Momentum_Diff'] = df['HT_Form_Momentum'] - df['AT_Form_Momentum']
+
+    multi_cols = [
+        'HT_Pts3', 'AT_Pts3', 'HT_GoalsFor3', 'AT_GoalsFor3',
+        'HT_Pts10', 'AT_Pts10', 'HT_GoalsFor10', 'AT_GoalsFor10',
+        'HT_xG_Avg_3', 'AT_xG_Avg_3', 'HT_xG_Avg_10', 'AT_xG_Avg_10',
+        'HT_Form_Momentum', 'AT_Form_Momentum', 'Form_Momentum_Diff',
+    ]
     for col in multi_cols:
         df[col] = df[col].fillna(0)
 
     print(f"   ✅ Features multi-escala: {len(multi_cols)} columnas agregadas")
+    return df
+
+
+# ============================================================================
+# FEATURES EWM (DECAY EXPONENCIAL)
+# ============================================================================
+
+def agregar_features_ewm(df: pd.DataFrame, span: int = 5) -> pd.DataFrame:
+    """
+    Agrega features con decay exponencial (EWM) para forma reciente.
+
+    Calcula EWM para:
+      - Pts, Goals For/Against, Shots Target, xG y xGA (si disponibles)
+    """
+    print(f"\n🔧 Calculando features EWM (span={span})...")
+
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    # Formato long
+    home = df[['Date', 'HomeTeam', 'FTHG', 'FTAG', 'HST']].copy()
+    home.columns = ['Date', 'Team', 'GF', 'GA', 'ST']
+    away = df[['Date', 'AwayTeam', 'FTAG', 'FTHG', 'AST']].copy()
+    away.columns = ['Date', 'Team', 'GF', 'GA', 'ST']
+
+    for sub in (home, away):
+        sub['GF'] = pd.to_numeric(sub['GF'], errors='coerce').fillna(0)
+        sub['GA'] = pd.to_numeric(sub['GA'], errors='coerce').fillna(0)
+        sub['ST'] = pd.to_numeric(sub['ST'], errors='coerce').fillna(0)
+        sub['Pts'] = np.where(sub['GF'] > sub['GA'], 3,
+                     np.where(sub['GF'] == sub['GA'], 1, 0))
+
+    long_df = pd.concat([home, away], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    grp = long_df.groupby('Team')
+    long_df['Pts_EWM'] = grp['Pts'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+    long_df['GF_EWM'] = grp['GF'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+    long_df['GA_EWM'] = grp['GA'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+    long_df['ST_EWM'] = grp['ST'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+
+    n = len(df)
+    home_stats = long_df.iloc[:n][['Pts_EWM', 'GF_EWM', 'GA_EWM', 'ST_EWM']].copy()
+    away_stats = long_df.iloc[n:][['Pts_EWM', 'GF_EWM', 'GA_EWM', 'ST_EWM']].copy()
+    home_stats.index = df.index
+    away_stats.index = df.index
+
+    df['HT_Pts_EWM5'] = home_stats['Pts_EWM'].fillna(0)
+    df['AT_Pts_EWM5'] = away_stats['Pts_EWM'].fillna(0)
+    df['HT_GoalsFor_EWM5'] = home_stats['GF_EWM'].fillna(0)
+    df['AT_GoalsFor_EWM5'] = away_stats['GF_EWM'].fillna(0)
+    df['HT_GoalsAgainst_EWM5'] = home_stats['GA_EWM'].fillna(0)
+    df['AT_GoalsAgainst_EWM5'] = away_stats['GA_EWM'].fillna(0)
+    df['HT_ShotsTarget_EWM5'] = home_stats['ST_EWM'].fillna(0)
+    df['AT_ShotsTarget_EWM5'] = away_stats['ST_EWM'].fillna(0)
+
+    # xG EWM si hay datos
+    if 'Home_xG' in df.columns and 'Away_xG' in df.columns:
+        home_xg = df[['Date', 'HomeTeam', 'Home_xG', 'Away_xG']].copy()
+        home_xg.columns = ['Date', 'Team', 'xGF', 'xGA']
+        away_xg = df[['Date', 'AwayTeam', 'Away_xG', 'Home_xG']].copy()
+        away_xg.columns = ['Date', 'Team', 'xGF', 'xGA']
+
+        long_xg = pd.concat([home_xg, away_xg], ignore_index=True)
+        long_xg = long_xg.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+        grp_xg = long_xg.groupby('Team')
+        long_xg['xGF_EWM'] = grp_xg['xGF'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+        long_xg['xGA_EWM'] = grp_xg['xGA'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+
+        df['HT_xG_EWM5'] = long_xg.iloc[:n]['xGF_EWM'].values
+        df['AT_xG_EWM5'] = long_xg.iloc[n:]['xGF_EWM'].values
+        df['HT_xGA_EWM5'] = long_xg.iloc[:n]['xGA_EWM'].values
+        df['AT_xGA_EWM5'] = long_xg.iloc[n:]['xGA_EWM'].values
+    else:
+        df['HT_xG_EWM5'] = 0.0
+        df['AT_xG_EWM5'] = 0.0
+        df['HT_xGA_EWM5'] = 0.0
+        df['AT_xGA_EWM5'] = 0.0
+
+    ewm_cols = [
+        'HT_Pts_EWM5', 'AT_Pts_EWM5',
+        'HT_GoalsFor_EWM5', 'AT_GoalsFor_EWM5',
+        'HT_GoalsAgainst_EWM5', 'AT_GoalsAgainst_EWM5',
+        'HT_ShotsTarget_EWM5', 'AT_ShotsTarget_EWM5',
+        'HT_xG_EWM5', 'AT_xG_EWM5', 'HT_xGA_EWM5', 'AT_xGA_EWM5',
+    ]
+    df[ewm_cols] = df[ewm_cols].fillna(0)
+    print(f"   ✅ Features EWM: {len(ewm_cols)} columnas agregadas")
     return df
 
 
@@ -941,6 +1056,48 @@ def agregar_features_elo(df: pd.DataFrame) -> pd.DataFrame:
     print(f"   ELO: {con_elo}/{len(df)} partidos con datos ({con_elo/len(df)*100:.1f}%)")
     print(f"   ELO local promedio: {df['HT_ELO'].mean():.1f} | visitante: {df['AT_ELO'].mean():.1f}")
 
+    return df
+
+
+# ==========================================================================
+# FEATURES DE STRENGTH OF RECENT SCHEDULE (SoR)
+# ==========================================================================
+
+def agregar_features_sor(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """
+    Strength of Recent Schedule (SoR): promedio de Elo de rivales en los
+    ultimos `window` partidos, usando solo partidos anteriores.
+    """
+    if 'HT_Elo' not in df.columns or 'AT_Elo' not in df.columns:
+        print("   SoR: faltan features de Elo, saltando.")
+        df['HT_SoR5'] = 0.0
+        df['AT_SoR5'] = 0.0
+        return df
+
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    home_rows = df[['Date', 'HomeTeam', 'AT_Elo']].copy()
+    home_rows.columns = ['Date', 'Team', 'Opp_Elo']
+
+    away_rows = df[['Date', 'AwayTeam', 'HT_Elo']].copy()
+    away_rows.columns = ['Date', 'Team', 'Opp_Elo']
+
+    long_df = pd.concat([home_rows, away_rows], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    grp = long_df.groupby('Team')
+    long_df['SoR'] = grp['Opp_Elo'].transform(
+        lambda x: x.shift(1).rolling(window, min_periods=1).mean()
+    )
+
+    n = len(df)
+    df['HT_SoR5'] = long_df.iloc[:n]['SoR'].values
+    df['AT_SoR5'] = long_df.iloc[n:]['SoR'].values
+
+    df['HT_SoR5'] = df['HT_SoR5'].fillna(df['HT_SoR5'].median() if pd.notna(df['HT_SoR5'].median()) else 0.0)
+    df['AT_SoR5'] = df['AT_SoR5'].fillna(df['AT_SoR5'].median() if pd.notna(df['AT_SoR5'].median()) else 0.0)
+
+    print("   SoR: features agregadas (HT_SoR5 / AT_SoR5)")
     return df
 
 
@@ -1359,6 +1516,7 @@ def agregar_features_descanso(df: pd.DataFrame,
     df['AT_Had_Europa'] = at_europa
     df['HT_Games_15d']  = ht_games
     df['AT_Games_15d']  = at_games
+    df['Calendar_Congestion_Diff'] = df['HT_Games_15d'] - df['AT_Games_15d']
 
     # Estadísticas de cobertura
     con_datos = (df['HT_Days_Rest'] != DEFAULTS['HT_Days_Rest']).sum()

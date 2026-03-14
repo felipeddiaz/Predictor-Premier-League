@@ -1,0 +1,363 @@
+
+======================================================================
+   PREMIER LEAGUE - ENTRENAMIENTO DE MODELOS
+   (Feature Selection + Elo Ratings — Optimizado para ROI)
+======================================================================
+
+======================================================================
+FASE 1: CARGANDO DATOS
+======================================================================
+✅ Cargados: 3691 partidos
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+   Calculando features derivadas de cuotas (solo apertura)...
+   Features de cuotas derivadas (apertura): 3691 partidos con datos
+
+   Calculando features Asian Handicap (solo apertura)...
+   Asian Handicap (apertura): 2266 partidos con datos
+   Handicap promedio local: -0.189
+
+🔧 Calculando features multi-escala (window=3/10)...
+   ✅ Features multi-escala: 15 columnas agregadas
+
+🔧 Calculando features EWM (span=5)...
+   ✅ Features EWM: 12 columnas agregadas
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+   Pinnacle Opening agregado: 3630 partidos con datos
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+   SoR: features agregadas (HT_SoR5 / AT_SoR5)
+
+📊 Features totales: 121
+   • Base: 10
+   • Cuotas: 3
+   • xG rolling: 6
+   • H2H: 5
+   • H2H derivadas: 4
+   • Tabla: 11
+   • Cuotas derivadas: 6
+   • Asian Handicap: 5
+   • Rolling extra: 3
+   • Pinnacle: 3
+   • Referee: 5
+   • Forma/Momentum: 15
+   • xG Global: 5
+   • Multi-escala (w=10): 15
+   • Descanso/Fatiga: 7
+   • Elo ratings: 4
+
+📊 Distribución de resultados:
+   Local: 1648 (44.6%)
+   Empate: 852 (23.1%)
+   Visitante: 1191 (32.3%)
+
+   Division de datos (80/20 temporal)
+   Entrenamiento: 2952 partidos
+   Prueba: 739 partidos
+
+======================================================================
+SELECCION DE FEATURES (Top 35 de 121)
+======================================================================
+
+   Top 35 features seleccionadas:
+    1. Prob_A                         0.0436
+    2. Home_Advantage_Prob            0.0355
+    3. Pinnacle_Open_A                0.0336
+    4. Pinnacle_Open_H                0.0321
+    5. AH_Edge_Home                   0.0178
+    6. B365H                          0.0150
+    7. Prob_H                         0.0146
+    8. Pinnacle_Conf                  0.0117
+    9. Prob_D                         0.0109
+   10. B365A                          0.0098
+   11. Position_Reliability           0.0093
+   12. B365D                          0.0091
+   13. Elo_WinProb_H                  0.0086
+   14. HT_Elo                         0.0085
+   15. Market_Confidence              0.0085
+   16. Prob_Spread                    0.0083
+   17. HT_Games_15d                   0.0083
+   18. AT_xGA_EWM5                    0.0083
+   19. H2H_Total_Goals_Avg            0.0083
+   20. HT_HomeWinRate5                0.0082
+   21. AT_ShotsTarget_EWM5            0.0081
+   22. Ref_Away_Yellow                0.0080
+   23. AT_Pts_EWM5                    0.0080
+   24. AT_xGA_Global                  0.0079
+   25. Elo_Diff                       0.0079
+   26. AT_AwayGoals5                  0.0078
+   27. AT_Elo                         0.0078
+   28. AT_xG_EWM5                     0.0077
+   29. HT_GoalsFor_EWM5               0.0077
+   30. Rest_Diff                      0.0076
+   31. xG_Diff                        0.0075
+   32. AT_xG_Avg_10                   0.0075
+   33. HT_SoR5                        0.0075
+   34. HT_HomeGoals5                  0.0075
+   35. H2H_Home_Goals_Avg             0.0075
+
+   Eliminadas (86):
+       HT_Pressure                    0.0075
+       HT_xG_EWM5                     0.0074
+       HT_Points                      0.0074
+       AT_GoalsAgainst5               0.0074
+       H2H_Goal_Diff                  0.0073
+       AT_Pts10                       0.0073
+       HT_Position                    0.0073
+       AT_Pts5                        0.0073
+       AT_GoalsFor_EWM5               0.0073
+       H2H_Home_Consistent            0.0073
+       AH_Implied_Home                0.0073
+       HT_Days_Rest                   0.0073
+       AT_Goals_Diff                  0.0073
+       Position_Diff_Weighted         0.0072
+       Ref_Home_WinRate               0.0072
+       Match_Type                     0.0072
+       HT_ShotsTarget_EWM5            0.0072
+       Season_Progress                0.0072
+       AT_Days_Rest                   0.0072
+       HT_Pts_EWM5                    0.0072
+       AT_xG_Avg_3                    0.0072
+       xG_Global_Diff                 0.0072
+       HT_xG_Avg_10                   0.0072
+       Momentum_Diff                  0.0071
+       HT_GoalsFor5                   0.0071
+       AT_Form_Momentum               0.0071
+       AT_xGA_Avg                     0.0071
+       AT_Pressure                    0.0071
+       AT_SoR5                        0.0071
+       AT_GoalsFor5                   0.0071
+       H2H_Win_Advantage              0.0071
+       AH_Implied_Away                0.0071
+       AT_GoalsFor10                  0.0071
+       Form_Momentum_Diff             0.0071
+       HT_GoalsAgainst_EWM5           0.0070
+       HT_Pts5                        0.0070
+       HT_xGA_Avg                     0.0070
+       HT_xG_Global                   0.0070
+       HT_Form_L                      0.0070
+       H2H_Away_Goals_Avg             0.0070
+       HT_xGA_Global                  0.0069
+       Ref_Yellow_Avg                 0.0069
+       HT_xGA_EWM5                    0.0069
+       AT_Points                      0.0069
+       xG_Total                       0.0069
+       HT_GoalsAgainst5               0.0069
+       AT_xG_Global                   0.0068
+       AT_GoalsAgainst_EWM5           0.0068
+       HT_xG_Avg                      0.0068
+       AT_HTR_Rate                    0.0068
+       AT_AwayWinRate5                0.0068
+       HT_Goals_Diff                  0.0067
+       HT_GoalsFor10                  0.0067
+       Ref_Home_Yellow                0.0067
+       H2H_Matches                    0.0067
+       HT_Form_Momentum               0.0067
+       HT_xG_Avg_3                    0.0067
+       Position_Diff                  0.0067
+       H2H_BTTS_Rate                  0.0066
+       AT_Streak                      0.0066
+       H2H_Home_Win_Rate              0.0066
+       AT_GoalsFor3                   0.0066
+       AT_xG_Avg                      0.0066
+       HT_Had_Europa                  0.0066
+       Ref_Goals_Avg                  0.0065
+       AT_WinRate5                    0.0064
+       AT_Position                    0.0063
+       AHh                            0.0062
+       AH_Market_Conf                 0.0061
+       AT_AvgShotsTarget              0.0061
+       HT_Streak                      0.0060
+       AT_Form_D                      0.0060
+       HT_Pts3                        0.0060
+       HT_AvgShotsTarget              0.0060
+       HT_GoalsFor3                   0.0059
+       HT_Form_D                      0.0059
+       AT_Pts3                        0.0057
+       HT_AvgGoals                    0.0056
+       HT_Pts10                       0.0056
+       AT_Form_W                      0.0053
+       AT_Form_L                      0.0053
+       AT_AvgGoals                    0.0052
+       AT_Games_15d                   0.0048
+       HT_WinRate5                    0.0046
+       AT_Had_Europa                  0.0046
+       HT_Form_W                      0.0044
+
+======================================================================
+MODELO 1: RANDOM FOREST BÁSICO (Baseline)
+======================================================================
+✅ Log Loss: 0.9872 | Brier: 0.1952 | F1: 0.4647 | Acc: 52.91% | ROI: -3.81%
+
+======================================================================
+MODELO 2: RANDOM FOREST BALANCEADO (Auto)
+======================================================================
+✅ Log Loss: 0.9805 | Brier: 0.1948 | F1: 0.4979 | Acc: 52.10% | ROI: +29.82%
+
+======================================================================
+MODELO 3: RANDOM FOREST CON PESOS OPTUNA
+======================================================================
+✅ Log Loss: 0.9945 | Brier: 0.1985 | F1: 0.4899 | Acc: 48.04% | ROI: +8.84%
+
+======================================================================
+MODELO 4: XGBOOST
+======================================================================
+✅ Log Loss: 0.9882 | Brier: 0.1964 | F1: 0.4971 | Acc: 52.77% | ROI: +23.73%
+
+======================================================================
+FASE 2: COMPARACIÓN DE MODELOS (Criterio: ROI)
+======================================================================
+
+Modelo                              ROI  Log Loss   Brier      F1     Acc
+-------------------------------------------------------------------------
+Random Forest Básico            -3.81%    0.9872  0.1952  0.4647 52.91%
+Random Forest Balanceado       +29.82%    0.9805  0.1948  0.4979 52.10%
+Random Forest Optuna            +8.84%    0.9945  0.1985  0.4899 48.04%
+XGBoost                        +23.73%    0.9882  0.1964  0.4971 52.77%
+
+============================================================
+GANADOR: Random Forest Balanceado  (ROI: +29.82%)
+   Log Loss:    0.9805
+   Brier Score: 0.1948
+   F1-Score:    0.4979 (referencia)
+   Accuracy:    52.10% (referencia)
+============================================================
+
+📊 REPORTE DETALLADO:
+-----------------------------------------------------------------
+              precision    recall  f1-score   support
+
+       Local       0.56      0.69      0.62       309
+      Empate       0.32      0.17      0.22       185
+   Visitante       0.54      0.58      0.56       245
+
+    accuracy                           0.52       739
+   macro avg       0.47      0.48      0.46       739
+weighted avg       0.49      0.52      0.50       739
+
+
+======================================================================
+CALIBRACIÓN DE PROBABILIDADES
+======================================================================
+
+📊 Modelo ORIGINAL (sin calibrar):
+   Log Loss:    0.9805
+   Brier Score: 0.1948
+
+📊 Modelo CALIBRADO (Platt Scaling + TimeSeriesSplit):
+   Log Loss:    0.9879
+   Brier Score: 0.1958
+
+📊 COMPARACIÓN:
+   Métrica         Original     Calibrado    Cambio      
+   --------------------------------------------------
+   Log Loss        0.9805       0.9879          -0.0074
+   Brier Score     0.1948       0.1958          -0.0010
+   F1 (info)       0.4979       0.4527          -0.0452
+
+⚠️  Calibración NO mejora probabilidades (Brier +0.0010)
+   → Guardando modelo ORIGINAL (ya produce buenas probabilidades)
+
+======================================================================
+CALIBRACION DE SHRINKAGE (FACTOR_CONSERVADOR)
+======================================================================
+
+   Brier Score RAW (sin ajuste):       0.1948
+
+   Shrinkage grid search:
+     alpha=0.50  Brier=0.2018
+     alpha=0.55  Brier=0.2004
+     alpha=0.60  Brier=0.1993
+     alpha=0.65  Brier=0.1983
+     alpha=0.70  Brier=0.1974
+     alpha=0.75  Brier=0.1966
+     alpha=0.80  Brier=0.1960
+     alpha=0.85  Brier=0.1955
+     alpha=0.90  Brier=0.1951
+     alpha=0.95  Brier=0.1949
+     alpha=1.00  Brier=0.1948 <-- mejor
+
+   Mejor shrinkage: alpha=1.00 -> Brier=0.1948
+   Temperature Scaling: T=1.00 -> Brier=0.1948
+
+   -> Shrinkage es mejor (alpha=1.00)
+
+======================================================================
+FASE 4: GENERANDO VISUALIZACIONES
+======================================================================
+✅ Guardado: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\confusion_matrix_final.png
+
+======================================================================
+FASE 5: GUARDANDO MODELO
+======================================================================
+✅ Modelo: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\modelo_final_optimizado.pkl
+✅ Features: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\features.pkl
+✅ Metadata: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\metadata.pkl
+   alpha_shrinkage: 1.00
+
+======================================================================
+ENTRENAMIENTO COMPLETADO
+======================================================================
+
+   Modelo guardado: Random Forest Balanceado (Sin Calibrar)
+   Features: 35 (de 121 originales)
+
+   Metricas primarias (calidad probabilistica):
+   Log Loss:    0.9805
+   Brier Score: 0.1948
+   ROI sim.:    +29.82%
+
+   Metricas de referencia (clasificacion):
+   Accuracy:    52.10%
+   F1-Score:    0.4979
+
+   Archivos guardados en C:\Users\LAP\Desktop\mi_predictor_pl\modelos\
+
+
+======================================================================
+WALK-FORWARD TEMPORAL (season-by-season)
+======================================================================
+   Temporadas disponibles: 2016-17, 2017-18, 2018-19, 2019-20, 2020-21, 2021-22, 2022-23, 2023-24, 2024-25, 2025-26
+
+Test Season   Train  Test  Log Loss   Brier      F1     Acc      ROI
+---------------------------------------------------------------------------
+2020-21        1520   380    1.0227  0.2034  0.4708 48.42%  +5.34%
+2021-22        1900   380    0.9689  0.1913  0.4995 53.42%  +0.20%
+2022-23        2280   380    0.9927  0.1971  0.5225 52.37% -20.75%
+2023-24        2660   380    0.9311  0.1828  0.5613 57.89% +24.24%
+2024-25        3040   380    0.9850  0.1957  0.5014 53.42%  -0.89%
+2025-26        3420   271    1.0165  0.2032  0.4577 47.60% +63.16%
+---------------------------------------------------------------------------
+PROMEDIO                     0.9862  0.1956  0.5022 52.19% +11.88%
+STD                          0.0306  0.0071
+
+   Log Loss consistente entre temporadas.
+
+======================================================================
+MODELO ESTRUCTURAL (SIN CUOTAS)
+======================================================================
+   Features estructurales: 101 (sin cuotas)
+   Log Loss:    0.9988
+   Brier Score: 0.1989
+   F1-Score:    0.4958
+   Accuracy:    53.59%
+   Calibracion no mejora, guardando original
+
+   Modelo estructural: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\modelo_value_betting.pkl
+   Features:           C:\Users\LAP\Desktop\mi_predictor_pl\modelos\features_value_betting.pkl
+
+   COMPARACION FINAL:
+   Modelo                               Log Loss   Brier      F1     Acc
+   -----------------------------------------------------------------
+   Principal (35 feat)                    0.9805  0.1948  0.4979 52.10%
+   Estructural (101 feat)                 0.9988  0.1989  0.4958 53.59%
+
+   Delta Log Loss: +0.0183
