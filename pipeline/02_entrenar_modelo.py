@@ -42,15 +42,20 @@ from config import (
     ARCHIVO_MODELO,
     ARCHIVO_FEATURES_PKL,
     ARCHIVO_METADATA,
+    ARCHIVO_MODELO_VB,
+    ARCHIVO_FEATURES_VB,
     PESOS_OPTIMOS,
     PESOS_XGB,
     PARAMS_OPTIMOS,
     PARAMS_XGB,
+    PARAMS_XGB_VB,
     ALL_FEATURES,
+    FEATURES_ESTRUCTURALES,
     FEATURES_BASE,
     FEATURES_CUOTAS,
     FEATURES_CUOTAS_DERIVADAS,
     FEATURES_XG,
+    FEATURES_XG_GLOBAL,
     FEATURES_H2H,
     FEATURES_H2H_DERIVADAS,
     FEATURES_TABLA,
@@ -60,10 +65,11 @@ from config import (
     FEATURES_REFEREE,
     FEATURES_FORMA_MOMENTUM,
     FEATURES_DESCANSO,
-    FEATURES_XG_GLOBAL,
     FEATURES_MULTI_ESCALA,
+    FEATURES_ELO,
     TEST_SIZE,
     RANDOM_SEED,
+    N_FEATURES_SELECCION,
 )
 from utils import (
     agregar_features_tabla,
@@ -74,6 +80,7 @@ from utils import (
     agregar_features_forma_momentum,
     agregar_features_pinnacle_move,
     agregar_features_arbitro,
+    agregar_features_elo,
 )
 
 warnings.filterwarnings('ignore')
@@ -110,6 +117,7 @@ def cargar_datos():
     df = agregar_features_forma_momentum(df)
     df = agregar_features_pinnacle_move(df)
     df = agregar_features_arbitro(df)
+    df = agregar_features_elo(df)
 
     # Filtrar solo las que existen en el DataFrame
     # Usa ALL_FEATURES de config.py como lista canonica unica
@@ -131,6 +139,7 @@ def cargar_datos():
     print(f"   • xG Global: {len([f for f in FEATURES_XG_GLOBAL if f in features])}")
     print(f"   • Multi-escala (w=10): {len([f for f in FEATURES_MULTI_ESCALA if f in features])}")
     print(f"   • Descanso/Fatiga: {len([f for f in FEATURES_DESCANSO if f in features])}")
+    print(f"   • Elo ratings: {len([f for f in FEATURES_ELO if f in features])}")
 
     # Info de H2H
     if 'H2H_Available' in features:
@@ -406,39 +415,39 @@ def calibrar_modelo(modelo, X_train, y_train, X_test, y_test):
 # ============================================================================
 
 def seleccionar_mejor_modelo(resultados, y_test):
-    """Compara modelos y selecciona el mejor según Log Loss (calidad probabilística)."""
+    """Compara modelos y selecciona el mejor según ROI (value betting)."""
 
     print("\n" + "="*70)
-    print("FASE 2: COMPARACIÓN DE MODELOS")
+    print("FASE 2: COMPARACIÓN DE MODELOS (Criterio: ROI)")
     print("="*70)
 
-    header = f"{'Modelo':<30} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}"
-    roi_disponible = any(r['roi'] is not None for r in resultados.values())
-    if roi_disponible:
-        header += f" {'ROI':>8}"
+    header = f"{'Modelo':<30} {'ROI':>8} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}"
     print(f"\n{header}")
     print("-" * len(header))
 
     for key, datos in resultados.items():
-        linea = (f"{datos['nombre']:<30} {datos['log_loss']:>9.4f} "
+        roi_str = f"{datos['roi']:>+7.2%}" if datos['roi'] is not None else f"{'N/A':>8}"
+        linea = (f"{datos['nombre']:<30} {roi_str} {datos['log_loss']:>9.4f} "
                  f"{datos['brier_score']:>7.4f} {datos['f1_score']:>7.4f} "
                  f"{datos['accuracy']:>6.2%}")
-        if roi_disponible:
-            roi_str = f"{datos['roi']:>+7.2%}" if datos['roi'] is not None else f"{'N/A':>8}"
-            linea += f" {roi_str}"
         print(linea)
 
-    # Elegir mejor por Log Loss (menor = mejor calidad probabilística)
-    mejor_key = min(resultados.items(), key=lambda x: x[1]['log_loss'])[0]
+    # Elegir mejor por ROI (mayor = mejor para value betting)
+    # Filtrar modelos con ROI disponible
+    con_roi = {k: v for k, v in resultados.items() if v['roi'] is not None}
+    if con_roi:
+        mejor_key = max(con_roi.items(), key=lambda x: x[1]['roi'])[0]
+    else:
+        # Fallback a Log Loss si no hay ROI disponible
+        mejor_key = min(resultados.items(), key=lambda x: x[1]['log_loss'])[0]
     mejor = resultados[mejor_key]
 
     print(f"\n{'='*60}")
-    print(f"GANADOR: {mejor['nombre']}  (Log Loss: {mejor['log_loss']:.4f})")
+    print(f"GANADOR: {mejor['nombre']}  (ROI: {mejor['roi']:+.2%})")
+    print(f"   Log Loss:    {mejor['log_loss']:.4f}")
     print(f"   Brier Score: {mejor['brier_score']:.4f}")
     print(f"   F1-Score:    {mejor['f1_score']:.4f} (referencia)")
     print(f"   Accuracy:    {mejor['accuracy']:.2%} (referencia)")
-    if mejor['roi'] is not None:
-        print(f"   ROI sim.:    {mejor['roi']:+.2%}")
     print(f"{'='*60}")
 
     # Reporte detallado
@@ -842,66 +851,126 @@ def walk_forward_temporal(df, features):
 
 
 # ============================================================================
+# FEATURE SELECTION (Top-N por importancia XGBoost)
+# ============================================================================
+
+def seleccionar_features(X_train, y_train, features, n_top=N_FEATURES_SELECCION):
+    """
+    Entrena un XGBoost rápido y selecciona las top-N features por importancia.
+
+    Reduce overfitting al eliminar features ruidosas. Retorna la lista
+    ordenada de features seleccionadas.
+    """
+    print("\n" + "="*70)
+    print(f"SELECCION DE FEATURES (Top {n_top} de {len(features)})")
+    print("="*70)
+
+    sample_weights = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
+    selector = XGBClassifier(
+        n_estimators=200,
+        max_depth=5,
+        learning_rate=0.05,
+        subsample=0.7,
+        colsample_bytree=0.8,
+        random_state=RANDOM_SEED,
+        n_jobs=-1,
+        eval_metric='mlogloss',
+    )
+    selector.fit(X_train, y_train, sample_weight=sample_weights)
+
+    importances = selector.feature_importances_
+    df_imp = pd.DataFrame({
+        'Feature': features,
+        'Importancia': importances,
+    }).sort_values('Importancia', ascending=False)
+
+    top_features = df_imp.head(n_top)['Feature'].tolist()
+
+    print(f"\n   Top {n_top} features seleccionadas:")
+    for i, (_, row) in enumerate(df_imp.head(n_top).iterrows(), 1):
+        print(f"   {i:2d}. {row['Feature']:<30} {row['Importancia']:.4f}")
+
+    # Features eliminadas
+    eliminadas = df_imp.tail(len(features) - n_top)
+    print(f"\n   Eliminadas ({len(eliminadas)}):")
+    for _, row in eliminadas.iterrows():
+        print(f"       {row['Feature']:<30} {row['Importancia']:.4f}")
+
+    return top_features
+
+
+# ============================================================================
 # MAIN
 # ============================================================================
 
 def main():
-    """Pipeline completo."""
-    
-    print("\n" + "⚽" * 35)
+    """Pipeline completo con feature selection y Elo ratings. Selecciona por ROI."""
+
+    print("\n" + "="*70)
     print("   PREMIER LEAGUE - ENTRENAMIENTO DE MODELOS")
-    print("   (Versión con Pesos Optimizados por Optuna)")
-    print("⚽" * 35 + "\n")
-    
+    print("   (Feature Selection + Elo Ratings — Optimizado para ROI)")
+    print("="*70 + "\n")
+
     # Cargar datos
     resultado = cargar_datos()
     if resultado[0] is None:
         return None, None
 
-    X, X_filled, y, features, df = resultado
-
-    # ── Walk-forward temporal (diagnóstico de consistencia) ───────────────
-    walk_forward_temporal(df, features)
+    X, X_filled, y, features_all, df = resultado
 
     # ── Split 80/20 para entrenamiento final ──────────────────────────────
     pct_label = f"{int(TEST_SIZE*100)}"
-    print(f"\n🔪 División de datos ({100-int(TEST_SIZE*100)}/{pct_label} temporal)")
-    X_train, X_test, y_train, y_test = train_test_split(
+    print(f"\n   Division de datos ({100-int(TEST_SIZE*100)}/{pct_label} temporal)")
+    X_train_all, X_test_all, y_train, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, shuffle=False
     )
-    X_train_filled = X_filled.loc[X_train.index]
-    X_test_filled = X_filled.loc[X_test.index]
-    df_cuotas_test = df.loc[X_test.index] if 'B365H' in df.columns else None
-    print(f"   Entrenamiento: {len(X_train)} partidos")
-    print(f"   Prueba: {len(X_test)} partidos")
+    X_train_all_filled = X_filled.loc[X_train_all.index]
+    X_test_all_filled = X_filled.loc[X_test_all.index]
+    df_cuotas_test = df.loc[X_test_all.index] if 'B365H' in df.columns else None
+    print(f"   Entrenamiento: {len(X_train_all)} partidos")
+    print(f"   Prueba: {len(X_test_all)} partidos")
 
-    # Entrenar modelos (RF con filled, XGBoost con NaN nativo)
+    # ── P1: Seleccion de features (top N por importancia) ─────────────────
+    top_features = seleccionar_features(X_train_all, y_train, features_all)
+
+    # Subseleccionar features
+    X_train = X_train_all[top_features]
+    X_test = X_test_all[top_features]
+    X_train_filled = X_train.fillna(0)
+    X_test_filled = X_test.fillna(0)
+    features = top_features
+
+    # ── Entrenar modelos individuales (RF, XGBoost) ───────────────────────
     resultados = entrenar_modelos(X_train, y_train, X_test, y_test,
                                   X_train_filled, X_test_filled,
                                   df_cuotas_test)
 
-    # Seleccionar mejor (por Log Loss)
+    # Seleccionar mejor (por ROI — objetivo: value betting)
     mejor_key, mejor_modelo = seleccionar_mejor_modelo(resultados, y_test)
 
-    # Optimización adicional (solo si no ganó Optuna/XGBoost)
-    modelo_final, pred_final, mejorado = optimizar_modelo_adicional(
-        mejor_key, mejor_modelo, X_train, y_train, X_test, y_test,
-        X_train_filled, X_test_filled
-    )
+    modelo_final = mejor_modelo['modelo']
+    pred_final = mejor_modelo['predicciones']
 
-    # Calibrar probabilidades
-    es_xgb = 'XGBoost' in mejor_modelo['nombre'] or hasattr(modelo_final, 'get_booster')
+    # ── Calibracion de probabilidades ─────────────────────────────────────
+    es_xgb = mejor_key == 'XGBoost'
     _X_tr_cal = X_train if es_xgb else X_train_filled
     _X_te_cal = X_test if es_xgb else X_test_filled
+
+    cal_split = int(len(_X_tr_cal) * 0.80)
+    X_cal_train = _X_tr_cal.iloc[:cal_split]
+    y_cal_train = y_train.iloc[:cal_split]
+
     modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
-        modelo_final, _X_tr_cal, y_train, _X_te_cal, y_test
+        modelo_final, X_cal_train, y_cal_train, _X_te_cal, y_test
     )
 
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
     nombre_final = f"{mejor_modelo['nombre']} {tag_cal}"
 
+    _X_te_eval = _X_te_cal
+
     # Calibrar shrinkage (FACTOR_CONSERVADOR)
-    alpha_opt, _, _, _, metodo = calibrar_shrinkage(modelo_a_guardar, _X_te_cal, y_test)
+    alpha_opt, _, _, _, metodo = calibrar_shrinkage(modelo_a_guardar, _X_te_eval, y_test)
 
     # Visualizaciones
     visualizar_resultados(y_test, pred_final, nombre_final, features, modelo_final)
@@ -909,9 +978,9 @@ def main():
     # Guardar modelo
     guardar_modelo_final(modelo_a_guardar, features, nombre_final, alpha_shrinkage=alpha_opt)
 
-    # Métricas finales (probabilísticas + clasificación)
-    probs_final = modelo_a_guardar.predict_proba(_X_te_cal)
-    pred_guardado = modelo_a_guardar.predict(_X_te_cal)
+    # Métricas finales
+    probs_final = modelo_a_guardar.predict_proba(_X_te_eval)
+    pred_guardado = modelo_a_guardar.predict(_X_te_eval)
     ll_final = log_loss(y_test, probs_final)
     bs_final = _brier_multiclase(y_test, probs_final)
     f1_final = f1_score(y_test, pred_guardado, average='weighted')
@@ -922,16 +991,80 @@ def main():
     print("ENTRENAMIENTO COMPLETADO")
     print("="*70)
     print(f"\n   Modelo guardado: {nombre_final}")
-    print(f"\n   Métricas primarias (calidad probabilística):")
+    print(f"   Features: {len(features)} (de {len(features_all)} originales)")
+    print(f"\n   Metricas primarias (calidad probabilistica):")
     print(f"   Log Loss:    {ll_final:.4f}")
     print(f"   Brier Score: {bs_final:.4f}")
     if roi_final is not None:
         print(f"   ROI sim.:    {roi_final:+.2%}")
-    print(f"\n   Métricas de referencia (clasificación):")
+    print(f"\n   Metricas de referencia (clasificacion):")
     print(f"   Accuracy:    {acc_final:.2%}")
     print(f"   F1-Score:    {f1_final:.4f}")
 
     print(f"\n   Archivos guardados en {RUTA_MODELOS}\n")
+
+    # ── Walk-forward temporal con features seleccionadas ──────────────────
+    walk_forward_temporal(df, features)
+
+    # ── Modelo estructural (sin cuotas) ───────────────────────────────────
+    print("\n" + "=" * 70)
+    print("MODELO ESTRUCTURAL (SIN CUOTAS)")
+    print("=" * 70)
+
+    features_estr = [f for f in FEATURES_ESTRUCTURALES if f in df.columns]
+    print(f"   Features estructurales: {len(features_estr)} (sin cuotas)")
+
+    X_estr = df[features_estr]
+    X_estr_train = X_estr.iloc[X_train_all.index]
+    X_estr_test = X_estr.iloc[X_test_all.index]
+
+    sample_weights_estr = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
+    xgb_estr = XGBClassifier(**PARAMS_XGB_VB)
+    xgb_estr.fit(X_estr_train, y_train, sample_weight=sample_weights_estr,
+                 eval_set=[(X_estr_test, y_test)], verbose=False)
+
+    probs_estr = xgb_estr.predict_proba(X_estr_test)
+    pred_estr = xgb_estr.predict(X_estr_test)
+    ll_estr = log_loss(y_test, probs_estr)
+    bs_estr = _brier_multiclase(y_test, probs_estr)
+    f1_estr = f1_score(y_test, pred_estr, average='weighted')
+    acc_estr = accuracy_score(y_test, pred_estr)
+
+    print(f"   Log Loss:    {ll_estr:.4f}")
+    print(f"   Brier Score: {bs_estr:.4f}")
+    print(f"   F1-Score:    {f1_estr:.4f}")
+    print(f"   Accuracy:    {acc_estr:.2%}")
+
+    # Calibrar modelo estructural
+    params_no_es = {k: v for k, v in PARAMS_XGB_VB.items() if k != 'early_stopping_rounds'}
+    xgb_estr_for_cal = XGBClassifier(**params_no_es)
+    xgb_estr_for_cal.fit(X_estr_train, y_train, sample_weight=sample_weights_estr)
+    tscv_estr = TimeSeriesSplit(n_splits=3)
+    cal_estr = CalibratedClassifierCV(estimator=xgb_estr_for_cal, method='sigmoid', cv=tscv_estr)
+    cal_estr.fit(X_estr_train, y_train)
+    probs_cal_estr = cal_estr.predict_proba(X_estr_test)
+    bs_cal_estr = _brier_multiclase(y_test, probs_cal_estr)
+
+    if bs_cal_estr < bs_estr:
+        modelo_estr_final = cal_estr
+        print(f"   Calibracion mejora Brier ({bs_estr:.4f} -> {bs_cal_estr:.4f})")
+    else:
+        modelo_estr_final = xgb_estr
+        print(f"   Calibracion no mejora, guardando original")
+
+    joblib.dump(modelo_estr_final, ARCHIVO_MODELO_VB)
+    joblib.dump(features_estr, ARCHIVO_FEATURES_VB)
+    print(f"\n   Modelo estructural: {ARCHIVO_MODELO_VB}")
+    print(f"   Features:           {ARCHIVO_FEATURES_VB}")
+
+    # Comparación final
+    print(f"\n   COMPARACION FINAL:")
+    print(f"   {'Modelo':<35} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}")
+    print(f"   {'-'*65}")
+    print(f"   {'Principal (' + str(len(features)) + ' feat)':<35} {ll_final:>9.4f} {bs_final:>7.4f} {f1_final:>7.4f} {acc_final:>6.2%}")
+    print(f"   {'Estructural (' + str(len(features_estr)) + ' feat)':<35} {ll_estr:>9.4f} {bs_estr:>7.4f} {f1_estr:>7.4f} {acc_estr:>6.2%}")
+    diff_ll = ll_estr - ll_final
+    print(f"\n   Delta Log Loss: {diff_ll:+.4f}")
 
     return modelo_a_guardar, features
 

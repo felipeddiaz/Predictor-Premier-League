@@ -499,14 +499,11 @@ class Predictor:
         prob_max = max(prob_h, prob_d, prob_a)
         prob_min = min(prob_h, prob_d, prob_a)
 
+        # P3-Audit: Solo features de apertura (eliminadas Prob_Move_* y Market_Move_Strength)
         return {
             'Prob_H': prob_h,
             'Prob_D': prob_d,
             'Prob_A': prob_a,
-            'Prob_Move_H': 0.0,
-            'Prob_Move_D': 0.0,
-            'Prob_Move_A': 0.0,
-            'Market_Move_Strength': 0.0,
             'Prob_Spread': prob_max - prob_min,
             'Market_Confidence': prob_max - (1 / 3),
             'Home_Advantage_Prob': prob_h - prob_a,
@@ -523,16 +520,14 @@ class Predictor:
         Los calculos son identicos a agregar_features_asian_handicap() en utils.py
         para garantizar consistencia entre entrenamiento y prediccion.
         """
+        # P3-Audit: Solo features de apertura AH (eliminadas closing line features)
         if not partido.tiene_ah():
             return {
                 'AH_Line': 0.0,
-                'AH_Line_Move': 0.0,
                 'AH_Implied_Home': 0.5,
                 'AH_Implied_Away': 0.5,
                 'AH_Edge_Home': 0.0,
                 'AH_Market_Conf': 0.0,
-                'AH_Close_Move_H': 0.0,
-                'AH_Close_Move_A': 0.0,
             }
 
         ah_line    = partido.ah_line
@@ -557,16 +552,12 @@ class Predictor:
         ah_fair = 1.909
         ah_market_conf = max(0.0, ah_fair - ah_cuota_h) if ah_cuota_h else 0.0
 
-        # Sin cuotas de cierre en prediccion en vivo — movimiento = 0
         return {
             'AH_Line': float(ah_line),
-            'AH_Line_Move': 0.0,        # sin cierre disponible
             'AH_Implied_Home': float(ah_implied_h),
             'AH_Implied_Away': float(ah_implied_a),
             'AH_Edge_Home': float(ah_edge_home),
             'AH_Market_Conf': float(ah_market_conf),
-            'AH_Close_Move_H': 0.0,     # sin cierre disponible
-            'AH_Close_Move_A': 0.0,
         }
 
     def _calcular_descanso_prediccion(self, local: str, visitante: str) -> dict:

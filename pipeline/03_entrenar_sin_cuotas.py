@@ -72,7 +72,7 @@ from config import (
     RANDOM_SEED,
     UMBRAL_EDGE_MINIMO,
 )
-from utils import agregar_xg_rolling, agregar_features_tabla
+from utils import agregar_xg_rolling, agregar_features_tabla, agregar_features_elo
 
 warnings.filterwarnings('ignore')
 
@@ -181,6 +181,7 @@ def cargar_datos():
     # Features calculadas en memoria (funciones canónicas de utils.py)
     df = agregar_xg_rolling(df)
     df = agregar_features_tabla(df)
+    df = agregar_features_elo(df)
 
     # Solo partidos con H2H disponible
     if 'H2H_Available' in df.columns:
@@ -715,8 +716,13 @@ def main():
     _X_tr_cal = X_train if es_xgb else X_train_filled
     _X_te_cal = X_test if es_xgb else X_test_filled
 
+    # P2-Audit: Split de calibración separado (últimos 20% del train)
+    cal_split = int(len(_X_tr_cal) * 0.80)
+    X_cal_train = _X_tr_cal.iloc[:cal_split]
+    y_cal_train = y_train.iloc[:cal_split]
+
     modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
-        mejor['modelo'], _X_tr_cal, y_train, _X_te_cal, y_test
+        mejor['modelo'], X_cal_train, y_cal_train, _X_te_cal, y_test
     )
 
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"

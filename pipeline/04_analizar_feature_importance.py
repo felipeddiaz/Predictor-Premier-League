@@ -44,12 +44,12 @@ if __name__ == '__main__':
     # DEFINIR FEATURES
     # ============================================================================
 
-    # Cuotas puras
-    features_cuotas = ['B365H', 'B365D', 'B365A', 'B365CH', 'B365CD', 'B365CA']
+    # P3-Audit: Solo cuotas de apertura (eliminadas closing odds)
+    features_cuotas = ['B365H', 'B365D', 'B365A']
 
-    # Crear probabilidades implícitas si hay cuotas
+    # Crear probabilidades implícitas si hay cuotas (solo apertura)
     if all(col in df.columns for col in ['B365H', 'B365D', 'B365A']):
-        print("\n🔧 Calculando probabilidades implícitas de cuotas...")
+        print("\n   Calculando probabilidades implícitas de cuotas (apertura)...")
 
         prob_h = 1 / df['B365H']
         prob_d = 1 / df['B365D']
@@ -64,26 +64,12 @@ if __name__ == '__main__':
         df['Prob_Max'] = df[['Prob_H', 'Prob_D', 'Prob_A']].max(axis=1)
         df['Prob_Spread'] = df['Prob_Max'] - df[['Prob_H', 'Prob_D', 'Prob_A']].min(axis=1)
 
-        if all(col in df.columns for col in ['B365CH', 'B365CD', 'B365CA']):
-            probc_h = 1 / df['B365CH']
-            probc_d = 1 / df['B365CD']
-            probc_a = 1 / df['B365CA']
-            totalc = probc_h + probc_d + probc_a
+        print("   Probabilidades calculadas")
 
-            df['ProbC_H'] = probc_h / totalc
-            df['ProbC_D'] = probc_d / totalc
-            df['ProbC_A'] = probc_a / totalc
-            df['Prob_Move_H'] = df['ProbC_H'] - df['Prob_H']
-            df['Prob_Move_D'] = df['ProbC_D'] - df['Prob_D']
-            df['Prob_Move_A'] = df['ProbC_A'] - df['Prob_A']
-
-        print("   ✅ Probabilidades calculadas")
-
-    # Features de probabilidades
+    # Features de probabilidades (solo apertura)
     features_prob = [
         'Prob_H', 'Prob_D', 'Prob_A', 'Prob_Diff_HA', 'Prob_Ratio_HA',
-        'Prob_Max', 'Prob_Spread', 'ProbC_H', 'ProbC_D', 'ProbC_A',
-        'Prob_Move_H', 'Prob_Move_D', 'Prob_Move_A',
+        'Prob_Max', 'Prob_Spread',
     ]
 
     # Features base
