@@ -41,7 +41,7 @@ from config import (
     MONEDA,
 )
 import utils
-from utils import calcular_h2h_features, EnsembleLGBM_XGB, StackingMetaLearner  # noqa: F401 — necesario para deserializar ensemble/stacking
+from utils import calcular_h2h_features, EnsembleLGBM_XGB  # noqa: F401 — necesario para deserializar ensemble
 from core.models import Partido, Prediccion, ConfigJornada
 
 # Carpeta de salida para reportes — siempre en la raiz del proyecto

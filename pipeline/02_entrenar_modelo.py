@@ -24,7 +24,6 @@ Pipeline:
 
 import pandas as pd
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, TimeSeriesSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, log_loss, brier_score_loss
@@ -37,7 +36,6 @@ import joblib
 import os
 import warnings
 
-from sklearn.linear_model import LogisticRegression
 from config import (
     ARCHIVO_FEATURES,
     RUTA_MODELOS,
@@ -417,39 +415,39 @@ def calibrar_modelo(modelo, X_train, y_train, X_test, y_test):
 # ============================================================================
 
 def seleccionar_mejor_modelo(resultados, y_test):
-    """Compara modelos y selecciona el mejor según Log Loss (calidad probabilística)."""
+    """Compara modelos y selecciona el mejor según ROI (value betting)."""
 
     print("\n" + "="*70)
-    print("FASE 2: COMPARACIÓN DE MODELOS")
+    print("FASE 2: COMPARACIÓN DE MODELOS (Criterio: ROI)")
     print("="*70)
 
-    header = f"{'Modelo':<30} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}"
-    roi_disponible = any(r['roi'] is not None for r in resultados.values())
-    if roi_disponible:
-        header += f" {'ROI':>8}"
+    header = f"{'Modelo':<30} {'ROI':>8} {'Log Loss':>9} {'Brier':>7} {'F1':>7} {'Acc':>7}"
     print(f"\n{header}")
     print("-" * len(header))
 
     for key, datos in resultados.items():
-        linea = (f"{datos['nombre']:<30} {datos['log_loss']:>9.4f} "
+        roi_str = f"{datos['roi']:>+7.2%}" if datos['roi'] is not None else f"{'N/A':>8}"
+        linea = (f"{datos['nombre']:<30} {roi_str} {datos['log_loss']:>9.4f} "
                  f"{datos['brier_score']:>7.4f} {datos['f1_score']:>7.4f} "
                  f"{datos['accuracy']:>6.2%}")
-        if roi_disponible:
-            roi_str = f"{datos['roi']:>+7.2%}" if datos['roi'] is not None else f"{'N/A':>8}"
-            linea += f" {roi_str}"
         print(linea)
 
-    # Elegir mejor por Log Loss (menor = mejor calidad probabilística)
-    mejor_key = min(resultados.items(), key=lambda x: x[1]['log_loss'])[0]
+    # Elegir mejor por ROI (mayor = mejor para value betting)
+    # Filtrar modelos con ROI disponible
+    con_roi = {k: v for k, v in resultados.items() if v['roi'] is not None}
+    if con_roi:
+        mejor_key = max(con_roi.items(), key=lambda x: x[1]['roi'])[0]
+    else:
+        # Fallback a Log Loss si no hay ROI disponible
+        mejor_key = min(resultados.items(), key=lambda x: x[1]['log_loss'])[0]
     mejor = resultados[mejor_key]
 
     print(f"\n{'='*60}")
-    print(f"GANADOR: {mejor['nombre']}  (Log Loss: {mejor['log_loss']:.4f})")
+    print(f"GANADOR: {mejor['nombre']}  (ROI: {mejor['roi']:+.2%})")
+    print(f"   Log Loss:    {mejor['log_loss']:.4f}")
     print(f"   Brier Score: {mejor['brier_score']:.4f}")
     print(f"   F1-Score:    {mejor['f1_score']:.4f} (referencia)")
     print(f"   Accuracy:    {mejor['accuracy']:.2%} (referencia)")
-    if mejor['roi'] is not None:
-        print(f"   ROI sim.:    {mejor['roi']:+.2%}")
     print(f"{'='*60}")
 
     # Reporte detallado
@@ -902,146 +900,15 @@ def seleccionar_features(X_train, y_train, features, n_top=N_FEATURES_SELECCION)
 
 
 # ============================================================================
-# STACKING META-LEARNER
-# ============================================================================
-
-class StackingMetaLearner(BaseEstimator, ClassifierMixin):
-    """
-    Stacking ensemble: RF + XGBoost como base learners,
-    LogisticRegression como meta-learner sobre las probabilidades.
-
-    Entrena los base learners con out-of-fold predictions para evitar leakage,
-    luego entrena el meta-learner sobre esas predicciones.
-    """
-    def __init__(self, rf_model=None, xgb_model=None, meta_model=None,
-                 features=None):
-        self.rf_model = rf_model
-        self.xgb_model = xgb_model
-        self.meta_model = meta_model
-        self.features = features
-        self.classes_ = np.array([0, 1, 2])
-
-    def predict_proba(self, X):
-        X_fill = X.fillna(0) if hasattr(X, 'fillna') else X
-        probs_rf = self.rf_model.predict_proba(X_fill)
-        probs_xgb = self.xgb_model.predict_proba(X)
-        meta_X = np.hstack([probs_rf, probs_xgb])
-        return self.meta_model.predict_proba(meta_X)
-
-    def predict(self, X):
-        probs = self.predict_proba(X)
-        return self.classes_[np.argmax(probs, axis=1)]
-
-
-def entrenar_stacking(X_train, y_train, X_test, y_test,
-                      X_train_filled, X_test_filled,
-                      features, df_cuotas_test=None):
-    """
-    Entrena un stacking ensemble (RF + XGBoost + LogReg meta-learner).
-
-    Usa TimeSeriesSplit para generar out-of-fold predictions de los base
-    learners, luego entrena LogisticRegression sobre esas probabilidades.
-    """
-    print("\n" + "="*70)
-    print("STACKING META-LEARNER (RF + XGBoost -> LogReg)")
-    print("="*70)
-
-    n_splits = 3
-    tscv = TimeSeriesSplit(n_splits=n_splits)
-
-    # Matrices para OOF predictions (3 clases * 2 modelos = 6 columnas)
-    oof_rf = np.zeros((len(X_train), 3))
-    oof_xgb = np.zeros((len(X_train), 3))
-    oof_count = np.zeros(len(X_train))
-
-    print(f"\n   Generando OOF predictions ({n_splits} folds)...")
-
-    for fold_idx, (train_idx, val_idx) in enumerate(tscv.split(X_train)):
-        print(f"   Fold {fold_idx + 1}/{n_splits}: "
-              f"train={len(train_idx)}, val={len(val_idx)}")
-
-        # RF (usa filled)
-        rf_fold = RandomForestClassifier(**PARAMS_OPTIMOS)
-        rf_fold.fit(X_train_filled.iloc[train_idx], y_train.iloc[train_idx])
-        oof_rf[val_idx] = rf_fold.predict_proba(X_train_filled.iloc[val_idx])
-
-        # XGBoost (usa NaN nativo)
-        sw_fold = compute_sample_weight(class_weight=PESOS_XGB,
-                                        y=y_train.iloc[train_idx])
-        xgb_fold = XGBClassifier(**PARAMS_XGB)
-        xgb_fold.fit(X_train.iloc[train_idx], y_train.iloc[train_idx],
-                     sample_weight=sw_fold)
-        oof_xgb[val_idx] = xgb_fold.predict_proba(X_train.iloc[val_idx])
-
-        oof_count[val_idx] = 1
-
-    # Solo usar filas que tuvieron predicciones OOF
-    mask_oof = oof_count > 0
-    meta_X_train = np.hstack([oof_rf[mask_oof], oof_xgb[mask_oof]])
-    meta_y_train = y_train.values[mask_oof]
-
-    print(f"\n   OOF samples para meta-learner: {mask_oof.sum()}")
-
-    # Entrenar meta-learner
-    meta = LogisticRegression(
-        C=1.0, max_iter=1000,
-        solver='lbfgs', random_state=RANDOM_SEED
-    )
-    meta.fit(meta_X_train, meta_y_train)
-
-    # Entrenar base learners finales sobre todo el train
-    print("   Entrenando base learners finales...")
-    rf_final = RandomForestClassifier(**PARAMS_OPTIMOS)
-    rf_final.fit(X_train_filled, y_train)
-
-    sw_all = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
-    xgb_final = XGBClassifier(**PARAMS_XGB)
-    xgb_final.fit(X_train, y_train, sample_weight=sw_all)
-
-    # Crear stacking model
-    stacking = StackingMetaLearner(
-        rf_model=rf_final,
-        xgb_model=xgb_final,
-        meta_model=meta,
-        features=features,
-    )
-
-    # Evaluar en test
-    probs_stack = stacking.predict_proba(X_test)
-    pred_stack = stacking.predict(X_test)
-    ll_stack = log_loss(y_test, probs_stack)
-    bs_stack = _brier_multiclase(y_test, probs_stack)
-    f1_stack = f1_score(y_test, pred_stack, average='weighted')
-    acc_stack = accuracy_score(y_test, pred_stack)
-    roi_stack = _roi_simulado(y_test, probs_stack, df_cuotas_test)
-
-    roi_str = f" | ROI: {roi_stack:+.2%}" if roi_stack is not None else ""
-    print(f"\n   Stacking: Log Loss: {ll_stack:.4f} | Brier: {bs_stack:.4f} "
-          f"| F1: {f1_stack:.4f} | Acc: {acc_stack:.2%}{roi_str}")
-
-    return {
-        'modelo': stacking,
-        'predicciones': pred_stack,
-        'probs': probs_stack,
-        'accuracy': acc_stack,
-        'f1_score': f1_stack,
-        'log_loss': ll_stack,
-        'brier_score': bs_stack,
-        'roi': roi_stack,
-        'nombre': 'Stacking (RF+XGB→LogReg)',
-    }
-
-
-# ============================================================================
 # MAIN
 # ============================================================================
 
 def main():
-    """Pipeline completo con feature selection, stacking y Elo ratings."""
+    """Pipeline completo con feature selection y Elo ratings. Selecciona por ROI."""
 
     print("\n" + "="*70)
     print("   PREMIER LEAGUE - ENTRENAMIENTO DE MODELOS")
-    print("   (Feature Selection + Stacking + Elo Ratings)")
+    print("   (Feature Selection + Elo Ratings — Optimizado para ROI)")
     print("="*70 + "\n")
 
     # Cargar datos
@@ -1078,50 +945,29 @@ def main():
                                   X_train_filled, X_test_filled,
                                   df_cuotas_test)
 
-    # ── P2: Stacking meta-learner (RF + XGBoost → LogReg) ────────────────
-    resultado_stacking = entrenar_stacking(
-        X_train, y_train, X_test, y_test,
-        X_train_filled, X_test_filled,
-        features, df_cuotas_test
-    )
-    resultados['Stacking'] = resultado_stacking
-
-    # Seleccionar mejor (por Log Loss) — incluye stacking
+    # Seleccionar mejor (por ROI — objetivo: value betting)
     mejor_key, mejor_modelo = seleccionar_mejor_modelo(resultados, y_test)
 
     modelo_final = mejor_modelo['modelo']
     pred_final = mejor_modelo['predicciones']
 
     # ── Calibracion de probabilidades ─────────────────────────────────────
-    es_stacking = mejor_key == 'Stacking'
+    es_xgb = mejor_key == 'XGBoost'
+    _X_tr_cal = X_train if es_xgb else X_train_filled
+    _X_te_cal = X_test if es_xgb else X_test_filled
 
-    if es_stacking:
-        # Stacking ya tiene LogReg meta-learner que produce probs calibradas
-        # CalibratedClassifierCV no puede refit un StackingMetaLearner
-        print("\n" + "="*70)
-        print("CALIBRACION: Stacking usa LogReg meta-learner (ya calibrado)")
-        print("="*70)
-        modelo_a_guardar = modelo_final
-        probs_finales = modelo_final.predict_proba(X_test)
-        fue_calibrado = False
-    else:
-        es_xgb = mejor_key == 'XGBoost'
-        _X_tr_cal = X_train if es_xgb else X_train_filled
-        _X_te_cal = X_test if es_xgb else X_test_filled
+    cal_split = int(len(_X_tr_cal) * 0.80)
+    X_cal_train = _X_tr_cal.iloc[:cal_split]
+    y_cal_train = y_train.iloc[:cal_split]
 
-        cal_split = int(len(_X_tr_cal) * 0.80)
-        X_cal_train = _X_tr_cal.iloc[:cal_split]
-        y_cal_train = y_train.iloc[:cal_split]
-
-        modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
-            modelo_final, X_cal_train, y_cal_train, _X_te_cal, y_test
-        )
+    modelo_a_guardar, probs_finales, fue_calibrado = calibrar_modelo(
+        modelo_final, X_cal_train, y_cal_train, _X_te_cal, y_test
+    )
 
     tag_cal = "(Calibrado)" if fue_calibrado else "(Sin Calibrar)"
     nombre_final = f"{mejor_modelo['nombre']} {tag_cal}"
 
-    # Para eval, stacking siempre usa X_test (maneja NaN internamente)
-    _X_te_eval = X_test
+    _X_te_eval = _X_te_cal
 
     # Calibrar shrinkage (FACTOR_CONSERVADOR)
     alpha_opt, _, _, _, metodo = calibrar_shrinkage(modelo_a_guardar, _X_te_eval, y_test)

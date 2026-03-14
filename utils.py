@@ -23,33 +23,6 @@ warnings.filterwarnings('ignore')
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-class StackingMetaLearner(BaseEstimator, ClassifierMixin):
-    """
-    Stacking ensemble serializable via joblib.
-
-    RF + XGBoost como base learners, LogisticRegression como meta-learner
-    sobre las probabilidades concatenadas.
-    """
-    def __init__(self, rf_model=None, xgb_model=None, meta_model=None,
-                 features=None):
-        self.rf_model = rf_model
-        self.xgb_model = xgb_model
-        self.meta_model = meta_model
-        self.features = features
-        self.classes_ = np.array([0, 1, 2])
-
-    def predict_proba(self, X):
-        X_fill = X.fillna(0) if hasattr(X, 'fillna') else X
-        probs_rf = self.rf_model.predict_proba(X_fill)
-        probs_xgb = self.xgb_model.predict_proba(X)
-        meta_X = np.hstack([probs_rf, probs_xgb])
-        return self.meta_model.predict_proba(meta_X)
-
-    def predict(self, X):
-        probs = self.predict_proba(X)
-        return self.classes_[np.argmax(probs, axis=1)]
-
-
 class EnsembleLGBM_XGB(BaseEstimator, ClassifierMixin):
     """
     Ensemble de votacion ponderada entre LightGBM y XGBoost.

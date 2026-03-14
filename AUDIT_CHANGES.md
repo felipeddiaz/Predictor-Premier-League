@@ -2,11 +2,12 @@
 
 ## Resumen Ejecutivo
 
-Se implementaron 3 mejoras principales al sistema de prediccion:
+Se implementaron 2 mejoras principales al sistema de prediccion, optimizadas para **ROI en value betting**:
 
 1. **Seleccion de Features**: 98 → 35 features (reduccion de overfitting)
-2. **Stacking Meta-Learner**: RF + XGBoost → LogisticRegression (mejor combinacion de modelos)
-3. **Elo Ratings**: Feature compacta de fuerza relativa de equipos
+2. **Elo Ratings**: Feature compacta de fuerza relativa de equipos
+
+**Criterio de seleccion de modelo: ROI** (no Log Loss). El objetivo es encontrar valor en apuestas.
 
 ---
 
@@ -34,77 +35,29 @@ def seleccionar_features(X_train, y_train, features, n_top=N_FEATURES_SELECCION)
     # Retorna top N features ordenadas por importancia
 ```
 
-### Top 35 Features Seleccionadas (ordenadas por importancia)
+### Top 10 Features (por importancia en modelo final)
 
-Las features mas importantes incluyen:
-- **Cuotas/Mercado**: PSH, PSD, PSA, BbMxH, BbMxD, BbMxA, BbAvH, BbAvD, BbAvA, Pinnacle_SharpMoney_H/D/A, AH_Edge
-- **Forma**: HT_WinRate5, AT_WinRate5, HT_Pts5, AT_Pts5, HT_AvgGoals, AT_AvgGoals
-- **Tabla**: HT_Position, AT_Position, Position_Diff, HT_GD, AT_GD
-- **Elo**: HT_Elo, AT_Elo, Elo_Diff (3 de 4 features Elo entraron al top 35)
-- **xG**: HT_xG_Avg, AT_xG_Avg, xG_Diff
-- **H2H**: H2H_Home_WinRate, H2H_Played
+| # | Feature | Importancia |
+|---|---------|-------------|
+| 1 | Home_Advantage_Prob | 0.0827 |
+| 2 | Pinnacle_Open_H | 0.0786 |
+| 3 | B365A | 0.0645 |
+| 4 | Pinnacle_Open_A | 0.0639 |
+| 5 | B365H | 0.0636 |
+| 6 | Prob_A | 0.0565 |
+| 7 | AH_Edge_Home | 0.0515 |
+| 8 | Pinnacle_Conf | 0.0297 |
+| 9 | Market_Confidence | 0.0292 |
+| 10 | Prob_D | 0.0262 |
+
+Features Elo en el top 35: HT_Elo (#22), AT_Elo (#18), Elo_Diff (#20), Elo_WinProb_H (#12).
 
 ### Resultado
 Menos features = menos ruido, mejor generalizacion, entrenamiento mas rapido.
 
 ---
 
-## 2. Stacking Meta-Learner
-
-### Problema
-El ensemble anterior (EnsembleLGBM_XGB) promediaba probabilidades con pesos fijos. No aprendia la mejor forma de combinar modelos.
-
-### Solucion
-Stacking de 2 niveles:
-- **Nivel 1 (base learners)**: RandomForest + XGBoost
-- **Nivel 2 (meta-learner)**: LogisticRegression entrenada sobre predicciones out-of-fold
-
-### Arquitectura
-
-```
-Datos de entrada (35 features)
-        |
-   ┌────┴────┐
-   │         │
-RandomForest  XGBoost
-   │         │
-   ├─ 3 probs ─┤─ 3 probs ─┐
-   │                        │
-   └───── 6 features ───────┘
-              │
-     LogisticRegression
-              │
-     3 probabilidades finales
-     (H / D / A)
-```
-
-### Implementacion
-
-**`utils.py`** — nueva clase `StackingMetaLearner`:
-```python
-class StackingMetaLearner(BaseEstimator, ClassifierMixin):
-    def __init__(self, rf_model, xgb_model, meta_model, features):
-        ...
-    def predict_proba(self, X):
-        probs_rf = self.rf_model.predict_proba(X_fill)
-        probs_xgb = self.xgb_model.predict_proba(X)
-        meta_X = np.hstack([probs_rf, probs_xgb])  # 6 features
-        return self.meta_model.predict_proba(meta_X)
-```
-
-**`pipeline/02_entrenar_modelo.py`** — nueva funcion `entrenar_stacking()`:
-- Usa `TimeSeriesSplit(n_splits=3)` para generar predicciones out-of-fold (OOF)
-- Evita data leakage temporal: cada fold solo usa datos pasados
-- Meta-learner: `LogisticRegression(C=1.0, max_iter=1000, solver='lbfgs')`
-
-### Calibracion
-El stacking NO pasa por `CalibratedClassifierCV` porque:
-- LogisticRegression ya produce probabilidades calibradas nativamente
-- `StackingMetaLearner` no implementa `fit()`, lo cual es incompatible con `CalibratedClassifierCV`
-
----
-
-## 3. Elo Ratings
+## 2. Elo Ratings
 
 ### Problema
 No habia una feature que capturara la fuerza historica acumulada de cada equipo de forma compacta.
@@ -143,7 +96,7 @@ FEATURES_ELO = ['HT_Elo', 'AT_Elo', 'Elo_Diff', 'Elo_WinProb_H']
 Agregadas a `FEATURES_CON_CUOTAS_APERTURA` y `FEATURES_ESTRUCTURALES`.
 
 ### Impacto
-3 de 4 features Elo fueron seleccionadas en el top 35 (posiciones ~12, 18, 22), confirmando su valor predictivo.
+4 de 4 features Elo fueron seleccionadas en el top 35, confirmando su valor predictivo.
 
 ---
 
@@ -152,24 +105,24 @@ Agregadas a `FEATURES_CON_CUOTAS_APERTURA` y `FEATURES_ESTRUCTURALES`.
 | Archivo | Cambios |
 |---------|---------|
 | `config.py` | +`N_FEATURES_SELECCION=35`, +`FEATURES_ELO` (4 features), actualizado `FEATURES_CON_CUOTAS_APERTURA` y `FEATURES_ESTRUCTURALES` |
-| `utils.py` | +clase `StackingMetaLearner`, +funcion `agregar_features_elo()` |
-| `pipeline/02_entrenar_modelo.py` | +`seleccionar_features()`, +`entrenar_stacking()`, reescrito `main()` completo, +import `agregar_features_elo`, +call Elo en `cargar_datos()` |
+| `utils.py` | +funcion `agregar_features_elo()` |
+| `pipeline/02_entrenar_modelo.py` | +`seleccionar_features()`, reescrito `main()`, seleccion por ROI, +import `agregar_features_elo` |
 | `pipeline/03_entrenar_sin_cuotas.py` | +import y call `agregar_features_elo` en carga de datos |
-| `core/predictor.py` | +import `StackingMetaLearner` para deserializacion del modelo guardado |
 
 ---
 
-## Resultados Completos
+## Resultados: Seleccion por ROI
 
-### Modelos Individuales (35 features seleccionadas)
+### Modelo Principal: XGBoost (35 features seleccionadas)
 
-| Modelo | Log Loss | Brier Score | Accuracy | ROI |
-|--------|----------|-------------|----------|-----|
-| **Stacking (RF+XGB→LogReg)** | **0.9713** | **0.1926** | 52.77% | -70.83% |
-| XGBoost | 0.9829 | 0.1952 | 52.37% | **+24.22%** |
-| RF Balanceado | 0.9851 | — | — | +17.70% |
-| RF Optuna | 0.9937 | — | — | +10.90% |
-| RF Basico | 0.9900 | — | — | -3.83% |
+| Modelo | ROI | Log Loss | Brier Score | Accuracy |
+|--------|-----|----------|-------------|----------|
+| **XGBoost** | **+24.22%** | 0.9829 | 0.1952 | 52.37% |
+| RF Balanceado | +17.70% | 0.9851 | 0.1955 | 51.83% |
+| RF Optuna | +10.90% | 0.9937 | 0.1984 | 48.31% |
+| RF Basico | -3.83% | 0.9900 | 0.1963 | 52.23% |
+
+**Ganador: XGBoost** — mejor ROI (+24.22%) Y mejor Log Loss (0.9829).
 
 ### Modelo Estructural (sin cuotas, 78 features)
 
@@ -181,31 +134,17 @@ Agregadas a `FEATURES_CON_CUOTAS_APERTURA` y `FEATURES_ESTRUCTURALES`.
 
 ### Walk-Forward Validation (temporada por temporada)
 
-| Metrica | Valor |
-|---------|-------|
-| ROI promedio | +17.54% |
-| STD Log Loss | 0.0305 |
+| Temporada | Train | Test | Log Loss | ROI |
+|-----------|-------|------|----------|-----|
+| 2020-21 | 1520 | 380 | 1.0174 | +16.62% |
+| 2021-22 | 1900 | 380 | 0.9665 | +37.00% |
+| 2022-23 | 2280 | 380 | 0.9969 | -16.30% |
+| 2023-24 | 2660 | 380 | 0.9318 | +0.17% |
+| 2024-25 | 3040 | 380 | 0.9747 | +40.60% |
+| 2025-26 | 3420 | 271 | 1.0183 | +27.15% |
+| **PROMEDIO** | | | **0.9843** | **+17.54%** |
 
-Consistencia alta entre temporadas (baja desviacion estandar).
-
----
-
-## Analisis: Stacking vs XGBoost Solo
-
-### Stacking gana en metricas probabilisticas
-- Mejor Log Loss (0.9713 vs 0.9829) → probabilidades mas precisas
-- Mejor Brier Score (0.1926 vs 0.1952) → mejor calibracion
-
-### XGBoost gana en ROI de apuestas
-- ROI +24.22% vs -70.83% del stacking
-- El stacking distribuye probabilidad de forma mas "suave", lo que reduce la confianza en apuestas de valor
-- XGBoost es mas "agresivo" en sus predicciones, generando mas value bets correctas
-
-### Conclusion practica
-- **Para prediccion pura**: Stacking es superior
-- **Para apuestas (value betting)**: XGBoost solo es muy superior
-- El modelo guardado como `modelo_final_optimizado.pkl` es el Stacking (gano por Log Loss)
-- El modelo `modelo_value_betting.pkl` es el XGBoost estructural (78 features, sin cuotas)
+ROI positivo en 5 de 6 temporadas. STD Log Loss: 0.0305 (consistente).
 
 ---
 
@@ -213,17 +152,16 @@ Consistencia alta entre temporadas (baja desviacion estandar).
 
 | Archivo | Contenido |
 |---------|-----------|
-| `modelos/modelo_final_optimizado.pkl` | Stacking meta-learner (35 features) |
-| `modelos/modelo_value_betting.pkl` | XGBoost estructural (78 features) |
+| `modelos/modelo_final_optimizado.pkl` | XGBoost (35 features, seleccionado por ROI) |
+| `modelos/modelo_value_betting.pkl` | XGBoost estructural (78 features, sin cuotas) |
 | `modelos/features.pkl` | Lista de 35 features seleccionadas |
 | `modelos/features_value_betting.pkl` | Lista de 78 features estructurales |
 | `modelos/metadata.pkl` | Metadata del entrenamiento |
 | `modelos/confusion_matrix_final.png` | Matriz de confusion del modelo final |
+| `modelos/feature_importance_final.png` | Importancia de features |
 
 ---
 
-## Commit
+## Branch
 
-- **Hash**: `75e546a`
 - **Branch**: `claude/football-ml-audit-EKYmn`
-- **Mensaje**: Implement feature selection (98→35), stacking meta-learner, and Elo ratings
