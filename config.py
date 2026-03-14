@@ -54,14 +54,14 @@ RANDOM_SEED = 42
 TEST_SIZE = 0.20            # 80/20 split temporal
 N_FEATURES_SELECCION = 35   # Seleccionar top-N features por importancia XGBoost
 
-# Pesos de clase optimizados por Optuna (100 trials RF, maximizando F1 weighted)
+# Pesos de clase optimizados por Optuna 
 PESOS_OPTIMOS = {
     0: 2.5498,  # Local
     1: 6.0558,  # Empate
     2: 3.8179,  # Visitante
 }
 
-# Pesos optimizados para XGBoost (busqueda en grilla, F1=0.5726 en test 15%)
+# Pesos optimizados para XGBoost
 PESOS_XGB = {
     0: 0.9469,  # Local
     1: 1.5348,  # Empate
@@ -149,18 +149,18 @@ PARAMS_XGB = {
 FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
-UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
-UMBRAL_EDGE_DC = 0.05           # Edge minimo para doble oportunidad (fallback)
-MARGEN_DC_SINTETICO = 0.95      # Factor margen bookmaker para cuotas DC derivadas
-CUOTA_MAXIMA = 5.0              # No apostar en underdogs extremos
-PROBABILIDAD_MINIMA = 0.35      # Probabilidad mínima del modelo
+UMBRAL_EDGE_MINIMO = 0.08       # Edge minimo recomendado por sensibilidad (max Sharpe)
+UMBRAL_EDGE_DC = 0.12           # Umbral minimo para doble oportunidad (fallback)
+MARGEN_DC_SINTETICO = 0.95      # Margen aplicado a cuotas DC sinteticas
+CUOTA_MAXIMA = 6.0              # No apostar en underdogs extremos
+PROBABILIDAD_MINIMA = 0.50      # Probabilidad mínima del modelo
 
 # Capa 3: Kelly Criterion
 KELLY_FRACTION = 0.25           # Kelly fraccionario (25% del Kelly completo)
 STAKE_MAXIMO_PCT = 0.025        # Máximo 2.5% del bankroll por apuesta
 
 # General
-BANKROLL_DEFAULT = 2000
+BANKROLL_DEFAULT = 5000
 MONEDA = "$"
 
 # ROI anualizado: asumiendo ~50 apuestas por año

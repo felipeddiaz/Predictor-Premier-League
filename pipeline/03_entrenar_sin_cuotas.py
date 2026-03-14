@@ -104,7 +104,16 @@ def _brier_multiclase(y_true, probs):
     return bs / 3
 
 
-def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
+def _roi_simulado(
+    y_true,
+    probs,
+    df_cuotas=None,
+    edge_minimo=None,
+    umbral_dc=None,
+    margen_dc=None,
+    usar_fallback_dc=True,
+    return_detalle=False,
+):
     """
     ROI simulado con apuestas planas sobre value bets.
 
@@ -119,6 +128,10 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
     """
     if edge_minimo is None:
         edge_minimo = UMBRAL_EDGE_MINIMO
+    if umbral_dc is None:
+        umbral_dc = UMBRAL_EDGE_DC
+    if margen_dc is None:
+        margen_dc = MARGEN_DC_SINTETICO
 
     if df_cuotas is None:
         return None
@@ -134,9 +147,11 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
     n_apuestas_dc = 0
 
     for i in range(len(y_true)):
-        prob_mercado = 1.0 / cuotas[i]
-        if np.any(np.isnan(prob_mercado)) or np.any(cuotas[i] <= 1.0):
+        cuota_h, cuota_d, cuota_a = cuotas[i]
+        if np.any(np.isnan([cuota_h, cuota_d, cuota_a])) or np.any(cuotas[i] <= 1.0):
             continue
+
+        prob_mercado = 1.0 / cuotas[i]
 
         edges = probs[i] - prob_mercado
         mejor_resultado = int(np.argmax(edges))
@@ -183,6 +198,8 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
                     ganancia -= 1.0
 
     if apostado == 0:
+        if return_detalle:
+            return None
         return None
 
     return {
@@ -858,6 +875,9 @@ def main():
 
     # Evaluación value betting (diferencial exclusivo del 03)
     evaluar_value_betting(modelo_a_guardar, _X_te_cal, y_test, df_test)
+
+    # Walk-forward temporal (mismo tipo de modelo ganador)
+    walk_forward_temporal(df, features, modelo_key=mejor_key)
 
     # Visualizaciones (usa modelo base para feature_importances_)
     visualizar_resultados(y_test, mejor['predicciones'], nombre_final, features, mejor['modelo'])
