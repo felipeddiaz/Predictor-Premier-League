@@ -80,6 +80,58 @@ def calcular_ev(prob_modelo, cuota, stake=1.0, prob_fair=None):
     }
 
 
+def calcular_ev_doble_oportunidad(prob_modelo_3, cuota_h, cuota_d, cuota_a,
+                                   umbral_edge=0.05, margen_sintetico=0.95):
+    """
+    Evalúa apuestas de doble oportunidad (1X, X2, 12) como fallback.
+
+    Deriva cuotas DC sintéticas de las cuotas 1X2 existentes.
+    Solo se usa cuando NO hay valor en ninguna proposición 1X2.
+
+    Args:
+        prob_modelo_3: array/lista [P(H), P(D), P(A)] del modelo
+        cuota_h, cuota_d, cuota_a: cuotas 1X2 del bookmaker
+        umbral_edge: edge mínimo para considerar la apuesta DC
+        margen_sintetico: factor para simular margen bookmaker (0.95 = 5%)
+
+    Returns:
+        dict con mejor opción DC si hay valor, None si no hay valor.
+        Keys: mercado, edge, cuota, prob_modelo, prob_mercado, ev
+    """
+    fair_h, fair_d, fair_a = eliminar_vig(cuota_h, cuota_d, cuota_a)
+
+    # Probabilidades del modelo para cada mercado DC
+    dc_opciones = [
+        ('1X', prob_modelo_3[0] + prob_modelo_3[1], fair_h + fair_d, 2),  # pierde si Away
+        ('X2', prob_modelo_3[1] + prob_modelo_3[2], fair_d + fair_a, 0),  # pierde si Home
+        ('12', prob_modelo_3[0] + prob_modelo_3[2], fair_h + fair_a, 1),  # pierde si Draw
+    ]
+
+    mejor = None
+    mejor_edge = -1.0
+
+    for mercado, prob_mod, prob_merc, clase_pierde in dc_opciones:
+        edge = prob_mod - prob_merc
+        if edge > mejor_edge:
+            mejor_edge = edge
+            cuota_dc = (1.0 / prob_merc) * margen_sintetico
+            ev = (prob_mod * (cuota_dc - 1.0)) - ((1.0 - prob_mod) * 1.0)
+            mejor = {
+                'mercado': mercado,
+                'edge': edge,
+                'cuota': cuota_dc,
+                'prob_modelo': prob_mod,
+                'prob_mercado': prob_merc,
+                'ev': ev,
+                'clase_pierde': clase_pierde,
+            }
+
+    if mejor is not None and mejor['edge'] >= umbral_edge:
+        return mejor
+
+    return None
+
+
 def kelly_criterion(prob_modelo, cuota, kelly_fraction=0.25, max_kelly=0.10):
     """
     Calcula el porcentaje óptimo del bankroll a apostar usando Kelly Criterion.

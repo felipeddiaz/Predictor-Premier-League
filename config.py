@@ -150,6 +150,8 @@ FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
 UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
+UMBRAL_EDGE_DC = 0.05           # Edge minimo para doble oportunidad (fallback)
+MARGEN_DC_SINTETICO = 0.95      # Factor margen bookmaker para cuotas DC derivadas
 CUOTA_MAXIMA = 5.0              # No apostar en underdogs extremos
 PROBABILIDAD_MINIMA = 0.35      # Probabilidad mínima del modelo
 

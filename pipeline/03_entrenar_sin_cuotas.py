@@ -71,6 +71,8 @@ from config import (
     FEATURES_DESCANSO,
     RANDOM_SEED,
     UMBRAL_EDGE_MINIMO,
+    UMBRAL_EDGE_DC,
+    MARGEN_DC_SINTETICO,
 )
 from utils import (
     agregar_xg_rolling,
@@ -106,8 +108,14 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
     """
     ROI simulado con apuestas planas sobre value bets.
 
-    Para cada partido donde max(prob_modelo) - prob_mercado > edge_minimo,
-    apuesta 1 unidad al resultado con mayor edge. Calcula el ROI total.
+    Lógica escalonada:
+    1. Si max edge 1X2 >= umbral → apuesta 1X2
+    2. Si no, evalúa doble oportunidad (1X, X2, 12) como fallback
+    3. Si max edge DC >= UMBRAL_EDGE_DC → apuesta DC
+    4. Si no → no apuesta
+
+    Returns:
+        dict con ROI total, desglose 1X2/DC, o None si no hay cuotas.
     """
     if edge_minimo is None:
         edge_minimo = UMBRAL_EDGE_MINIMO
@@ -122,6 +130,8 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
     cuotas = df_cuotas[cuota_cols].values
     apostado = 0.0
     ganancia = 0.0
+    n_apuestas_1x2 = 0
+    n_apuestas_dc = 0
 
     for i in range(len(y_true)):
         prob_mercado = 1.0 / cuotas[i]
@@ -133,16 +143,55 @@ def _roi_simulado(y_true, probs, df_cuotas=None, edge_minimo=None):
         mejor_edge = edges[mejor_resultado]
 
         if mejor_edge >= edge_minimo:
+            # --- Apuesta 1X2 (sin cambios) ---
             apostado += 1.0
+            n_apuestas_1x2 += 1
             if y_true.iloc[i] == mejor_resultado:
                 ganancia += cuotas[i][mejor_resultado] - 1.0
             else:
                 ganancia -= 1.0
+        else:
+            # --- Fallback: Doble Oportunidad ---
+            # Fair probs del mercado (normalizar para eliminar vig)
+            total_prob = prob_mercado.sum()
+            fair = prob_mercado / total_prob
+
+            # Opciones DC: (nombre, prob_modelo, prob_mercado, clase_que_pierde)
+            dc_opciones = [
+                (probs[i][0] + probs[i][1], fair[0] + fair[1], 2),  # 1X: pierde si Away
+                (probs[i][1] + probs[i][2], fair[1] + fair[2], 0),  # X2: pierde si Home
+                (probs[i][0] + probs[i][2], fair[0] + fair[2], 1),  # 12: pierde si Draw
+            ]
+
+            mejor_dc_edge = -1.0
+            mejor_dc = None
+            for prob_mod, prob_merc, clase_pierde in dc_opciones:
+                dc_edge = prob_mod - prob_merc
+                if dc_edge > mejor_dc_edge:
+                    mejor_dc_edge = dc_edge
+                    cuota_dc = (1.0 / prob_merc) * MARGEN_DC_SINTETICO
+                    mejor_dc = (cuota_dc, clase_pierde)
+
+            if mejor_dc is not None and mejor_dc_edge >= UMBRAL_EDGE_DC:
+                apostado += 1.0
+                n_apuestas_dc += 1
+                cuota_dc, clase_pierde = mejor_dc
+                # DC gana si el resultado NO es la clase que pierde
+                if y_true.iloc[i] != clase_pierde:
+                    ganancia += cuota_dc - 1.0
+                else:
+                    ganancia -= 1.0
 
     if apostado == 0:
         return None
 
-    return ganancia / apostado
+    return {
+        'roi': ganancia / apostado,
+        'apostado': apostado,
+        'ganancia': ganancia,
+        'n_1x2': n_apuestas_1x2,
+        'n_dc': n_apuestas_dc,
+    }
 
 
 def _evaluar_modelo(modelo, X_test, y_test, nombre, df_cuotas=None):
@@ -154,7 +203,10 @@ def _evaluar_modelo(modelo, X_test, y_test, nombre, df_cuotas=None):
     f1 = f1_score(y_test, pred, average='weighted')
     ll = log_loss(y_test, probs)
     bs = _brier_multiclase(y_test, probs)
-    roi = _roi_simulado(y_test, probs, df_cuotas)
+    roi_result = _roi_simulado(y_test, probs, df_cuotas)
+
+    # Extraer ROI escalar para compatibilidad con el resto del pipeline
+    roi = roi_result['roi'] if roi_result is not None else None
 
     return {
         'modelo': modelo,
@@ -165,6 +217,7 @@ def _evaluar_modelo(modelo, X_test, y_test, nombre, df_cuotas=None):
         'log_loss': ll,
         'brier_score': bs,
         'roi': roi,
+        'roi_detalle': roi_result,
         'nombre': nombre,
     }
 
@@ -263,6 +316,10 @@ def entrenar_modelos(X_train, y_train, X_test, y_test,
         roi_str = f" | ROI: {r['roi']:+.2%}" if r['roi'] is not None else ""
         print(f"   Log Loss: {r['log_loss']:.4f} | Brier: {r['brier_score']:.4f} "
               f"| F1: {r['f1_score']:.4f} | Acc: {r['accuracy']:.2%}{roi_str}")
+        rd = r.get('roi_detalle')
+        if rd is not None:
+            print(f"   Apuestas: {rd['n_1x2']} 1X2 + {rd['n_dc']} DC = "
+                  f"{rd['n_1x2'] + rd['n_dc']} total")
 
     # -------------------------------------------------------------------------
     # MODELO 1: Random Forest Básico (baseline)
@@ -544,12 +601,64 @@ def evaluar_value_betting(modelo, X_test, y_test, df_test):
         roi_pct = (roi / num_apuestas) * 100
         print(f"{umbral:>6.1%}    {num_apuestas:>10}  {acc_vb:>10.1%}  {roi_pct:>8.1f}%")
 
+    # --- Sección DC fallback ---
+    # Evalúa doble oportunidad SOLO para partidos sin edge 1X2 suficiente
+    print(f"\n   DOBLE OPORTUNIDAD (fallback cuando no hay edge 1X2):")
+    print(f"{'Umbral 1X2':<12} {'Sin edge':<10} {'DC bets':<10} {'Acc DC':<10} {'ROI DC':<10}")
+    print("-" * 55)
+
+    for umbral in umbrales:
+        max_edge_1x2 = np.maximum(np.maximum(edge_home, edge_draw), edge_away)
+        sin_edge_mask = max_edge_1x2 <= umbral
+
+        # Calcular edges DC para partidos sin edge 1X2
+        dc_prob_mod = np.column_stack([
+            y_proba[:, 0] + y_proba[:, 1],  # 1X
+            y_proba[:, 1] + y_proba[:, 2],  # X2
+            y_proba[:, 0] + y_proba[:, 2],  # 12
+        ])
+        dc_prob_merc = np.column_stack([
+            prob_h + prob_d,  # 1X
+            prob_d + prob_a,  # X2
+            prob_h + prob_a,  # 12
+        ])
+        dc_edges = dc_prob_mod - dc_prob_merc
+        max_dc_edge = dc_edges.max(axis=1)
+
+        dc_mask = sin_edge_mask & (max_dc_edge >= UMBRAL_EDGE_DC)
+        n_sin_edge = sin_edge_mask.sum()
+        n_dc_bets = dc_mask.sum()
+
+        if n_dc_bets == 0:
+            print(f"{umbral:>6.1%}      {n_sin_edge:>8}  {0:>8}  {'N/A':>8}  {'N/A':>8}")
+            continue
+
+        # clase_pierde: 1X→2(Away), X2→0(Home), 12→1(Draw)
+        clase_pierde_map = [2, 0, 1]
+        roi_dc = 0
+        aciertos_dc = 0
+
+        for idx in np.where(dc_mask)[0]:
+            mejor_dc = int(np.argmax(dc_edges[idx]))
+            clase_pierde = clase_pierde_map[mejor_dc]
+            cuota_dc = (1.0 / dc_prob_merc[idx, mejor_dc]) * MARGEN_DC_SINTETICO
+            if y_test.iloc[idx] != clase_pierde:
+                roi_dc += cuota_dc - 1
+                aciertos_dc += 1
+            else:
+                roi_dc -= 1
+
+        acc_dc = aciertos_dc / n_dc_bets
+        roi_dc_pct = (roi_dc / n_dc_bets) * 100
+        print(f"{umbral:>6.1%}      {n_sin_edge:>8}  {n_dc_bets:>8}  {acc_dc:>8.1%}  {roi_dc_pct:>8.1f}%")
+
     print("\n   INTERPRETACION:")
     print("   - Edge = modelo ve valor que el mercado NO vio (sin haberlo consultado)")
     print("   - Edge >5%  -> apuestas con buena probabilidad")
     print("   - Edge >8%  -> apuestas con alta confianza")
     print("   - ROI >0%   -> estrategia rentable a largo plazo")
-    print("\n   RECOMENDACION: usar edge >5% como filtro mínimo para apostar")
+    print("   - DC fallback: captura valor residual cuando 1X2 no tiene edge")
+    print(f"\n   RECOMENDACION: usar edge >5% 1X2, fallback DC con edge >{UMBRAL_EDGE_DC:.0%}")
 
 
 # ============================================================================
@@ -763,7 +872,8 @@ def main():
     bs_final = _brier_multiclase(y_test, probs_final)
     f1_final = f1_score(y_test, pred_guardado, average='weighted')
     acc_final = accuracy_score(y_test, pred_guardado)
-    roi_final = _roi_simulado(y_test, probs_final, df_test)
+    roi_result_final = _roi_simulado(y_test, probs_final, df_test)
+    roi_final = roi_result_final['roi'] if roi_result_final is not None else None
 
     print("\n" + "=" * 70)
     print("ENTRENAMIENTO COMPLETADO")
@@ -774,6 +884,10 @@ def main():
     print(f"   Brier Score: {bs_final:.4f}")
     if roi_final is not None:
         print(f"   ROI sim.:    {roi_final:+.2%}")
+    if roi_result_final is not None:
+        n1 = roi_result_final['n_1x2']
+        ndc = roi_result_final['n_dc']
+        print(f"   Apuestas:    {int(n1)} 1X2 + {int(ndc)} DC = {int(n1+ndc)} total")
     print(f"\n   Métricas de referencia (clasificación):")
     print(f"   Accuracy:    {acc_final:.2%}")
     print(f"   F1-Score:    {f1_final:.4f}")
