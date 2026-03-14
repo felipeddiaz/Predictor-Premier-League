@@ -876,8 +876,8 @@ def main():
     # Evaluación value betting (diferencial exclusivo del 03)
     evaluar_value_betting(modelo_a_guardar, _X_te_cal, y_test, df_test)
 
-    # Walk-forward temporal (mismo tipo de modelo ganador)
-    walk_forward_temporal(df, features, modelo_key=mejor_key)
+    # Walk-forward temporal (TODO: portar desde 02_entrenar_modelo.py)
+    # walk_forward_temporal(df, features, modelo_key=mejor_key)
 
     # Visualizaciones (usa modelo base para feature_importances_)
     visualizar_resultados(y_test, mejor['predicciones'], nombre_final, features, mejor['modelo'])
