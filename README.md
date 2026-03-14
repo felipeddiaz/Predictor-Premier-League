@@ -21,9 +21,11 @@ Además de predecir resultados, el sistema identifica **value bets**: situacione
 Los modelos de predicción deportiva simples suelen limitarse a clasificar resultados. Este proyecto va más allá:
 
 - Integra señales de mercado (Pinnacle, Bet365, Asian Handicap) junto con estadísticas de rendimiento
-- Selecciona automáticamente las features más informativas mediante permutation importance
+- Selecciona automáticamente las **35 features más informativas** de 98 disponibles mediante importancia XGBoost
+- Incluye **Elo ratings** como feature compacta de fuerza histórica de equipos
 - Co-optimiza pesos de clase e hiperparámetros simultáneamente con búsqueda bayesiana
-- Calibra probabilidades condicionalmente (solo si mejora el F1)
+- Selecciona el modelo ganador por **ROI** (no por Log Loss ni F1)
+- Calibra probabilidades condicionalmente (solo si mejora Brier Score)
 - Aplica tres capas de filtrado de riesgo antes de recomendar una apuesta
 - Genera reportes automatizados por jornada
 
@@ -76,9 +78,9 @@ Los modelos de predicción deportiva simples suelen limitarse a clasificar resul
 
 Datos de Expected Goals por equipo y partido, almacenados en `datos/raw/final_matches_xg.csv`. Se obtienen mediante el script `herramientas/scrape_xg_understat.py` que descarga los datos de Understat.com y los fusiona con el dataset principal por fecha y nombre de equipo.
 
-### 3. Ratings ELO históricos
+### 3. Elo Ratings (calculados internamente)
 
-Ratings ELO por equipo almacenados en `datos/raw/elo/`. Calculados externamente y cargados como CSVs por temporada. Están disponibles en el código (`utils.agregar_features_elo`) pero **excluidos del modelo actual** porque en pruebas redujeron el F1 en -0.014.
+El sistema calcula **Elo ratings incrementales** directamente a partir de los resultados del dataset (no de fuentes externas). La función `utils.agregar_features_elo()` recorre los partidos cronológicamente, actualizando ratings con K=20, home advantage=50, y regresión del 33% hacia la media al inicio de cada temporada. Genera 4 features (`HT_Elo`, `AT_Elo`, `Elo_Diff`, `Elo_WinProb_H`), de las cuales las 4 fueron seleccionadas en el top 35 del modelo final.
 
 ### 4. Cuotas actuales por jornada
 
@@ -92,7 +94,7 @@ Las cuotas Bet365 de la jornada a predecir se ingresan manualmente en `jornada/j
 mi_predictor_pl/
 │
 ├── config.py                          # Configuración centralizada: rutas, features, params
-├── utils.py                           # Librería de feature engineering compartida (1 126 líneas)
+├── utils.py                           # Librería de feature engineering compartida (incluye Elo ratings)
 ├── pyproject.toml                     # Paquete instalable con pip install -e .
 ├── requirements.txt
 ├── README.md
@@ -133,10 +135,11 @@ mi_predictor_pl/
 │       └── elo/                       # Ratings ELO históricos
 │
 ├── modelos/                           # Modelos entrenados y artefactos
-│   ├── modelo_final_optimizado.pkl    # Modelo de producción (XGBoost, F1=0.5102)
-│   ├── features.pkl                   # Lista exacta de las 55 features del modelo
+│   ├── modelo_final_optimizado.pkl    # Modelo de producción (XGBoost, 35 features, ROI +24.22%)
+│   ├── features.pkl                   # Lista exacta de las 35 features seleccionadas
 │   ├── metadata.pkl                   # Métricas y metadatos del entrenamiento
-│   ├── modelo_value_betting.pkl       # Modelo alternativo sin cuotas
+│   ├── modelo_value_betting.pkl       # Modelo estructural sin cuotas (78 features)
+│   ├── features_value_betting.pkl     # Features del modelo estructural
 │   └── optuna_*.json                  # Resultados de búsquedas Optuna por configuración
 │
 ├── reportes/                          # PDFs y Excels generados por jornada
@@ -165,27 +168,40 @@ datos/procesados/premier_league_RESTAURADO.csv
   (3 691 partidos, 2016-2026, con features calculadas)
          │
          ▼  pipeline/02_entrenar_modelo.py
+         │   1. Calcula Elo ratings
+         │   2. Selecciona top 35 features (de 98)
+         │   3. Entrena 4 modelos (RF×3 + XGBoost)
+         │   4. Selecciona ganador por ROI
+         │   5. Walk-forward validation temporal
 modelos/modelo_final_optimizado.pkl
-  (XGBoost, 55 features, F1-weighted = 0.5102, split 80/20 temporal)
+  (XGBoost, 35 features, ROI +24.22%, split 80/20 temporal)
          │
          ▼  jornada/jornada_config.py  →  jornada/predecir_jornada_completa.py
 reportes/predicciones_jornada_XX.pdf + .xlsx
-  (probabilidades calibradas → EV → Kelly Criterion → apuestas recomendadas)
+  (probabilidades → EV → Kelly Criterion → apuestas recomendadas)
 ```
 
 ### Paso 1 — Preparar datos (`pipeline/01_preparar_datos.py`)
 
-Carga los 10 CSVs de temporadas, los concatena, limpia fechas y columnas con exceso de NaN, y aplica toda la ingeniería de features descrita en la siguiente sección. El resultado es el dataset canónico con 3 691 partidos y más de 80 features disponibles.
+Carga los 10 CSVs de temporadas, los concatena, limpia fechas y columnas con exceso de NaN, y aplica toda la ingeniería de features descrita en la siguiente sección. El resultado es el dataset canónico con 3 691 partidos y 98 features disponibles.
 
 ### Paso 2 — Entrenar modelos (`pipeline/02_entrenar_modelo.py`)
 
-Entrena y compara 3 modelos sobre un split **80/20 temporal sin shuffle** (los últimos 739 partidos como test):
+El pipeline de entrenamiento ejecuta los siguientes pasos:
 
-1. **XGBoost** — se entrena primero para evitar contaminación de threads con scikit-learn
-2. **Random Forest Balanceado** — pesos de clase co-optimizados con Optuna
-3. **Random Forest Optuna** — hiperparámetros y pesos co-optimizados simultáneamente
+1. **Calcula Elo ratings** incrementales para todos los equipos
+2. **Selecciona las top 35 features** de 98 disponibles usando importancia XGBoost (modelo selector rápido: 200 árboles, max_depth=5)
+3. **Entrena y compara 4 modelos** sobre un split 80/20 temporal sin shuffle:
+   - **RF Básico** — baseline sin optimización
+   - **RF Balanceado** — pesos de clase co-optimizados con Optuna
+   - **RF Optuna** — hiperparámetros y pesos co-optimizados
+   - **XGBoost** — gradient boosting con pesos de muestra
+4. **Selecciona el ganador por ROI** (retorno sobre inversión en value betting simulado)
+5. **Calibra condicionalmente** con Platt Scaling (solo si mejora Brier Score)
+6. **Walk-forward validation** temporada por temporada para validar consistencia
+7. **Entrena modelo estructural** (sin cuotas, 78 features) para edge independiente del mercado
 
-El ganador por F1-weighted en test se calibra condicionalmente con Platt Scaling (solo si la calibración mejora el F1) y se guarda como `modelos/modelo_final_optimizado.pkl` junto con la lista de features y metadatos.
+El modelo ganador se guarda como `modelos/modelo_final_optimizado.pkl` junto con la lista de features y metadatos.
 
 ### Paso 3 — Predecir jornada (`jornada/predecir_jornada_completa.py`)
 
@@ -195,7 +211,7 @@ Se edita `jornada/jornada_config.py` con los fixtures y cuotas actuales de Bet36
 
 ## Ingeniería de Features
 
-El universo completo de features disponibles es de **84 variables** agrupadas en 9 categorías. Durante el entrenamiento se aplica un proceso de **selección por permutation importance** (RF balanced, n_repeats=5, evaluado en el último fold del TimeSeriesSplit(n_splits=5) sobre el 80% de train) para seleccionar las **55 features más informativas** que usa el modelo de producción.
+El universo completo de features disponibles es de **98 variables** agrupadas en 16 categorías. Durante el entrenamiento se aplica **selección automática por importancia XGBoost** (modelo selector: 200 árboles, max_depth=5) para seleccionar las **top 35 features** que usa el modelo de producción. Esta reducción agresiva (98 → 35) minimiza overfitting y mejora la generalización.
 
 Todas las features temporales utilizan `shift(1)` explícito para evitar data leakage — el partido actual nunca se incluye en su propia ventana de cálculo.
 
@@ -216,7 +232,7 @@ Todas las features temporales utilizan `shift(1)` explícito para evitar data le
 | `HT_Form_W/D/L` | Victorias / empates / derrotas del local en los últimos 5 partidos |
 | `AT_Form_W/D/L` | Victorias / empates / derrotas del visitante en los últimos 5 partidos |
 
-**Todas incluidas en FEATURES_SELECCIONADAS:** `HT_AvgGoals`, `AT_AvgGoals`, `HT_AvgShotsTarget`, `AT_AvgShotsTarget`, `HT_Form_W`, `AT_Form_W`. Las features `HT_Form_D`, `HT_Form_L`, `AT_Form_D`, `AT_Form_L` no fueron seleccionadas por permutation importance.
+**Selección dinámica:** la inclusión de cada feature depende del selector automático en cada ejecución.
 
 ---
 
@@ -230,7 +246,7 @@ Todas las features temporales utilizan `shift(1)` explícito para evitar data le
 | `B365H`, `B365D`, `B365A` | Cuotas Bet365 apertura: victoria local, empate, victoria visitante |
 | `B365CH`, `B365CD`, `B365CA` | Cuotas Bet365 cierre: mismas tres opciones al cierre del mercado |
 
-**Incluidas en FEATURES_SELECCIONADAS:** ninguna directamente. Su información se consume a través de las features derivadas (Categoría 3).
+**En modelo actual:** `B365H`, `B365D`, `B365A` incluidas directamente en el top 35.
 
 ---
 
@@ -248,7 +264,7 @@ Todas las features temporales utilizan `shift(1)` explícito para evitar data le
 | `Market_Confidence` | Qué tan concentrada está la probabilidad en un resultado |
 | `Home_Advantage_Prob` | Ventaja de probabilidad del local sobre el visitante |
 
-**Incluidas en FEATURES_SELECCIONADAS:** `Prob_A`, `Prob_Move_H`, `Prob_Move_D`, `Prob_Move_A`, `Prob_Spread`. Excluidas: `Prob_H`, `Prob_D`, `Market_Move_Strength`, `Market_Confidence`, `Home_Advantage_Prob`.
+**En modelo actual:** `Home_Advantage_Prob` (#1 más importante), `Prob_A`, `Market_Confidence`, `Prob_D`, `Prob_Spread` incluidas en el top 35.
 
 ---
 
@@ -267,8 +283,7 @@ Todas las features temporales utilizan `shift(1)` explícito para evitar data le
 | `xG_Diff` | Diferencia de xG creado entre local y visitante |
 | `xG_Total` | Suma del xG de ambos equipos |
 
-**Todas incluidas en FEATURES_SELECCIONADAS:** `xG_Total`, `AT_xGA_Avg`, `HT_xG_Avg`, `xG_Diff`, `AT_xG_Avg`.  
-`HT_xGA_Avg` no fue seleccionada por permutation importance.
+**En modelo actual:** `AT_xG_Avg`, `xG_Diff` y `AT_xGA_Global` incluidas en el top 35.
 
 ---
 
@@ -290,7 +305,7 @@ Todas las features temporales utilizan `shift(1)` explícito para evitar data le
 | `H2H_Total_Goals_Avg` | Media de goles totales por partido en H2H |
 | `H2H_Home_Consistent` | Flag de consistencia histórica del local en H2H |
 
-**Incluidas en FEATURES_SELECCIONADAS:** `H2H_Away_Goals_Avg`, `H2H_Matches`, `H2H_Total_Goals_Avg`, `H2H_Home_Win_Rate`, `H2H_BTTS_Rate`. Excluidas: `H2H_Home_Goals_Avg`, `H2H_Goal_Diff`, `H2H_Win_Advantage`, `H2H_Home_Consistent`.
+**En modelo actual:** `H2H_Goal_Diff`, `H2H_Total_Goals_Avg` incluidas en el top 35.
 
 ---
 
@@ -314,7 +329,7 @@ La posición en tabla de cada equipo se recalcula *antes* de cada partido para e
 | `HT_Pressure` | Presión del local (importancia relativa del resultado para sus objetivos) |
 | `AT_Pressure` | Presión del visitante |
 
-**Incluidas en FEATURES_SELECCIONADAS:** `Position_Diff`, `Position_Diff_Weighted`, `HT_Points`, `AT_Position`, `AT_Points`, `Season_Progress`, `Position_Reliability`, `Match_Type`, `HT_Pressure`. Excluidas: `HT_Position`, `AT_Pressure`.
+**En modelo actual:** `Position_Diff_Weighted`, `HT_Position`, `Match_Type` incluidas en el top 35.
 
 ---
 
@@ -342,7 +357,7 @@ La posición en tabla de cada equipo se recalcula *antes* de cada partido para e
 | `HT_HomeGoals5` | Goles marcados por el local en sus últimos 5 partidos en casa |
 | `AT_AwayGoals5` | Goles marcados por el visitante en sus últimos 5 partidos fuera |
 
-**Incluidas en FEATURES_SELECCIONADAS:** `HT_HomeGoals5`, `AT_GoalsFor5`, `HT_HomeWinRate5`, `HT_GoalsFor5`, `Momentum_Diff`, `HT_Streak`, `HT_Form_W`, `AT_Form_W`. Excluidas: `HT_WinRate5`, `AT_WinRate5`, `AT_Streak`, `HT_Pts5`, `AT_Pts5`, `HT_GoalsAgainst5`, `AT_GoalsAgainst5`, `AT_AwayWinRate5`, `AT_AwayGoals5`.
+**En modelo actual:** `AT_WinRate5`, `HT_HomeWinRate5`, `AT_GoalsAgainst5`, `AT_Pts5`, `AT_GoalsFor5` incluidas en el top 35.
 
 ---
 
@@ -363,7 +378,7 @@ Pinnacle es considerada la casa de apuestas con los mercados más eficientes del
 | `Pinnacle_Sharp_A` | Probabilidad implícita cierre Pinnacle visitante (sin vig, normalizada) |
 | `Pinnacle_Conf` | Confianza del mercado sharp: max(Sharp_H, Sharp_A) − 1/3 |
 
-**Todas incluidas en FEATURES_SELECCIONADAS.** `Pinnacle_Sharp_H` y `Pinnacle_Sharp_A` son las **dos features más importantes** del modelo actual (importancias XGBoost de 0.0783 y 0.0680 respectivamente).
+**En modelo actual:** `Pinnacle_Open_H` (#2), `Pinnacle_Open_A` (#4), `Pinnacle_Conf` (#8) incluidas en el top 35.
 
 ---
 
@@ -385,7 +400,7 @@ El Asian Handicap elimina el empate del mercado, obligando al apostador a elegir
 | `AH_Market_Conf` | Confianza del mercado AH: distancia de la cuota respecto a la línea justa (1.909) |
 | `AH_Close_Move_H` | Movimiento de cuota AH local de apertura a cierre |
 
-**Todas incluidas en FEATURES_SELECCIONADAS.** Los NaN (partidos sin datos AH) se imputan con la mediana del resto de partidos — **no con 0**, ya que `AHh=0` significa "partido parejo" y no "dato ausente". `AH_Edge_Home` es la **cuarta feature más importante** del modelo (importancia XGBoost = 0.0485).
+**En modelo actual:** `AH_Edge_Home` (#7), `AH_Implied_Away`, `AH_Market_Conf` incluidas en el top 35. Los NaN (partidos sin datos AH) se imputan con la mediana — **no con 0**, ya que `AHh=0` significa "partido parejo" y no "dato ausente".
 
 ---
 
@@ -401,7 +416,7 @@ El Asian Handicap elimina el empate del mercado, obligando al apostador a elegir
 | `AT_HTR_Rate` | % partidos en que el visitante ganaba al descanso (últimos 5 partidos) |
 | `PS_vs_Avg_H` | Señal sharp: diferencia entre prob. implícita Pinnacle local y promedio de mercado |
 
-**Incluidas en FEATURES_SELECCIONADAS:** `HT_Goals_Diff`, `PS_vs_Avg_H`. Excluidas: `AT_Goals_Diff`, `AT_HTR_Rate`.
+**En modelo actual:** ninguna de estas features fue seleccionada en el top 35 actual.
 
 ---
 
@@ -419,61 +434,68 @@ El Asian Handicap elimina el empate del mercado, obligando al apostador a elegir
 | `Ref_Home_Yellow` | Promedio de amarillas al equipo local con este árbitro |
 | `Ref_Away_Yellow` | Promedio de amarillas al equipo visitante con este árbitro |
 
-**Todas incluidas en FEATURES_SELECCIONADAS:** `Ref_Away_Yellow`, `Ref_Yellow_Avg`, `Ref_Home_WinRate`, `Ref_Goals_Avg`.  
-`Ref_Home_Yellow` no fue seleccionada por permutation importance.
+**En modelo actual:** `Ref_Away_Yellow` incluida en el top 35.
 
 ---
 
-### Categoría 12 — Ratings ELO (3 features) — Disponibles, no incluidas
+### Categoría 12 — Elo Ratings (4 features)
 
-**Fuente:** `datos/raw/elo/`, calculados externamente.  
+**Fuente:** calculadas internamente a partir de los resultados del dataset.
 **Calculadas en:** `utils.agregar_features_elo()`.
+**Parámetros:** K=20, home advantage=50, Elo inicial=1500, regresión por temporada=33%.
+
+Sistema Elo incremental que rastrea la fuerza de cada equipo partido a partido. Al inicio de cada temporada, los ratings se regresan un 33% hacia la media (1500) para reflejar cambios de plantilla. Los equipos nuevos (ascendidos) arrancan con Elo=1500.
 
 | Feature | Descripción |
 |---|---|
-| `HT_ELO` | Rating ELO del local en la fecha del partido |
-| `AT_ELO` | Rating ELO del visitante en la fecha del partido |
-| `ELO_Diff` | Diferencia de ratings: HT_ELO − AT_ELO |
+| `HT_Elo` | Rating Elo del local antes del partido |
+| `AT_Elo` | Rating Elo del visitante antes del partido |
+| `Elo_Diff` | Diferencia de ratings: HT_Elo − AT_Elo |
+| `Elo_WinProb_H` | Probabilidad implícita Elo de victoria local: `1 / (1 + 10^(-Elo_Diff/400))` |
 
-**No incluidas en `ALL_FEATURES` ni en `FEATURES_SELECCIONADAS`:** en pruebas controladas con XGBoost, estas features **redujeron el F1 en −0.014** respecto a no incluirlas. Se mantienen disponibles en el código para futura experimentación.
+**Todas incluidas en el modelo final.** Las 4 features Elo fueron seleccionadas en el top 35 (posiciones 12, 18, 20, 22), confirmando su valor predictivo como proxy compacto de fuerza de equipo.
 
 ---
 
 ### Resumen de selección de features
 
-| Categoría | Disponibles | En modelo |
-|---|---|---|
-| Estadísticas Base Rolling | 10 | 6 |
-| Cuotas Bet365 | 6 | 0 (via derivadas) |
-| Señales Derivadas de Cuotas | 10 | 5 |
-| Expected Goals (xG) | 6 | 5 |
-| Head-to-Head | 9 | 5 |
-| Posición en Tabla | 11 | 9 |
-| Forma y Momentum | 15 | 8 |
-| Pinnacle / Sharp Money | 6 | 6 |
-| Asian Handicap | 7 | 7 |
-| Rolling Adicionales | 4 | 2 |
-| Árbitro | 5 | 4 |
-| ELO | 3 | 0 |
-| **Total** | **84** | **55** |
+De las 98 features disponibles, el selector automático (XGBoost, 200 árboles) elige las **top 35** por importancia. La selección se ejecuta en cada entrenamiento, adaptándose a los datos.
 
-Las 55 features finales se seleccionaron en dos pasos:
-1. **Top 45** por permutation importance (RF balanced, n_repeats=5, evaluado en el último fold de TimeSeriesSplit(n_splits=5) sobre el 80% de entrenamiento)
-2. **+ 10 candidatas** de Pinnacle Sharp y Asian Handicap, añadidas manualmente por su valor informativo conocido y validadas empíricamente (mejoran el F1)
+| Categoría | Disponibles | En modelo (top 35) |
+|---|---|---|
+| Estadísticas Base Rolling | 10 | ~3 |
+| Cuotas Bet365 | 3 | 3 |
+| Señales Derivadas de Cuotas | 6 | 5 |
+| Expected Goals (xG) | 6 | 3 |
+| xG Global | 5 | 2 |
+| Head-to-Head | 9 | 2 |
+| Posición en Tabla | 11 | 2 |
+| Forma y Momentum | 15 | 4 |
+| Pinnacle / Sharp Money | 3 | 3 |
+| Asian Handicap | 5 | 3 |
+| Rolling Adicionales | 3 | 0 |
+| Árbitro | 5 | 1 |
+| Multi-escala | 6 | 0 |
+| Descanso/Fatiga | 7 | 0 |
+| Elo Ratings | 4 | 4 |
+| **Total** | **98** | **35** |
+
+La selección es **automática y dinámica**: se recalcula en cada ejecución del pipeline. Las features de mercado (cuotas, Pinnacle, AH) y Elo dominan el top 10.
 
 ---
 
 ## Modelos y Entrenamiento
 
-### Los tres modelos competidores
+### Los cuatro modelos competidores
 
-En cada ejecución de `pipeline/02_entrenar_modelo.py` se entrenan y comparan tres modelos sobre el mismo split temporal 80/20:
+En cada ejecución de `pipeline/02_entrenar_modelo.py` se entrenan y comparan cuatro modelos sobre el mismo split temporal 80/20, usando las **35 features seleccionadas**:
 
 | Modelo | Descripción |
 |---|---|
-| **XGBoost** | Gradient boosting con pesos de muestra. Se entrena primero para evitar no-determinismo causado por contaminación del pool de threads OpenMP de scikit-learn |
+| **RF Básico** | Random Forest baseline sin optimización de pesos |
 | **RF Balanceado** | Random Forest con pesos de clase co-optimizados. Arquitectura fija (300 estimadores, max_depth=10) con pesos ajustados por Optuna |
 | **RF Optuna** | Random Forest con arquitectura y pesos de clase co-optimizados simultáneamente con Optuna |
+| **XGBoost** | Gradient boosting con pesos de muestra. Se entrena primero para evitar no-determinismo causado por contaminación del pool de threads OpenMP de scikit-learn |
 
 ### Co-optimización con Optuna
 
@@ -487,52 +509,49 @@ Los mejores parámetros se escriben automáticamente en `config.py` y se guardan
 
 ### Calibración condicional
 
-Tras seleccionar el modelo ganador, se prueba Platt Scaling (`CalibratedClassifierCV`, method='sigmoid', cv=3). La calibración solo se adopta si mejora el F1-weighted en test. En la versión actual, la calibración no mejora el F1 y se descarta — el modelo de producción es el XGBoost sin calibrar.
+Tras seleccionar el modelo ganador por ROI, se prueba Platt Scaling (`CalibratedClassifierCV`, method='sigmoid', cv=TimeSeriesSplit). La calibración solo se adopta si mejora el Brier Score en test. En la versión actual, la calibración no mejora las probabilidades y se descarta — el modelo de producción es el XGBoost sin calibrar.
 
 ### Resultados actuales (versión 2026-03)
 
-| Modelo | F1-weighted (test 20%) |
-|---|---|
-| **XGBoost** (ganador) | **0.5102** |
-| RF Optuna | 0.5057 |
-| RF Balanceado | 0.4907 |
-| Baseline original (Ensemble RF40%+XGB60%, 25 feats) | 0.5084 |
+**Criterio de selección: ROI (retorno sobre inversión en value betting simulado)**
 
-**Configuración del modelo ganador (XGBoost):**
+| Modelo | ROI | Log Loss | Brier Score | Accuracy |
+|---|---|---|---|---|
+| **XGBoost** (ganador) | **+24.22%** | **0.9829** | **0.1952** | 52.37% |
+| RF Balanceado | +17.70% | 0.9851 | 0.1955 | 51.83% |
+| RF Optuna | +10.90% | 0.9937 | 0.1984 | 48.31% |
+| RF Básico | -3.83% | 0.9900 | 0.1963 | 52.23% |
 
-```python
-PESOS_XGB  = {0: 0.9469, 1: 1.5348, 2: 1.1303}   # Local / Empate / Visitante
+### Walk-Forward Validation (temporada por temporada)
 
-PARAMS_XGB = {
-    'n_estimators':      350,
-    'max_depth':         6,
-    'learning_rate':     0.00566,
-    'subsample':         0.5697,
-    'colsample_bytree':  0.8134,
-    'colsample_bylevel': 0.6459,
-    'reg_alpha':         0.7067,
-    'reg_lambda':        2.0347,
-    'min_child_weight':  20,
-    'gamma':             0.9796,
-}
-```
+| Temporada | Train | Test | Log Loss | ROI |
+|---|---|---|---|---|
+| 2020-21 | 1520 | 380 | 1.0174 | +16.62% |
+| 2021-22 | 1900 | 380 | 0.9665 | +37.00% |
+| 2022-23 | 2280 | 380 | 0.9969 | -16.30% |
+| 2023-24 | 2660 | 380 | 0.9318 | +0.17% |
+| 2024-25 | 3040 | 380 | 0.9747 | +40.60% |
+| 2025-26 | 3420 | 271 | 1.0183 | +27.15% |
+| **PROMEDIO** | | | **0.9843** | **+17.54%** |
+
+ROI positivo en **5 de 6 temporadas**. STD Log Loss: 0.0305 (alta consistencia).
 
 ### Top 10 features más importantes (XGBoost, importancia por ganancia)
 
 | # | Feature | Importancia | Categoría |
 |---|---|---|---|
-| 1 | `Pinnacle_Sharp_H` | 0.0783 | Pinnacle Sharp |
-| 2 | `Pinnacle_Sharp_A` | 0.0680 | Pinnacle Sharp |
-| 3 | `Prob_A` | 0.0626 | Cuotas Derivadas |
-| 4 | `AH_Edge_Home` | 0.0485 | Asian Handicap |
-| 5 | `Pinnacle_Conf` | 0.0269 | Pinnacle Sharp |
-| 6 | `Prob_Spread` | 0.0231 | Cuotas Derivadas |
-| 7 | `Match_Type` | 0.0183 | Posición en Tabla |
-| 8 | `HT_HomeWinRate5` | 0.0176 | Forma y Momentum |
-| 9 | `Position_Reliability` | 0.0163 | Posición en Tabla |
-| 10 | `Position_Diff_Weighted` | 0.0156 | Posición en Tabla |
+| 1 | `Home_Advantage_Prob` | 0.0827 | Cuotas Derivadas |
+| 2 | `Pinnacle_Open_H` | 0.0786 | Pinnacle |
+| 3 | `B365A` | 0.0645 | Cuotas Bet365 |
+| 4 | `Pinnacle_Open_A` | 0.0639 | Pinnacle |
+| 5 | `B365H` | 0.0636 | Cuotas Bet365 |
+| 6 | `Prob_A` | 0.0565 | Cuotas Derivadas |
+| 7 | `AH_Edge_Home` | 0.0515 | Asian Handicap |
+| 8 | `Pinnacle_Conf` | 0.0297 | Pinnacle |
+| 9 | `Market_Confidence` | 0.0292 | Cuotas Derivadas |
+| 10 | `Prob_D` | 0.0262 | Cuotas Derivadas |
 
-Las tres primeras posiciones están dominadas por señales de mercado Pinnacle, lo que confirma la hipótesis de que los mercados sharp contienen información predictiva que no está plenamente capturada por las estadísticas de rendimiento.
+Las señales de mercado (cuotas, Pinnacle, AH) dominan las primeras posiciones, lo que confirma que los mercados sharp contienen información predictiva que no está plenamente capturada por las estadísticas de rendimiento.
 
 ### Dataset de entrenamiento
 
@@ -549,18 +568,26 @@ Las tres primeras posiciones están dominadas por señales de mercado Pinnacle, 
 
 ## Rendimiento del Modelo
 
+### Modelo principal (35 features con cuotas)
+
 | Métrica | Valor |
 |---|---|
-| **F1-weighted (test)** | **0.5102** |
-| Accuracy (test) | 52.91% |
-| F1 Victoria local | ~0.64 |
-| F1 Empate | ~0.22 (clase más difícil) |
-| F1 Victoria visitante | ~0.57 |
-| Recall Victoria local | 70.55% |
-| Recall Empate | 17.84% |
-| Recall Victoria visitante | 57.14% |
+| **ROI (test)** | **+24.22%** |
+| **ROI walk-forward (promedio 6 temporadas)** | **+17.54%** |
+| Log Loss (test) | 0.9829 |
+| Brier Score (test) | 0.1952 |
+| Accuracy (test) | 52.37% |
+| F1-weighted (test) | 0.4955 |
 
-> El baseline aleatorio para un problema de 3 clases es 33.3%. Un accuracy del 52.91% y un F1-weighted de 0.5102 representan una mejora significativa sobre el azar y son consistentes con la literatura académica en predicción deportiva con datos de mercado.
+### Modelo estructural (78 features sin cuotas)
+
+| Métrica | Valor |
+|---|---|
+| Log Loss (test) | 0.9921 |
+| Brier Score (test) | 0.1975 |
+| Accuracy (test) | 53.45% |
+
+> El baseline aleatorio para un problema de 3 clases es 33.3%. Un accuracy del 52.37% con ROI +24.22% representa una mejora significativa tanto en predicción como en rentabilidad. El ROI walk-forward positivo en 5/6 temporadas confirma la robustez del modelo.
 
 El empate es estructuralmente la clase más difícil de predecir: históricamente ocurre el 23-25% de las veces pero es la más impredecible incluso para los mercados de apuestas.
 
@@ -730,7 +757,10 @@ python pipeline/02_entrenar_modelo.py
 
 - El split de entrenamiento/validación es siempre **temporal sin shuffle** (`train_test_split(..., shuffle=False)`). Los últimos 739 partidos cronológicamente son siempre el conjunto de test. Esto evita data leakage entre partidos de distintas fechas.
 - Las features rolling usan `shift(1)` explícito: el partido actual nunca se incluye en su propia ventana de cálculo.
-- **No-determinismo de XGBoost con n_jobs=-1:** XGBoost puede dar F1 ligeramente distintos entre ejecuciones si el pool de threads OpenMP ya fue inicializado por scikit-learn. Por eso XGBoost se entrena **primero** en el pipeline (antes que los RF). El F1 de referencia es 0.5102 en proceso limpio con las 55 features actuales.
+- **Selección de features dinámica:** en cada entrenamiento, un XGBoost selector (200 árboles, max_depth=5) rankea las 98 features y selecciona las top 35. Esto se adapta automáticamente si se agregan o modifican features.
+- **Selección de modelo por ROI:** el modelo ganador se elige por retorno sobre inversión simulado, no por Log Loss ni F1. El objetivo del proyecto es encontrar valor en apuestas.
+- **Elo ratings calculados internamente:** `utils.agregar_features_elo()` genera ratings incrementales sin depender de fuentes externas.
+- **No-determinismo de XGBoost con n_jobs=-1:** XGBoost puede dar resultados ligeramente distintos entre ejecuciones si el pool de threads OpenMP ya fue inicializado por scikit-learn. Por eso XGBoost se entrena **primero** en el pipeline (antes que los RF).
 - Los modelos se guardan en `modelos/` como archivos `.pkl` junto con la lista exacta de features usadas y metadatos del entrenamiento, para garantizar reproducibilidad en predicción.
 - `config.py` es la única fuente de verdad para todos los hiperparámetros. Los scripts de optimización actualizan `config.py` automáticamente al terminar.
 - La imputación de Asian Handicap usa la **mediana** de los partidos con datos disponibles — nunca 0, porque `AHh=0` significa "partido parejo" y no "dato ausente".
