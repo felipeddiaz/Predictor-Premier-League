@@ -11,6 +11,8 @@ FEATURES_OU = [
     'H2H_Total_Goals_Avg', 'H2H_BTTS_Rate',
     'HT_TotalGoals5', 'AT_TotalGoals5', 'HT_Over25_Rate5', 'AT_Over25_Rate5',
     'HT_BTTS_Rate5', 'AT_BTTS_Rate5', 'H2H_Over25_Rate',
+    'HT_Shots5', 'AT_Shots5', 'HT_ShotsTarget5', 'AT_ShotsTarget5',
+    'HT_xG_Residual5', 'AT_xG_Residual5',
     'HT_Days_Rest', 'AT_Days_Rest', 'Rest_Diff',
     'HT_Elo', 'AT_Elo', 'Elo_Diff',
 ]

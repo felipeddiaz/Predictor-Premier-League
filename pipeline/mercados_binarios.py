@@ -44,6 +44,35 @@ def _asignar_temporada(dates: pd.Series) -> pd.Series:
     )
 
 
+def _fit_xgb_con_es_temporal(modelo, X_train, y_train):
+    """Entrena XGBoost con validacion temporal interna para early stopping."""
+    n = len(X_train)
+    # Requiere muestra suficiente para tener split interno estable.
+    if n >= 120:
+        idx_split = int(n * 0.85)
+        X_fit = X_train.iloc[:idx_split]
+        y_fit = y_train.iloc[:idx_split]
+        X_val = X_train.iloc[idx_split:]
+        y_val = y_train.iloc[idx_split:]
+
+        if len(X_val) >= 20 and y_val.nunique() > 1 and y_fit.nunique() > 1:
+            sw_fit = compute_sample_weight(class_weight="balanced", y=y_fit)
+            modelo.fit(
+                X_fit,
+                y_fit,
+                sample_weight=sw_fit,
+                eval_set=[(X_val, y_val)],
+                verbose=False,
+            )
+            return modelo
+
+    sw = compute_sample_weight(class_weight="balanced", y=y_train)
+    # Si no hay split interno valido, desactivar early stopping para este fold.
+    modelo.set_params(early_stopping_rounds=None)
+    modelo.fit(X_train, y_train, sample_weight=sw, verbose=False)
+    return modelo
+
+
 def _roi_binario(y_true, p_over, df_eval, over_col=None, under_col=None, edge_min=UMBRAL_EDGE_BINARIO):
     if over_col is None or under_col is None:
         return None
@@ -190,9 +219,9 @@ def _walk_forward(df, features, target_col, modelo_key, roi_kwargs):
                 random_state=RANDOM_SEED,
                 n_jobs=-1,
                 eval_metric="logloss",
+                early_stopping_rounds=40,
             )
-            sw = compute_sample_weight(class_weight="balanced", y=y_train)
-            m.fit(X_train, y_train, sample_weight=sw)
+            m = _fit_xgb_con_es_temporal(m, X_train, y_train)
             probs = m.predict_proba(X_test)[:, 1]
             pred = (probs >= 0.5).astype(int)
         else:

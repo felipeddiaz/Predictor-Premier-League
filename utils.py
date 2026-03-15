@@ -1628,18 +1628,25 @@ def _rolling_team_feature(df: pd.DataFrame, home_col: str, away_col: str, out_ho
     """Helper: rolling mean por equipo usando solo partidos previos."""
     tmp_home = df[['Date', 'HomeTeam', home_col]].copy()
     tmp_home.columns = ['Date', 'Team', 'Value']
+    tmp_home['MatchIdx'] = df.index.values
+    tmp_home['Side'] = 'home'
+
     tmp_away = df[['Date', 'AwayTeam', away_col]].copy()
     tmp_away.columns = ['Date', 'Team', 'Value']
+    tmp_away['MatchIdx'] = df.index.values
+    tmp_away['Side'] = 'away'
 
     long_df = pd.concat([tmp_home, tmp_away], ignore_index=True)
-    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+    long_df = long_df.sort_values(['Team', 'Date', 'MatchIdx', 'Side']).reset_index(drop=True)
     long_df['Rolling'] = long_df.groupby('Team')['Value'].transform(
         lambda x: x.shift(1).rolling(window, min_periods=1).mean()
     )
 
-    n = len(df)
-    df[out_home] = long_df.iloc[:n]['Rolling'].values
-    df[out_away] = long_df.iloc[n:]['Rolling'].values
+    home_roll = long_df[long_df['Side'] == 'home'].set_index('MatchIdx')['Rolling']
+    away_roll = long_df[long_df['Side'] == 'away'].set_index('MatchIdx')['Rolling']
+
+    df[out_home] = home_roll.reindex(df.index).values
+    df[out_away] = away_roll.reindex(df.index).values
     df[out_home] = df[out_home].fillna(0)
     df[out_away] = df[out_away].fillna(0)
     return df
@@ -1677,9 +1684,26 @@ def agregar_features_goles_binarias(df: pd.DataFrame, window: int = 5) -> pd.Dat
     df['Match_Over25'] = (df['Match_TotalGoals'] > 2.5).astype(float)
     df['Match_BTTS'] = ((pd.to_numeric(df['FTHG'], errors='coerce') > 0) & (pd.to_numeric(df['FTAG'], errors='coerce') > 0)).astype(float)
 
+    # Volumen de tiros (predictor fuerte para O/U)
+    df['Match_HomeShots'] = pd.to_numeric(df.get('HS', 0), errors='coerce').fillna(0)
+    df['Match_AwayShots'] = pd.to_numeric(df.get('AS', 0), errors='coerce').fillna(0)
+    df['Match_HomeShotsTarget'] = pd.to_numeric(df.get('HST', 0), errors='coerce').fillna(0)
+    df['Match_AwayShotsTarget'] = pd.to_numeric(df.get('AST', 0), errors='coerce').fillna(0)
+
+    # xG residual (goles - xG): proxy de sobre/sub-rendimiento
+    home_goals = pd.to_numeric(df.get('FTHG', 0), errors='coerce').fillna(0)
+    away_goals = pd.to_numeric(df.get('FTAG', 0), errors='coerce').fillna(0)
+    home_xg = pd.to_numeric(df.get('Home_xG', 0), errors='coerce').fillna(0)
+    away_xg = pd.to_numeric(df.get('Away_xG', 0), errors='coerce').fillna(0)
+    df['Match_Home_xG_Residual'] = home_goals - home_xg
+    df['Match_Away_xG_Residual'] = away_goals - away_xg
+
     df = _rolling_team_feature(df, 'Match_TotalGoals', 'Match_TotalGoals', 'HT_TotalGoals5', 'AT_TotalGoals5', window=window)
     df = _rolling_team_feature(df, 'Match_Over25', 'Match_Over25', 'HT_Over25_Rate5', 'AT_Over25_Rate5', window=window)
     df = _rolling_team_feature(df, 'Match_BTTS', 'Match_BTTS', 'HT_BTTS_Rate5', 'AT_BTTS_Rate5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShots', 'Match_AwayShots', 'HT_Shots5', 'AT_Shots5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShotsTarget', 'Match_AwayShotsTarget', 'HT_ShotsTarget5', 'AT_ShotsTarget5', window=window)
+    df = _rolling_team_feature(df, 'Match_Home_xG_Residual', 'Match_Away_xG_Residual', 'HT_xG_Residual5', 'AT_xG_Residual5', window=window)
 
     df = _h2h_rolling_rate(
         df,
@@ -1761,13 +1785,34 @@ def agregar_features_corners_binarias(df: pd.DataFrame, window: int = 5) -> pd.D
 
     hc = pd.to_numeric(df.get('HC', 0), errors='coerce').fillna(0)
     ac = pd.to_numeric(df.get('AC', 0), errors='coerce').fillna(0)
+    hs = pd.to_numeric(df.get('HS', 0), errors='coerce').fillna(0)
+    ass = pd.to_numeric(df.get('AS', 0), errors='coerce').fillna(0)
+    hst = pd.to_numeric(df.get('HST', 0), errors='coerce').fillna(0)
+    ast = pd.to_numeric(df.get('AST', 0), errors='coerce').fillna(0)
+    hf = pd.to_numeric(df.get('HF', 0), errors='coerce').fillna(0)
+    af = pd.to_numeric(df.get('AF', 0), errors='coerce').fillna(0)
+
     df['Match_HomeCorners'] = hc
     df['Match_AwayCorners'] = ac
     df['Match_TotalCorners'] = hc + ac
+    df['Match_HomeShots'] = hs
+    df['Match_AwayShots'] = ass
+    df['Match_HomeShotsTarget'] = hst
+    df['Match_AwayShotsTarget'] = ast
+    df['Match_HomeFouls'] = hf
+    df['Match_AwayFouls'] = af
 
     df = _rolling_team_feature(df, 'Match_HomeCorners', 'Match_AwayCorners', 'HT_CornersFor5', 'AT_CornersFor5', window=window)
     df = _rolling_team_feature(df, 'Match_AwayCorners', 'Match_HomeCorners', 'HT_CornersAgainst5', 'AT_CornersAgainst5', window=window)
     df = _rolling_team_feature(df, 'Match_TotalCorners', 'Match_TotalCorners', 'HT_CornersTotal5', 'AT_CornersTotal5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShots', 'Match_AwayShots', 'HT_Shots5', 'AT_Shots5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShotsTarget', 'Match_AwayShotsTarget', 'HT_ShotsTarget5', 'AT_ShotsTarget5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeFouls', 'Match_AwayFouls', 'HT_Fouls5', 'AT_Fouls5', window=window)
+
+    # Proxy de posesion/dominio por corners
+    df['HT_Corner_Dominance5'] = df['HT_CornersFor5'] - df['HT_CornersAgainst5']
+    df['AT_Corner_Dominance5'] = df['AT_CornersFor5'] - df['AT_CornersAgainst5']
+    df['Corner_Dominance_Diff'] = df['HT_Corner_Dominance5'] - df['AT_Corner_Dominance5']
 
     historial = {}
     vals = []
@@ -1782,6 +1827,9 @@ def agregar_features_corners_binarias(df: pd.DataFrame, window: int = 5) -> pd.D
     fill_cols = [
         'HT_CornersFor5', 'AT_CornersFor5', 'HT_CornersAgainst5', 'AT_CornersAgainst5',
         'HT_CornersTotal5', 'AT_CornersTotal5', 'H2H_Corners_Avg',
+        'HT_Shots5', 'AT_Shots5', 'HT_ShotsTarget5', 'AT_ShotsTarget5',
+        'HT_Fouls5', 'AT_Fouls5', 'HT_Corner_Dominance5', 'AT_Corner_Dominance5',
+        'Corner_Dominance_Diff',
     ]
     df[fill_cols] = df[fill_cols].fillna(0)
     return df
