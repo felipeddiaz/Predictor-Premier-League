@@ -1618,3 +1618,170 @@ def agregar_features_elo(df: pd.DataFrame,
           f"rango [{min(elos.values()):.0f} - {max(elos.values()):.0f}]")
 
     return df
+
+
+# ============================================================================
+# FEATURES MERCADOS BINARIOS (O/U, TARJETAS, CORNERS)
+# ============================================================================
+
+def _rolling_team_feature(df: pd.DataFrame, home_col: str, away_col: str, out_home: str, out_away: str, window: int = 5):
+    """Helper: rolling mean por equipo usando solo partidos previos."""
+    tmp_home = df[['Date', 'HomeTeam', home_col]].copy()
+    tmp_home.columns = ['Date', 'Team', 'Value']
+    tmp_away = df[['Date', 'AwayTeam', away_col]].copy()
+    tmp_away.columns = ['Date', 'Team', 'Value']
+
+    long_df = pd.concat([tmp_home, tmp_away], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+    long_df['Rolling'] = long_df.groupby('Team')['Value'].transform(
+        lambda x: x.shift(1).rolling(window, min_periods=1).mean()
+    )
+
+    n = len(df)
+    df[out_home] = long_df.iloc[:n]['Rolling'].values
+    df[out_away] = long_df.iloc[n:]['Rolling'].values
+    df[out_home] = df[out_home].fillna(0)
+    df[out_away] = df[out_away].fillna(0)
+    return df
+
+
+def _h2h_rolling_rate(df: pd.DataFrame, condition_fn, out_col: str, window: int = 5):
+    """Rate rolling H2H usando últimos N enfrentamientos directos."""
+    df = df.sort_values('Date').copy()
+    historial = {}
+    valores = []
+
+    for _, row in df.iterrows():
+        h = row['HomeTeam']
+        a = row['AwayTeam']
+        clave = tuple(sorted([h, a]))
+
+        prev = historial.get(clave, [])
+        valores.append(float(np.mean(prev[-window:])) if prev else 0.0)
+
+        ok = condition_fn(row)
+        prev.append(1.0 if ok else 0.0)
+        historial[clave] = prev
+
+    df[out_col] = valores
+    return df
+
+
+def agregar_features_goles_binarias(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """Features para mercado O/U goles."""
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    df['Match_TotalGoals'] = pd.to_numeric(df['FTHG'], errors='coerce').fillna(0) + pd.to_numeric(df['FTAG'], errors='coerce').fillna(0)
+    df['Match_Over25'] = (df['Match_TotalGoals'] > 2.5).astype(float)
+    df['Match_BTTS'] = ((pd.to_numeric(df['FTHG'], errors='coerce') > 0) & (pd.to_numeric(df['FTAG'], errors='coerce') > 0)).astype(float)
+
+    df = _rolling_team_feature(df, 'Match_TotalGoals', 'Match_TotalGoals', 'HT_TotalGoals5', 'AT_TotalGoals5', window=window)
+    df = _rolling_team_feature(df, 'Match_Over25', 'Match_Over25', 'HT_Over25_Rate5', 'AT_Over25_Rate5', window=window)
+    df = _rolling_team_feature(df, 'Match_BTTS', 'Match_BTTS', 'HT_BTTS_Rate5', 'AT_BTTS_Rate5', window=window)
+
+    df = _h2h_rolling_rate(
+        df,
+        condition_fn=lambda r: (float(r.get('FTHG', 0)) + float(r.get('FTAG', 0))) > 2.5,
+        out_col='H2H_Over25_Rate',
+        window=window,
+    )
+
+    return df
+
+
+def agregar_features_tarjetas_binarias(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """Features para mercado de tarjetas (O/U total)."""
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    hy = pd.to_numeric(df.get('HY', 0), errors='coerce').fillna(0)
+    ay = pd.to_numeric(df.get('AY', 0), errors='coerce').fillna(0)
+    hr = pd.to_numeric(df.get('HR', 0), errors='coerce').fillna(0)
+    ar = pd.to_numeric(df.get('AR', 0), errors='coerce').fillna(0)
+
+    df['Match_TotalYellow'] = hy + ay
+    df['Match_HomeYellow'] = hy
+    df['Match_AwayYellow'] = ay
+    df['Match_HomeRed'] = (hr > 0).astype(float)
+    df['Match_AwayRed'] = (ar > 0).astype(float)
+
+    df = _rolling_team_feature(df, 'Match_HomeYellow', 'Match_AwayYellow', 'HT_YellowAvg5', 'AT_YellowAvg5', window=window)
+    df = _rolling_team_feature(df, 'Match_AwayYellow', 'Match_HomeYellow', 'HT_YellowFor5', 'AT_YellowFor5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeRed', 'Match_AwayRed', 'HT_RedRate5', 'AT_RedRate5', window=window)
+
+    # Referee total cards rolling
+    if 'Referee' in df.columns:
+        ref_tmp = df[['Date', 'Referee', 'Match_TotalYellow']].copy()
+        ref_tmp = ref_tmp.sort_values(['Referee', 'Date']).reset_index(drop=True)
+        ref_tmp['Ref_Cards_Total_Avg'] = ref_tmp.groupby('Referee')['Match_TotalYellow'].transform(
+            lambda x: x.shift(1).rolling(window, min_periods=1).mean()
+        )
+        df['Ref_Cards_Total_Avg'] = ref_tmp['Ref_Cards_Total_Avg'].values
+    else:
+        df['Ref_Cards_Total_Avg'] = 0.0
+
+    # H2H yellow avg
+    df = _h2h_rolling_rate(
+        df,
+        condition_fn=lambda r: float(r.get('HY', 0)) + float(r.get('AY', 0)),
+        out_col='H2H_Yellow_Avg',
+        window=window,
+    )
+    # _h2h_rolling_rate devuelve rate binario; para promedio continuo recalculamos simple
+    historial = {}
+    y_vals = []
+    for _, row in df.iterrows():
+        clave = tuple(sorted([row['HomeTeam'], row['AwayTeam']]))
+        prev = historial.get(clave, [])
+        y_vals.append(float(np.mean(prev[-window:])) if prev else 0.0)
+        prev.append(float(row.get('HY', 0)) + float(row.get('AY', 0)))
+        historial[clave] = prev
+    df['H2H_Yellow_Avg'] = y_vals
+
+    base_ref = df.get('Ref_Yellow_Avg', pd.Series(np.zeros(len(df)), index=df.index)).fillna(0)
+    df['Ref_Aggressiveness_Interaction'] = base_ref * (df['HT_YellowAvg5'] + df['AT_YellowAvg5'])
+
+    fill_cols = [
+        'HT_YellowAvg5', 'AT_YellowAvg5', 'HT_YellowFor5', 'AT_YellowFor5',
+        'HT_RedRate5', 'AT_RedRate5', 'Ref_Cards_Total_Avg', 'H2H_Yellow_Avg',
+        'Ref_Aggressiveness_Interaction',
+    ]
+    df[fill_cols] = df[fill_cols].fillna(0)
+    return df
+
+
+def agregar_features_corners_binarias(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """Features para mercado de corners (O/U total)."""
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    hc = pd.to_numeric(df.get('HC', 0), errors='coerce').fillna(0)
+    ac = pd.to_numeric(df.get('AC', 0), errors='coerce').fillna(0)
+    df['Match_HomeCorners'] = hc
+    df['Match_AwayCorners'] = ac
+    df['Match_TotalCorners'] = hc + ac
+
+    df = _rolling_team_feature(df, 'Match_HomeCorners', 'Match_AwayCorners', 'HT_CornersFor5', 'AT_CornersFor5', window=window)
+    df = _rolling_team_feature(df, 'Match_AwayCorners', 'Match_HomeCorners', 'HT_CornersAgainst5', 'AT_CornersAgainst5', window=window)
+    df = _rolling_team_feature(df, 'Match_TotalCorners', 'Match_TotalCorners', 'HT_CornersTotal5', 'AT_CornersTotal5', window=window)
+
+    historial = {}
+    vals = []
+    for _, row in df.iterrows():
+        clave = tuple(sorted([row['HomeTeam'], row['AwayTeam']]))
+        prev = historial.get(clave, [])
+        vals.append(float(np.mean(prev[-window:])) if prev else 0.0)
+        prev.append(float(row.get('HC', 0)) + float(row.get('AC', 0)))
+        historial[clave] = prev
+    df['H2H_Corners_Avg'] = vals
+
+    fill_cols = [
+        'HT_CornersFor5', 'AT_CornersFor5', 'HT_CornersAgainst5', 'AT_CornersAgainst5',
+        'HT_CornersTotal5', 'AT_CornersTotal5', 'H2H_Corners_Avg',
+    ]
+    df[fill_cols] = df[fill_cols].fillna(0)
+    return df

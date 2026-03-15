@@ -26,6 +26,7 @@ RUTA_PORTAFOLIO = os.path.join(_RAIZ, 'portafolio_imagenes') + os.sep
 # Archivos de datos
 ARCHIVO_LIMPIO = os.path.join(RUTA_PROCESADOS, 'premier_league_limpio.csv')
 ARCHIVO_FEATURES = os.path.join(RUTA_PROCESADOS, 'archive', 'premier_league_RESTAURADO.csv')
+ARCHIVO_FEATURES_MERCADOS = os.path.join(RUTA_PROCESADOS, 'premier_league_con_features.csv')
 ARCHIVO_XG_RAW = os.path.join(RUTA_RAW, 'final_matches_xg.csv')
 
 # Archivos de modelo
@@ -34,6 +35,12 @@ ARCHIVO_FEATURES_PKL = os.path.join(RUTA_MODELOS, 'features.pkl')
 ARCHIVO_METADATA = os.path.join(RUTA_MODELOS, 'metadata.pkl')
 ARCHIVO_MODELO_VB = os.path.join(RUTA_MODELOS, 'modelo_value_betting.pkl')
 ARCHIVO_FEATURES_VB = os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')
+ARCHIVO_MODELO_OU = os.path.join(RUTA_MODELOS, 'modelo_over_under.pkl')
+ARCHIVO_FEATURES_OU = os.path.join(RUTA_MODELOS, 'features_over_under.pkl')
+ARCHIVO_MODELO_TARJETAS = os.path.join(RUTA_MODELOS, 'modelo_tarjetas.pkl')
+ARCHIVO_FEATURES_TARJETAS = os.path.join(RUTA_MODELOS, 'features_tarjetas.pkl')
+ARCHIVO_MODELO_CORNERS = os.path.join(RUTA_MODELOS, 'modelo_corners.pkl')
+ARCHIVO_FEATURES_CORNERS = os.path.join(RUTA_MODELOS, 'features_corners.pkl')
 
 # ============================================================================
 # PARÁMETROS DE FEATURE ENGINEERING
@@ -150,6 +157,10 @@ FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
 UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
+UMBRAL_EDGE_DC = 0.12           # Umbral minimo para doble oportunidad (fallback)
+MARGEN_DC_SINTETICO = 0.95      # Margen aplicado a cuotas DC sinteticas
+UMBRAL_EDGE_BINARIO = 0.05      # Edge minimo para mercados binarios
+MARGEN_SINTETICO_BINARIO = 0.95 # Margen sintetico para odds binarias
 CUOTA_MAXIMA = 4.0              # No apostar en underdogs extremos
 PROBABILIDAD_MINIMA = 0.45      # Probabilidad mínima del modelo
 

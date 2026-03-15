@@ -3799,6 +3799,548 @@ date,time,comp,round,day,venue,result,gf,ga,opponent,xg,xga,poss,attendance,capt
 10/05/2025,15:00,Premier League,Matchweek 36,Sat,Home,L,0,2,Brighton,0.9,1.6,56.0,31279.0,Nélson Semedo,03/04/2003,4-2-3-1,Michael Oliver,Match Report,,10.0,3.0,15.5,0.0,0.0,0.0,Wolverhampton Wanderers,2025,Brighton
 20/05/2025,20:00,Premier League,Matchweek 37,Tue,Away,L,2,4,Crystal Palace,1.4,1.7,69.0,24766.0,Toti Gomes,03/04/2003,03/04/2003,David Webb,Match Report,,12.0,3.0,15.1,0.0,0.0,0.0,Wolverhampton Wanderers,2025,Crystal Palace
 25/05/2025,16:00,Premier League,Matchweek 38,Sun,Home,D,1,1,Brentford,1.0,1.4,49.0,31382.0,Nélson Semedo,03/04/2003,4-2-3-1,Craig Pawson,Match Report,,18.0,6.0,20.6,0.0,0.0,0.0,Wolverhampton Wanderers,2025,Brentford
+15/08/2025,19:00,Premier League,,Fri,Home,W,4,2,Bournemouth,2.33007,1.57303,,,,,,,,,,,,,,,Liverpool,2026,Bournemouth
+15/08/2025,19:00,Premier League,,Fri,Away,L,2,4,Liverpool,1.57303,2.33007,,,,,,,,,,,,,,,Bournemouth,2026,Liverpool
+16/08/2025,11:30,Premier League,,Sat,Home,D,0,0,Newcastle,0.318601,1.40098,,,,,,,,,,,,,,,Aston Villa,2026,Newcastle
+16/08/2025,11:30,Premier League,,Sat,Away,D,0,0,Aston Villa,1.40098,0.318601,,,,,,,,,,,,,,,Newcastle,2026,Aston Villa
+16/08/2025,14:00,Premier League,,Sat,Home,D,1,1,Fulham,1.44008,0.902883,,,,,,,,,,,,,,,Brighton,2026,Fulham
+16/08/2025,14:00,Premier League,,Sat,Away,D,1,1,Brighton,0.902883,1.44008,,,,,,,,,,,,,,,Fulham,2026,Brighton
+16/08/2025,14:00,Premier League,,Sat,Home,W,3,0,West Ham,0.724368,0.558948,,,,,,,,,,,,,,,Sunderland,2026,West Ham
+16/08/2025,14:00,Premier League,,Sat,Away,L,0,3,Sunderland,0.558948,0.724368,,,,,,,,,,,,,,,West Ham,2026,Sunderland
+16/08/2025,14:00,Premier League,,Sat,Home,W,3,0,Burnley,1.97858,0.734138,,,,,,,,,,,,,,,Tottenham,2026,Burnley
+16/08/2025,14:00,Premier League,,Sat,Away,L,0,3,Tottenham,0.734138,1.97858,,,,,,,,,,,,,,,Burnley,2026,Tottenham
+16/08/2025,16:30,Premier League,,Sat,Home,L,0,4,Man City,0.519436,2.29903,,,,,,,,,,,,,,,Wolves,2026,Man City
+16/08/2025,16:30,Premier League,,Sat,Away,W,4,0,Wolves,2.29903,0.519436,,,,,,,,,,,,,,,Man City,2026,Wolves
+17/08/2025,13:00,Premier League,,Sun,Home,D,0,0,Crystal Palace,1.36793,1.03414,,,,,,,,,,,,,,,Chelsea,2026,Crystal Palace
+17/08/2025,13:00,Premier League,,Sun,Away,D,0,0,Chelsea,1.03414,1.36793,,,,,,,,,,,,,,,Crystal Palace,2026,Chelsea
+17/08/2025,13:00,Premier League,,Sun,Home,W,3,1,Brentford,1.7555,1.32516,,,,,,,,,,,,,,,Nott'm Forest,2026,Brentford
+17/08/2025,13:00,Premier League,,Sun,Away,L,1,3,Nott'm Forest,1.32516,1.7555,,,,,,,,,,,,,,,Brentford,2026,Nott'm Forest
+17/08/2025,15:30,Premier League,,Sun,Home,L,0,1,Arsenal,1.37653,1.3304,,,,,,,,,,,,,,,Man United,2026,Arsenal
+17/08/2025,15:30,Premier League,,Sun,Away,W,1,0,Man United,1.3304,1.37653,,,,,,,,,,,,,,,Arsenal,2026,Man United
+18/08/2025,19:00,Premier League,,Mon,Home,W,1,0,Everton,2.3812,0.674338,,,,,,,,,,,,,,,Leeds,2026,Everton
+18/08/2025,19:00,Premier League,,Mon,Away,L,0,1,Leeds,0.674338,2.3812,,,,,,,,,,,,,,,Everton,2026,Leeds
+22/08/2025,19:00,Premier League,,Fri,Home,L,1,5,Chelsea,0.978572,3.94997,,,,,,,,,,,,,,,West Ham,2026,Chelsea
+22/08/2025,19:00,Premier League,,Fri,Away,W,5,1,West Ham,3.94997,0.978572,,,,,,,,,,,,,,,Chelsea,2026,West Ham
+23/08/2025,11:30,Premier League,,Sat,Home,L,0,2,Tottenham,1.2475,1.28015,,,,,,,,,,,,,,,Man City,2026,Tottenham
+23/08/2025,11:30,Premier League,,Sat,Away,W,2,0,Man City,1.28015,1.2475,,,,,,,,,,,,,,,Tottenham,2026,Man City
+23/08/2025,14:00,Premier League,,Sat,Home,W,1,0,Aston Villa,1.12964,0.976852,,,,,,,,,,,,,,,Brentford,2026,Aston Villa
+23/08/2025,14:00,Premier League,,Sat,Away,L,0,1,Brentford,0.976852,1.12964,,,,,,,,,,,,,,,Aston Villa,2026,Brentford
+23/08/2025,14:00,Premier League,,Sat,Home,W,2,0,Sunderland,1.00381,1.12127,,,,,,,,,,,,,,,Burnley,2026,Sunderland
+23/08/2025,14:00,Premier League,,Sat,Away,L,0,2,Burnley,1.12127,1.00381,,,,,,,,,,,,,,,Sunderland,2026,Burnley
+23/08/2025,14:00,Premier League,,Sat,Home,W,1,0,Wolves,1.78462,0.373367,,,,,,,,,,,,,,,Bournemouth,2026,Wolves
+23/08/2025,14:00,Premier League,,Sat,Away,L,0,1,Bournemouth,0.373367,1.78462,,,,,,,,,,,,,,,Wolves,2026,Bournemouth
+23/08/2025,16:30,Premier League,,Sat,Home,W,5,0,Leeds,2.73761,0.156761,,,,,,,,,,,,,,,Arsenal,2026,Leeds
+23/08/2025,16:30,Premier League,,Sat,Away,L,0,5,Arsenal,0.156761,2.73761,,,,,,,,,,,,,,,Leeds,2026,Arsenal
+24/08/2025,13:00,Premier League,,Sun,Home,D,1,1,Nott'm Forest,1.10188,1.32987,,,,,,,,,,,,,,,Crystal Palace,2026,Nott'm Forest
+24/08/2025,13:00,Premier League,,Sun,Away,D,1,1,Crystal Palace,1.32987,1.10188,,,,,,,,,,,,,,,Nott'm Forest,2026,Crystal Palace
+24/08/2025,13:00,Premier League,,Sun,Home,W,2,0,Brighton,1.80116,2.08487,,,,,,,,,,,,,,,Everton,2026,Brighton
+24/08/2025,13:00,Premier League,,Sun,Away,L,0,2,Everton,2.08487,1.80116,,,,,,,,,,,,,,,Brighton,2026,Everton
+24/08/2025,15:30,Premier League,,Sun,Home,D,1,1,Man United,1.65333,1.54603,,,,,,,,,,,,,,,Fulham,2026,Man United
+24/08/2025,15:30,Premier League,,Sun,Away,D,1,1,Fulham,1.54603,1.65333,,,,,,,,,,,,,,,Man United,2026,Fulham
+25/08/2025,19:00,Premier League,,Mon,Home,L,2,3,Liverpool,1.96342,0.646559,,,,,,,,,,,,,,,Newcastle,2026,Liverpool
+25/08/2025,19:00,Premier League,,Mon,Away,W,3,2,Newcastle,0.646559,1.96342,,,,,,,,,,,,,,,Liverpool,2026,Newcastle
+30/08/2025,11:30,Premier League,,Sat,Home,W,2,0,Fulham,2.4324,0.736228,,,,,,,,,,,,,,,Chelsea,2026,Fulham
+30/08/2025,11:30,Premier League,,Sat,Away,L,0,2,Chelsea,0.736228,2.4324,,,,,,,,,,,,,,,Fulham,2026,Chelsea
+30/08/2025,14:00,Premier League,,Sat,Home,L,0,1,Bournemouth,0.17067,2.1201,,,,,,,,,,,,,,,Tottenham,2026,Bournemouth
+30/08/2025,14:00,Premier League,,Sat,Away,W,1,0,Tottenham,2.1201,0.17067,,,,,,,,,,,,,,,Bournemouth,2026,Tottenham
+30/08/2025,14:00,Premier League,,Sat,Home,L,2,3,Everton,0.943257,2.03791,,,,,,,,,,,,,,,Wolves,2026,Everton
+30/08/2025,14:00,Premier League,,Sat,Away,W,3,2,Wolves,2.03791,0.943257,,,,,,,,,,,,,,,Everton,2026,Wolves
+30/08/2025,14:00,Premier League,,Sat,Home,W,2,1,Brentford,1.57127,1.44604,,,,,,,,,,,,,,,Sunderland,2026,Brentford
+30/08/2025,14:00,Premier League,,Sat,Away,L,1,2,Sunderland,1.44604,1.57127,,,,,,,,,,,,,,,Brentford,2026,Sunderland
+30/08/2025,14:00,Premier League,,Sat,Home,W,3,2,Burnley,4.02237,1.32618,,,,,,,,,,,,,,,Man United,2026,Burnley
+30/08/2025,14:00,Premier League,,Sat,Away,L,2,3,Man United,1.32618,4.02237,,,,,,,,,,,,,,,Burnley,2026,Man United
+30/08/2025,16:30,Premier League,,Sat,Home,D,0,0,Newcastle,0.6773,0.303635,,,,,,,,,,,,,,,Leeds,2026,Newcastle
+30/08/2025,16:30,Premier League,,Sat,Away,D,0,0,Leeds,0.303635,0.6773,,,,,,,,,,,,,,,Newcastle,2026,Leeds
+31/08/2025,13:00,Premier League,,Sun,Home,L,0,3,West Ham,0.716018,2.236,,,,,,,,,,,,,,,Nott'm Forest,2026,West Ham
+31/08/2025,13:00,Premier League,,Sun,Away,W,3,0,Nott'm Forest,2.236,0.716018,,,,,,,,,,,,,,,West Ham,2026,Nott'm Forest
+31/08/2025,13:00,Premier League,,Sun,Home,W,2,1,Man City,2.20864,2.13418,,,,,,,,,,,,,,,Brighton,2026,Man City
+31/08/2025,13:00,Premier League,,Sun,Away,L,1,2,Brighton,2.13418,2.20864,,,,,,,,,,,,,,,Man City,2026,Brighton
+31/08/2025,15:30,Premier League,,Sun,Home,W,1,0,Arsenal,0.481404,0.485679,,,,,,,,,,,,,,,Liverpool,2026,Arsenal
+31/08/2025,15:30,Premier League,,Sun,Away,L,0,1,Liverpool,0.485679,0.481404,,,,,,,,,,,,,,,Arsenal,2026,Liverpool
+31/08/2025,18:00,Premier League,,Sun,Home,L,0,3,Crystal Palace,1.20586,2.59713,,,,,,,,,,,,,,,Aston Villa,2026,Crystal Palace
+31/08/2025,18:00,Premier League,,Sun,Away,W,3,0,Aston Villa,2.59713,1.20586,,,,,,,,,,,,,,,Crystal Palace,2026,Aston Villa
+13/09/2025,11:30,Premier League,,Sat,Home,W,3,0,Nott'm Forest,2.8817,0.293681,,,,,,,,,,,,,,,Arsenal,2026,Nott'm Forest
+13/09/2025,11:30,Premier League,,Sat,Away,L,0,3,Arsenal,0.293681,2.8817,,,,,,,,,,,,,,,Nott'm Forest,2026,Arsenal
+13/09/2025,14:00,Premier League,,Sat,Home,W,1,0,Wolves,1.19186,0.375942,,,,,,,,,,,,,,,Newcastle,2026,Wolves
+13/09/2025,14:00,Premier League,,Sat,Away,L,0,1,Newcastle,0.375942,1.19186,,,,,,,,,,,,,,,Wolves,2026,Newcastle
+13/09/2025,14:00,Premier League,,Sat,Home,W,2,1,Brighton,1.44187,0.624923,,,,,,,,,,,,,,,Bournemouth,2026,Brighton
+13/09/2025,14:00,Premier League,,Sat,Away,L,1,2,Bournemouth,0.624923,1.44187,,,,,,,,,,,,,,,Brighton,2026,Bournemouth
+13/09/2025,14:00,Premier League,,Sat,Home,D,0,0,Sunderland,1.75805,0.354129,,,,,,,,,,,,,,,Crystal Palace,2026,Sunderland
+13/09/2025,14:00,Premier League,,Sat,Away,D,0,0,Crystal Palace,0.354129,1.75805,,,,,,,,,,,,,,,Sunderland,2026,Crystal Palace
+13/09/2025,14:00,Premier League,,Sat,Home,D,0,0,Aston Villa,1.8927,0.354327,,,,,,,,,,,,,,,Everton,2026,Aston Villa
+13/09/2025,14:00,Premier League,,Sat,Away,D,0,0,Everton,0.354327,1.8927,,,,,,,,,,,,,,,Aston Villa,2026,Everton
+13/09/2025,14:00,Premier League,,Sat,Home,W,1,0,Leeds,1.13979,0.830398,,,,,,,,,,,,,,,Fulham,2026,Leeds
+13/09/2025,14:00,Premier League,,Sat,Away,L,0,1,Fulham,0.830398,1.13979,,,,,,,,,,,,,,,Leeds,2026,Fulham
+13/09/2025,16:30,Premier League,,Sat,Home,L,0,3,Tottenham,0.793248,1.51402,,,,,,,,,,,,,,,West Ham,2026,Tottenham
+13/09/2025,16:30,Premier League,,Sat,Away,W,3,0,West Ham,1.51402,0.793248,,,,,,,,,,,,,,,Tottenham,2026,West Ham
+13/09/2025,19:00,Premier League,,Sat,Home,D,2,2,Chelsea,1.17533,0.755999,,,,,,,,,,,,,,,Brentford,2026,Chelsea
+13/09/2025,19:00,Premier League,,Sat,Away,D,2,2,Brentford,0.755999,1.17533,,,,,,,,,,,,,,,Chelsea,2026,Brentford
+14/09/2025,13:00,Premier League,,Sun,Home,L,0,1,Liverpool,0.168041,2.79492,,,,,,,,,,,,,,,Burnley,2026,Liverpool
+14/09/2025,13:00,Premier League,,Sun,Away,W,1,0,Burnley,2.79492,0.168041,,,,,,,,,,,,,,,Liverpool,2026,Burnley
+14/09/2025,15:30,Premier League,,Sun,Home,W,3,0,Man United,1.99725,1.51915,,,,,,,,,,,,,,,Man City,2026,Man United
+14/09/2025,15:30,Premier League,,Sun,Away,L,0,3,Man City,1.51915,1.99725,,,,,,,,,,,,,,,Man United,2026,Man City
+20/09/2025,11:30,Premier League,,Sat,Home,W,2,1,Everton,1.06166,0.721371,,,,,,,,,,,,,,,Liverpool,2026,Everton
+20/09/2025,11:30,Premier League,,Sat,Away,L,1,2,Liverpool,0.721371,1.06166,,,,,,,,,,,,,,,Everton,2026,Liverpool
+20/09/2025,14:00,Premier League,,Sat,Home,L,1,2,Crystal Palace,0.466365,2.33565,,,,,,,,,,,,,,,West Ham,2026,Crystal Palace
+20/09/2025,14:00,Premier League,,Sat,Away,W,2,1,West Ham,2.33565,0.466365,,,,,,,,,,,,,,,Crystal Palace,2026,West Ham
+20/09/2025,14:00,Premier League,,Sat,Home,L,1,3,Leeds,1.5661,0.456988,,,,,,,,,,,,,,,Wolves,2026,Leeds
+20/09/2025,14:00,Premier League,,Sat,Away,W,3,1,Wolves,0.456988,1.5661,,,,,,,,,,,,,,,Leeds,2026,Wolves
+20/09/2025,14:00,Premier League,,Sat,Home,D,2,2,Tottenham,1.40466,1.19181,,,,,,,,,,,,,,,Brighton,2026,Tottenham
+20/09/2025,14:00,Premier League,,Sat,Away,D,2,2,Brighton,1.19181,1.40466,,,,,,,,,,,,,,,Tottenham,2026,Brighton
+20/09/2025,14:00,Premier League,,Sat,Home,D,1,1,Nott'm Forest,1.14159,0.830779,,,,,,,,,,,,,,,Burnley,2026,Nott'm Forest
+20/09/2025,14:00,Premier League,,Sat,Away,D,1,1,Burnley,0.830779,1.14159,,,,,,,,,,,,,,,Nott'm Forest,2026,Burnley
+20/09/2025,16:30,Premier League,,Sat,Home,W,2,1,Chelsea,1.34458,0.469843,,,,,,,,,,,,,,,Man United,2026,Chelsea
+20/09/2025,16:30,Premier League,,Sat,Away,L,1,2,Man United,0.469843,1.34458,,,,,,,,,,,,,,,Chelsea,2026,Man United
+20/09/2025,19:00,Premier League,,Sat,Home,W,3,1,Brentford,1.52431,0.826556,,,,,,,,,,,,,,,Fulham,2026,Brentford
+20/09/2025,19:00,Premier League,,Sat,Away,L,1,3,Fulham,0.826556,1.52431,,,,,,,,,,,,,,,Brentford,2026,Fulham
+21/09/2025,13:00,Premier League,,Sun,Home,D,0,0,Newcastle,0.55066,0.153629,,,,,,,,,,,,,,,Bournemouth,2026,Newcastle
+21/09/2025,13:00,Premier League,,Sun,Away,D,0,0,Bournemouth,0.153629,0.55066,,,,,,,,,,,,,,,Newcastle,2026,Bournemouth
+21/09/2025,13:00,Premier League,,Sun,Home,D,1,1,Aston Villa,0.938312,0.939354,,,,,,,,,,,,,,,Sunderland,2026,Aston Villa
+21/09/2025,13:00,Premier League,,Sun,Away,D,1,1,Sunderland,0.939354,0.938312,,,,,,,,,,,,,,,Aston Villa,2026,Sunderland
+21/09/2025,15:30,Premier League,,Sun,Home,D,1,1,Man City,0.718575,1.1227,,,,,,,,,,,,,,,Arsenal,2026,Man City
+21/09/2025,15:30,Premier League,,Sun,Away,D,1,1,Arsenal,1.1227,0.718575,,,,,,,,,,,,,,,Man City,2026,Arsenal
+27/09/2025,11:30,Premier League,,Sat,Home,W,3,1,Man United,2.78726,2.23609,,,,,,,,,,,,,,,Brentford,2026,Man United
+27/09/2025,11:30,Premier League,,Sat,Away,L,1,3,Brentford,2.23609,2.78726,,,,,,,,,,,,,,,Man United,2026,Brentford
+27/09/2025,14:00,Premier League,,Sat,Home,L,1,3,Brighton,2.02653,2.4751,,,,,,,,,,,,,,,Chelsea,2026,Brighton
+27/09/2025,14:00,Premier League,,Sat,Away,W,3,1,Chelsea,2.4751,2.02653,,,,,,,,,,,,,,,Brighton,2026,Chelsea
+27/09/2025,14:00,Premier League,,Sat,Home,W,2,1,Liverpool,3.53323,3.10176,,,,,,,,,,,,,,,Crystal Palace,2026,Liverpool
+27/09/2025,14:00,Premier League,,Sat,Away,L,1,2,Crystal Palace,3.10176,3.53323,,,,,,,,,,,,,,,Liverpool,2026,Crystal Palace
+27/09/2025,14:00,Premier League,,Sat,Home,D,2,2,Bournemouth,2.04728,1.06033,,,,,,,,,,,,,,,Leeds,2026,Bournemouth
+27/09/2025,14:00,Premier League,,Sat,Away,D,2,2,Leeds,1.06033,2.04728,,,,,,,,,,,,,,,Bournemouth,2026,Leeds
+27/09/2025,14:00,Premier League,,Sat,Home,W,5,1,Burnley,3.22133,0.509491,,,,,,,,,,,,,,,Man City,2026,Burnley
+27/09/2025,14:00,Premier League,,Sat,Away,L,1,5,Man City,0.509491,3.22133,,,,,,,,,,,,,,,Burnley,2026,Man City
+27/09/2025,16:30,Premier League,,Sat,Home,L,0,1,Sunderland,1.4203,1.94154,,,,,,,,,,,,,,,Nott'm Forest,2026,Sunderland
+27/09/2025,16:30,Premier League,,Sat,Away,W,1,0,Nott'm Forest,1.94154,1.4203,,,,,,,,,,,,,,,Sunderland,2026,Nott'm Forest
+27/09/2025,19:00,Premier League,,Sat,Home,D,1,1,Wolves,0.818711,1.15951,,,,,,,,,,,,,,,Tottenham,2026,Wolves
+27/09/2025,19:00,Premier League,,Sat,Away,D,1,1,Tottenham,1.15951,0.818711,,,,,,,,,,,,,,,Wolves,2026,Tottenham
+28/09/2025,13:00,Premier League,,Sun,Home,W,3,1,Fulham,1.36575,0.952612,,,,,,,,,,,,,,,Aston Villa,2026,Fulham
+28/09/2025,13:00,Premier League,,Sun,Away,L,1,3,Aston Villa,0.952612,1.36575,,,,,,,,,,,,,,,Fulham,2026,Aston Villa
+28/09/2025,15:30,Premier League,,Sun,Home,L,1,2,Arsenal,0.739851,2.07048,,,,,,,,,,,,,,,Newcastle,2026,Arsenal
+28/09/2025,15:30,Premier League,,Sun,Away,W,2,1,Newcastle,2.07048,0.739851,,,,,,,,,,,,,,,Arsenal,2026,Newcastle
+29/09/2025,19:00,Premier League,,Mon,Home,D,1,1,West Ham,0.909703,0.775766,,,,,,,,,,,,,,,Everton,2026,West Ham
+29/09/2025,19:00,Premier League,,Mon,Away,D,1,1,Everton,0.775766,0.909703,,,,,,,,,,,,,,,West Ham,2026,Everton
+03/10/2025,19:00,Premier League,,Fri,Home,W,3,1,Fulham,1.33458,0.84335,,,,,,,,,,,,,,,Bournemouth,2026,Fulham
+03/10/2025,19:00,Premier League,,Fri,Away,L,1,3,Bournemouth,0.84335,1.33458,,,,,,,,,,,,,,,Fulham,2026,Bournemouth
+04/10/2025,11:30,Premier League,,Sat,Home,L,1,2,Tottenham,1.48051,0.688198,,,,,,,,,,,,,,,Leeds,2026,Tottenham
+04/10/2025,11:30,Premier League,,Sat,Away,W,2,1,Leeds,0.688198,1.48051,,,,,,,,,,,,,,,Tottenham,2026,Leeds
+04/10/2025,14:00,Premier League,,Sat,Home,W,2,0,West Ham,3.0585,0.864549,,,,,,,,,,,,,,,Arsenal,2026,West Ham
+04/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Arsenal,0.864549,3.0585,,,,,,,,,,,,,,,West Ham,2026,Arsenal
+04/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Sunderland,1.9298,0.807119,,,,,,,,,,,,,,,Man United,2026,Sunderland
+04/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Man United,0.807119,1.9298,,,,,,,,,,,,,,,Sunderland,2026,Man United
+04/10/2025,16:30,Premier League,,Sat,Home,W,2,1,Liverpool,1.23721,2.05981,,,,,,,,,,,,,,,Chelsea,2026,Liverpool
+04/10/2025,16:30,Premier League,,Sat,Away,L,1,2,Chelsea,2.05981,1.23721,,,,,,,,,,,,,,,Liverpool,2026,Chelsea
+05/10/2025,13:00,Premier League,,Sun,Home,W,2,1,Burnley,1.73572,0.502292,,,,,,,,,,,,,,,Aston Villa,2026,Burnley
+05/10/2025,13:00,Premier League,,Sun,Away,L,1,2,Aston Villa,0.502292,1.73572,,,,,,,,,,,,,,,Burnley,2026,Aston Villa
+05/10/2025,13:00,Premier League,,Sun,Home,W,2,1,Crystal Palace,2.13876,2.17789,,,,,,,,,,,,,,,Everton,2026,Crystal Palace
+05/10/2025,13:00,Premier League,,Sun,Away,L,1,2,Everton,2.17789,2.13876,,,,,,,,,,,,,,,Crystal Palace,2026,Everton
+05/10/2025,13:00,Premier League,,Sun,Home,W,2,0,Nott'm Forest,3.81662,0.337689,,,,,,,,,,,,,,,Newcastle,2026,Nott'm Forest
+05/10/2025,13:00,Premier League,,Sun,Away,L,0,2,Newcastle,0.337689,3.81662,,,,,,,,,,,,,,,Nott'm Forest,2026,Newcastle
+05/10/2025,13:00,Premier League,,Sun,Home,D,1,1,Brighton,0.369404,1.39158,,,,,,,,,,,,,,,Wolves,2026,Brighton
+05/10/2025,13:00,Premier League,,Sun,Away,D,1,1,Wolves,1.39158,0.369404,,,,,,,,,,,,,,,Brighton,2026,Wolves
+05/10/2025,15:30,Premier League,,Sun,Home,L,0,1,Man City,0.693758,1.09647,,,,,,,,,,,,,,,Brentford,2026,Man City
+05/10/2025,15:30,Premier League,,Sun,Away,W,1,0,Brentford,1.09647,0.693758,,,,,,,,,,,,,,,Man City,2026,Brentford
+18/10/2025,11:30,Premier League,,Sat,Home,L,0,3,Chelsea,2.0555,2.5583,,,,,,,,,,,,,,,Nott'm Forest,2026,Chelsea
+18/10/2025,11:30,Premier League,,Sat,Away,W,3,0,Nott'm Forest,2.5583,2.0555,,,,,,,,,,,,,,,Chelsea,2026,Nott'm Forest
+18/10/2025,14:00,Premier League,,Sat,Home,W,2,1,Newcastle,0.857104,1.28313,,,,,,,,,,,,,,,Brighton,2026,Newcastle
+18/10/2025,14:00,Premier League,,Sat,Away,L,1,2,Brighton,1.28313,0.857104,,,,,,,,,,,,,,,Newcastle,2026,Brighton
+18/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Leeds,0.509647,2.33152,,,,,,,,,,,,,,,Burnley,2026,Leeds
+18/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Burnley,2.33152,0.509647,,,,,,,,,,,,,,,Leeds,2026,Burnley
+18/10/2025,14:00,Premier League,,Sat,Home,D,3,3,Bournemouth,4.56284,2.0471,,,,,,,,,,,,,,,Crystal Palace,2026,Bournemouth
+18/10/2025,14:00,Premier League,,Sat,Away,D,3,3,Crystal Palace,2.0471,4.56284,,,,,,,,,,,,,,,Bournemouth,2026,Crystal Palace
+18/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Everton,2.4799,0.794622,,,,,,,,,,,,,,,Man City,2026,Everton
+18/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Man City,0.794622,2.4799,,,,,,,,,,,,,,,Everton,2026,Man City
+18/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Wolves,1.02481,0.676323,,,,,,,,,,,,,,,Sunderland,2026,Wolves
+18/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Sunderland,0.676323,1.02481,,,,,,,,,,,,,,,Wolves,2026,Sunderland
+18/10/2025,16:30,Premier League,,Sat,Home,L,0,1,Arsenal,0.502332,2.07823,,,,,,,,,,,,,,,Fulham,2026,Arsenal
+18/10/2025,16:30,Premier League,,Sat,Away,W,1,0,Fulham,2.07823,0.502332,,,,,,,,,,,,,,,Arsenal,2026,Fulham
+19/10/2025,13:00,Premier League,,Sun,Home,L,1,2,Aston Villa,1.51461,0.352231,,,,,,,,,,,,,,,Tottenham,2026,Aston Villa
+19/10/2025,13:00,Premier League,,Sun,Away,W,2,1,Tottenham,0.352231,1.51461,,,,,,,,,,,,,,,Aston Villa,2026,Tottenham
+19/10/2025,15:30,Premier League,,Sun,Home,L,1,2,Man United,2.60972,2.53117,,,,,,,,,,,,,,,Liverpool,2026,Man United
+19/10/2025,15:30,Premier League,,Sun,Away,W,2,1,Liverpool,2.53117,2.60972,,,,,,,,,,,,,,,Man United,2026,Liverpool
+20/10/2025,19:00,Premier League,,Mon,Home,L,0,2,Brentford,0.260251,3.46635,,,,,,,,,,,,,,,West Ham,2026,Brentford
+20/10/2025,19:00,Premier League,,Mon,Away,W,2,0,West Ham,3.46635,0.260251,,,,,,,,,,,,,,,Brentford,2026,West Ham
+24/10/2025,19:00,Premier League,,Fri,Home,W,2,1,West Ham,2.2214,0.498653,,,,,,,,,,,,,,,Leeds,2026,West Ham
+24/10/2025,19:00,Premier League,,Fri,Away,L,1,2,Leeds,0.498653,2.2214,,,,,,,,,,,,,,,West Ham,2026,Leeds
+25/10/2025,14:00,Premier League,,Sat,Home,L,1,2,Sunderland,1.21332,1.5506,,,,,,,,,,,,,,,Chelsea,2026,Sunderland
+25/10/2025,14:00,Premier League,,Sat,Away,W,2,1,Chelsea,1.5506,1.21332,,,,,,,,,,,,,,,Sunderland,2026,Chelsea
+25/10/2025,14:00,Premier League,,Sat,Home,W,2,1,Fulham,2.76806,1.52001,,,,,,,,,,,,,,,Newcastle,2026,Fulham
+25/10/2025,14:00,Premier League,,Sat,Away,L,1,2,Newcastle,1.52001,2.76806,,,,,,,,,,,,,,,Fulham,2026,Newcastle
+25/10/2025,16:30,Premier League,,Sat,Home,W,4,2,Brighton,1.96231,0.947154,,,,,,,,,,,,,,,Man United,2026,Brighton
+25/10/2025,16:30,Premier League,,Sat,Away,L,2,4,Man United,0.947154,1.96231,,,,,,,,,,,,,,,Brighton,2026,Man United
+25/10/2025,19:00,Premier League,,Sat,Home,W,3,2,Liverpool,3.27126,2.11838,,,,,,,,,,,,,,,Brentford,2026,Liverpool
+25/10/2025,19:00,Premier League,,Sat,Away,L,2,3,Brentford,2.11838,3.27126,,,,,,,,,,,,,,,Liverpool,2026,Brentford
+26/10/2025,13:00,Premier League,,Sun,Home,W,2,0,Nott'm Forest,0.656601,0.305493,,,,,,,,,,,,,,,Bournemouth,2026,Nott'm Forest
+26/10/2025,13:00,Premier League,,Sun,Away,L,0,2,Bournemouth,0.305493,0.656601,,,,,,,,,,,,,,,Nott'm Forest,2026,Bournemouth
+26/10/2025,13:00,Premier League,,Sun,Home,W,1,0,Crystal Palace,0.856175,0.350534,,,,,,,,,,,,,,,Arsenal,2026,Crystal Palace
+26/10/2025,13:00,Premier League,,Sun,Away,L,0,1,Arsenal,0.350534,0.856175,,,,,,,,,,,,,,,Crystal Palace,2026,Arsenal
+26/10/2025,13:00,Premier League,,Sun,Home,W,1,0,Man City,0.843906,1.36914,,,,,,,,,,,,,,,Aston Villa,2026,Man City
+26/10/2025,13:00,Premier League,,Sun,Away,L,0,1,Aston Villa,1.36914,0.843906,,,,,,,,,,,,,,,Man City,2026,Aston Villa
+26/10/2025,13:00,Premier League,,Sun,Home,L,2,3,Burnley,2.58132,1.54544,,,,,,,,,,,,,,,Wolves,2026,Burnley
+26/10/2025,13:00,Premier League,,Sun,Away,W,3,2,Wolves,1.54544,2.58132,,,,,,,,,,,,,,,Burnley,2026,Wolves
+26/10/2025,15:30,Premier League,,Sun,Home,L,0,3,Tottenham,1.4032,2.09327,,,,,,,,,,,,,,,Everton,2026,Tottenham
+26/10/2025,15:30,Premier League,,Sun,Away,W,3,0,Everton,2.09327,1.4032,,,,,,,,,,,,,,,Tottenham,2026,Everton
+01/11/2025,15:00,Premier League,,Sat,Home,W,3,0,Leeds,2.64127,0.35919,,,,,,,,,,,,,,,Brighton,2026,Leeds
+01/11/2025,15:00,Premier League,,Sat,Away,L,0,3,Brighton,0.35919,2.64127,,,,,,,,,,,,,,,Leeds,2026,Brighton
+01/11/2025,15:00,Premier League,,Sat,Home,L,0,2,Arsenal,0.679177,2.51649,,,,,,,,,,,,,,,Burnley,2026,Arsenal
+01/11/2025,15:00,Premier League,,Sat,Away,W,2,0,Burnley,2.51649,0.679177,,,,,,,,,,,,,,,Arsenal,2026,Burnley
+01/11/2025,15:00,Premier League,,Sat,Home,W,2,0,Brentford,0.734558,0.820498,,,,,,,,,,,,,,,Crystal Palace,2026,Brentford
+01/11/2025,15:00,Premier League,,Sat,Away,L,0,2,Crystal Palace,0.820498,0.734558,,,,,,,,,,,,,,,Brentford,2026,Crystal Palace
+01/11/2025,15:00,Premier League,,Sat,Home,W,3,0,Wolves,1.91207,0.209934,,,,,,,,,,,,,,,Fulham,2026,Wolves
+01/11/2025,15:00,Premier League,,Sat,Away,L,0,3,Fulham,0.209934,1.91207,,,,,,,,,,,,,,,Wolves,2026,Fulham
+01/11/2025,15:00,Premier League,,Sat,Home,D,2,2,Man United,1.55066,0.91622,,,,,,,,,,,,,,,Nott'm Forest,2026,Man United
+01/11/2025,15:00,Premier League,,Sat,Away,D,2,2,Nott'm Forest,0.91622,1.55066,,,,,,,,,,,,,,,Man United,2026,Nott'm Forest
+01/11/2025,17:30,Premier League,,Sat,Home,L,0,1,Chelsea,0.146954,3.34251,,,,,,,,,,,,,,,Tottenham,2026,Chelsea
+01/11/2025,17:30,Premier League,,Sat,Away,W,1,0,Tottenham,3.34251,0.146954,,,,,,,,,,,,,,,Chelsea,2026,Tottenham
+01/11/2025,20:00,Premier League,,Sat,Home,W,2,0,Aston Villa,1.47021,0.43502,,,,,,,,,,,,,,,Liverpool,2026,Aston Villa
+01/11/2025,20:00,Premier League,,Sat,Away,L,0,2,Liverpool,0.43502,1.47021,,,,,,,,,,,,,,,Aston Villa,2026,Liverpool
+02/11/2025,14:00,Premier League,,Sun,Home,W,3,1,Newcastle,1.41383,0.523615,,,,,,,,,,,,,,,West Ham,2026,Newcastle
+02/11/2025,14:00,Premier League,,Sun,Away,L,1,3,West Ham,0.523615,1.41383,,,,,,,,,,,,,,,Newcastle,2026,West Ham
+02/11/2025,16:30,Premier League,,Sun,Home,W,3,1,Bournemouth,2.48999,0.899846,,,,,,,,,,,,,,,Man City,2026,Bournemouth
+02/11/2025,16:30,Premier League,,Sun,Away,L,1,3,Man City,0.899846,2.48999,,,,,,,,,,,,,,,Bournemouth,2026,Man City
+03/11/2025,20:00,Premier League,,Mon,Home,D,1,1,Everton,1.18068,1.00741,,,,,,,,,,,,,,,Sunderland,2026,Everton
+03/11/2025,20:00,Premier League,,Mon,Away,D,1,1,Sunderland,1.00741,1.18068,,,,,,,,,,,,,,,Everton,2026,Sunderland
+08/11/2025,12:30,Premier League,,Sat,Home,D,2,2,Man United,1.35532,0.820256,,,,,,,,,,,,,,,Tottenham,2026,Man United
+08/11/2025,12:30,Premier League,,Sat,Away,D,2,2,Tottenham,0.820256,1.35532,,,,,,,,,,,,,,,Man United,2026,Tottenham
+08/11/2025,15:00,Premier League,,Sat,Home,W,2,0,Fulham,2.30607,0.424478,,,,,,,,,,,,,,,Everton,2026,Fulham
+08/11/2025,15:00,Premier League,,Sat,Away,L,0,2,Everton,0.424478,2.30607,,,,,,,,,,,,,,,Fulham,2026,Everton
+08/11/2025,15:00,Premier League,,Sat,Home,W,3,2,Burnley,2.96728,1.87478,,,,,,,,,,,,,,,West Ham,2026,Burnley
+08/11/2025,15:00,Premier League,,Sat,Away,L,2,3,West Ham,1.87478,2.96728,,,,,,,,,,,,,,,Burnley,2026,West Ham
+08/11/2025,17:30,Premier League,,Sat,Home,D,2,2,Arsenal,1.20495,2.32943,,,,,,,,,,,,,,,Sunderland,2026,Arsenal
+08/11/2025,17:30,Premier League,,Sat,Away,D,2,2,Sunderland,2.32943,1.20495,,,,,,,,,,,,,,,Arsenal,2026,Sunderland
+08/11/2025,20:00,Premier League,,Sat,Home,W,3,0,Wolves,3.98342,0.111462,,,,,,,,,,,,,,,Chelsea,2026,Wolves
+08/11/2025,20:00,Premier League,,Sat,Away,L,0,3,Chelsea,0.111462,3.98342,,,,,,,,,,,,,,,Wolves,2026,Chelsea
+09/11/2025,14:00,Premier League,,Sun,Home,W,4,0,Bournemouth,1.88282,2.00992,,,,,,,,,,,,,,,Aston Villa,2026,Bournemouth
+09/11/2025,14:00,Premier League,,Sun,Away,L,0,4,Aston Villa,2.00992,1.88282,,,,,,,,,,,,,,,Bournemouth,2026,Aston Villa
+09/11/2025,14:00,Premier League,,Sun,Home,W,3,1,Newcastle,2.73729,0.432277,,,,,,,,,,,,,,,Brentford,2026,Newcastle
+09/11/2025,14:00,Premier League,,Sun,Away,L,1,3,Brentford,0.432277,2.73729,,,,,,,,,,,,,,,Newcastle,2026,Brentford
+09/11/2025,14:00,Premier League,,Sun,Home,D,0,0,Brighton,0.839547,0.637037,,,,,,,,,,,,,,,Crystal Palace,2026,Brighton
+09/11/2025,14:00,Premier League,,Sun,Away,D,0,0,Crystal Palace,0.637037,0.839547,,,,,,,,,,,,,,,Brighton,2026,Crystal Palace
+09/11/2025,14:00,Premier League,,Sun,Home,W,3,1,Leeds,2.49097,0.419461,,,,,,,,,,,,,,,Nott'm Forest,2026,Leeds
+09/11/2025,14:00,Premier League,,Sun,Away,L,1,3,Nott'm Forest,0.419461,2.49097,,,,,,,,,,,,,,,Leeds,2026,Nott'm Forest
+09/11/2025,16:30,Premier League,,Sun,Home,W,3,0,Liverpool,1.59542,1.0281,,,,,,,,,,,,,,,Man City,2026,Liverpool
+09/11/2025,16:30,Premier League,,Sun,Away,L,0,3,Man City,1.0281,1.59542,,,,,,,,,,,,,,,Liverpool,2026,Man City
+22/11/2025,12:30,Premier League,,Sat,Home,L,0,2,Chelsea,0.660943,1.72093,,,,,,,,,,,,,,,Burnley,2026,Chelsea
+22/11/2025,12:30,Premier League,,Sat,Away,W,2,0,Burnley,1.72093,0.660943,,,,,,,,,,,,,,,Chelsea,2026,Burnley
+22/11/2025,15:00,Premier League,,Sat,Home,D,2,2,West Ham,3.48299,0.390782,,,,,,,,,,,,,,,Bournemouth,2026,West Ham
+22/11/2025,15:00,Premier League,,Sat,Away,D,2,2,Bournemouth,0.390782,3.48299,,,,,,,,,,,,,,,West Ham,2026,Bournemouth
+22/11/2025,15:00,Premier League,,Sat,Home,W,2,1,Brentford,0.977488,2.19979,,,,,,,,,,,,,,,Brighton,2026,Brentford
+22/11/2025,15:00,Premier League,,Sat,Away,L,1,2,Brighton,2.19979,0.977488,,,,,,,,,,,,,,,Brentford,2026,Brighton
+22/11/2025,15:00,Premier League,,Sat,Home,W,1,0,Sunderland,2.83729,0.222768,,,,,,,,,,,,,,,Fulham,2026,Sunderland
+22/11/2025,15:00,Premier League,,Sat,Away,L,0,1,Fulham,0.222768,2.83729,,,,,,,,,,,,,,,Sunderland,2026,Fulham
+22/11/2025,15:00,Premier League,,Sat,Home,L,0,3,Nott'm Forest,1.79273,1.19459,,,,,,,,,,,,,,,Liverpool,2026,Nott'm Forest
+22/11/2025,15:00,Premier League,,Sat,Away,W,3,0,Liverpool,1.19459,1.79273,,,,,,,,,,,,,,,Nott'm Forest,2026,Liverpool
+22/11/2025,15:00,Premier League,,Sat,Home,L,0,2,Crystal Palace,1.66409,1.44933,,,,,,,,,,,,,,,Wolves,2026,Crystal Palace
+22/11/2025,15:00,Premier League,,Sat,Away,W,2,0,Wolves,1.44933,1.66409,,,,,,,,,,,,,,,Crystal Palace,2026,Wolves
+22/11/2025,17:30,Premier League,,Sat,Home,W,2,1,Man City,2.40555,2.45648,,,,,,,,,,,,,,,Newcastle,2026,Man City
+22/11/2025,17:30,Premier League,,Sat,Away,L,1,2,Newcastle,2.45648,2.40555,,,,,,,,,,,,,,,Man City,2026,Newcastle
+23/11/2025,14:00,Premier League,,Sun,Home,L,1,2,Aston Villa,1.84668,1.35978,,,,,,,,,,,,,,,Leeds,2026,Aston Villa
+23/11/2025,14:00,Premier League,,Sun,Away,W,2,1,Leeds,1.35978,1.84668,,,,,,,,,,,,,,,Aston Villa,2026,Leeds
+23/11/2025,16:30,Premier League,,Sun,Home,W,4,1,Tottenham,2.27827,0.0300672,,,,,,,,,,,,,,,Arsenal,2026,Tottenham
+23/11/2025,16:30,Premier League,,Sun,Away,L,1,4,Arsenal,0.0300672,2.27827,,,,,,,,,,,,,,,Tottenham,2026,Arsenal
+24/11/2025,20:00,Premier League,,Mon,Home,L,0,1,Everton,2.2737,0.155063,,,,,,,,,,,,,,,Man United,2026,Everton
+24/11/2025,20:00,Premier League,,Mon,Away,W,1,0,Man United,0.155063,2.2737,,,,,,,,,,,,,,,Everton,2026,Man United
+29/11/2025,15:00,Premier League,,Sat,Home,W,3,1,Burnley,3.72106,0.874025,,,,,,,,,,,,,,,Brentford,2026,Burnley
+29/11/2025,15:00,Premier League,,Sat,Away,L,1,3,Brentford,0.874025,3.72106,,,,,,,,,,,,,,,Burnley,2026,Brentford
+29/11/2025,15:00,Premier League,,Sat,Home,W,3,2,Leeds,2.85292,1.75142,,,,,,,,,,,,,,,Man City,2026,Leeds
+29/11/2025,15:00,Premier League,,Sat,Away,L,2,3,Man City,1.75142,2.85292,,,,,,,,,,,,,,,Leeds,2026,Man City
+29/11/2025,15:00,Premier League,,Sat,Home,W,3,2,Bournemouth,1.16955,1.79274,,,,,,,,,,,,,,,Sunderland,2026,Bournemouth
+29/11/2025,15:00,Premier League,,Sat,Away,L,2,3,Sunderland,1.79274,1.16955,,,,,,,,,,,,,,,Bournemouth,2026,Sunderland
+29/11/2025,17:30,Premier League,,Sat,Home,L,1,4,Newcastle,1.01125,2.45882,,,,,,,,,,,,,,,Everton,2026,Newcastle
+29/11/2025,17:30,Premier League,,Sat,Away,W,4,1,Everton,2.45882,1.01125,,,,,,,,,,,,,,,Newcastle,2026,Everton
+29/11/2025,20:00,Premier League,,Sat,Home,L,1,2,Fulham,1.04396,0.494736,,,,,,,,,,,,,,,Tottenham,2026,Fulham
+29/11/2025,20:00,Premier League,,Sat,Away,W,2,1,Tottenham,0.494736,1.04396,,,,,,,,,,,,,,,Fulham,2026,Tottenham
+30/11/2025,12:00,Premier League,,Sun,Home,L,1,2,Man United,2.13561,1.47768,,,,,,,,,,,,,,,Crystal Palace,2026,Man United
+30/11/2025,12:00,Premier League,,Sun,Away,W,2,1,Crystal Palace,1.47768,2.13561,,,,,,,,,,,,,,,Man United,2026,Crystal Palace
+30/11/2025,14:05,Premier League,,Sun,Home,W,1,0,Wolves,1.15486,0.692588,,,,,,,,,,,,,,,Aston Villa,2026,Wolves
+30/11/2025,14:05,Premier League,,Sun,Away,L,0,1,Aston Villa,0.692588,1.15486,,,,,,,,,,,,,,,Wolves,2026,Aston Villa
+30/11/2025,14:05,Premier League,,Sun,Home,L,0,2,Brighton,0.960325,2.0572,,,,,,,,,,,,,,,Nott'm Forest,2026,Brighton
+30/11/2025,14:05,Premier League,,Sun,Away,W,2,0,Nott'm Forest,2.0572,0.960325,,,,,,,,,,,,,,,Brighton,2026,Nott'm Forest
+30/11/2025,14:05,Premier League,,Sun,Home,L,0,2,Liverpool,0.364152,1.56793,,,,,,,,,,,,,,,West Ham,2026,Liverpool
+30/11/2025,14:05,Premier League,,Sun,Away,W,2,0,West Ham,1.56793,0.364152,,,,,,,,,,,,,,,Liverpool,2026,West Ham
+30/11/2025,16:30,Premier League,,Sun,Home,D,1,1,Arsenal,0.791914,1.22828,,,,,,,,,,,,,,,Chelsea,2026,Arsenal
+30/11/2025,16:30,Premier League,,Sun,Away,D,1,1,Chelsea,1.22828,0.791914,,,,,,,,,,,,,,,Arsenal,2026,Chelsea
+02/12/2025,19:30,Premier League,,Tue,Home,L,0,1,Everton,0.635415,1.19573,,,,,,,,,,,,,,,Bournemouth,2026,Everton
+02/12/2025,19:30,Premier League,,Tue,Away,W,1,0,Bournemouth,1.19573,0.635415,,,,,,,,,,,,,,,Everton,2026,Bournemouth
+02/12/2025,19:30,Premier League,,Tue,Home,L,4,5,Man City,0.972635,1.96225,,,,,,,,,,,,,,,Fulham,2026,Man City
+02/12/2025,19:30,Premier League,,Tue,Away,W,5,4,Fulham,1.96225,0.972635,,,,,,,,,,,,,,,Man City,2026,Fulham
+02/12/2025,20:15,Premier League,,Tue,Home,D,2,2,Tottenham,1.88558,1.05205,,,,,,,,,,,,,,,Newcastle,2026,Tottenham
+02/12/2025,20:15,Premier League,,Tue,Away,D,2,2,Newcastle,1.05205,1.88558,,,,,,,,,,,,,,,Tottenham,2026,Newcastle
+03/12/2025,19:30,Premier League,,Wed,Home,W,2,0,Brentford,2.63126,0.588716,,,,,,,,,,,,,,,Arsenal,2026,Brentford
+03/12/2025,19:30,Premier League,,Wed,Away,L,0,2,Arsenal,0.588716,2.63126,,,,,,,,,,,,,,,Brentford,2026,Arsenal
+03/12/2025,19:30,Premier League,,Wed,Home,L,3,4,Aston Villa,1.96298,3.15745,,,,,,,,,,,,,,,Brighton,2026,Aston Villa
+03/12/2025,19:30,Premier League,,Wed,Away,W,4,3,Brighton,3.15745,1.96298,,,,,,,,,,,,,,,Aston Villa,2026,Brighton
+03/12/2025,19:30,Premier League,,Wed,Home,L,0,1,Crystal Palace,1.16852,0.987797,,,,,,,,,,,,,,,Burnley,2026,Crystal Palace
+03/12/2025,19:30,Premier League,,Wed,Away,W,1,0,Burnley,0.987797,1.16852,,,,,,,,,,,,,,,Crystal Palace,2026,Burnley
+03/12/2025,19:30,Premier League,,Wed,Home,L,0,1,Nott'm Forest,1.02461,1.12389,,,,,,,,,,,,,,,Wolves,2026,Nott'm Forest
+03/12/2025,19:30,Premier League,,Wed,Away,W,1,0,Wolves,1.12389,1.02461,,,,,,,,,,,,,,,Nott'm Forest,2026,Wolves
+03/12/2025,20:15,Premier League,,Wed,Home,W,3,1,Chelsea,2.2047,0.964018,,,,,,,,,,,,,,,Leeds,2026,Chelsea
+03/12/2025,20:15,Premier League,,Wed,Away,L,1,3,Leeds,0.964018,2.2047,,,,,,,,,,,,,,,Chelsea,2026,Leeds
+03/12/2025,20:15,Premier League,,Wed,Home,D,1,1,Sunderland,1.37633,0.712662,,,,,,,,,,,,,,,Liverpool,2026,Sunderland
+03/12/2025,20:15,Premier League,,Wed,Away,D,1,1,Liverpool,0.712662,1.37633,,,,,,,,,,,,,,,Sunderland,2026,Liverpool
+04/12/2025,20:00,Premier League,,Thu,Home,D,1,1,West Ham,2.27674,1.36584,,,,,,,,,,,,,,,Man United,2026,West Ham
+04/12/2025,20:00,Premier League,,Thu,Away,D,1,1,Man United,1.36584,2.27674,,,,,,,,,,,,,,,West Ham,2026,Man United
+06/12/2025,12:30,Premier League,,Sat,Home,W,2,1,Arsenal,2.71986,1.85965,,,,,,,,,,,,,,,Aston Villa,2026,Arsenal
+06/12/2025,12:30,Premier League,,Sat,Away,L,1,2,Aston Villa,1.85965,2.71986,,,,,,,,,,,,,,,Arsenal,2026,Aston Villa
+06/12/2025,15:00,Premier League,,Sat,Home,D,0,0,Chelsea,1.41931,0.672602,,,,,,,,,,,,,,,Bournemouth,2026,Chelsea
+06/12/2025,15:00,Premier League,,Sat,Away,D,0,0,Bournemouth,0.672602,1.41931,,,,,,,,,,,,,,,Chelsea,2026,Bournemouth
+06/12/2025,15:00,Premier League,,Sat,Home,W,3,0,Nott'm Forest,1.25348,0.31234,,,,,,,,,,,,,,,Everton,2026,Nott'm Forest
+06/12/2025,15:00,Premier League,,Sat,Away,L,0,3,Everton,0.31234,1.25348,,,,,,,,,,,,,,,Nott'm Forest,2026,Everton
+06/12/2025,15:00,Premier League,,Sat,Home,W,3,0,Sunderland,2.41605,0.626486,,,,,,,,,,,,,,,Man City,2026,Sunderland
+06/12/2025,15:00,Premier League,,Sat,Away,L,0,3,Man City,0.626486,2.41605,,,,,,,,,,,,,,,Sunderland,2026,Man City
+06/12/2025,15:00,Premier League,,Sat,Home,W,2,1,Burnley,1.80708,1.58375,,,,,,,,,,,,,,,Newcastle,2026,Burnley
+06/12/2025,15:00,Premier League,,Sat,Away,L,1,2,Newcastle,1.58375,1.80708,,,,,,,,,,,,,,,Burnley,2026,Newcastle
+06/12/2025,15:00,Premier League,,Sat,Home,W,2,0,Brentford,2.42388,0.470563,,,,,,,,,,,,,,,Tottenham,2026,Brentford
+06/12/2025,15:00,Premier League,,Sat,Away,L,0,2,Tottenham,0.470563,2.42388,,,,,,,,,,,,,,,Brentford,2026,Tottenham
+06/12/2025,17:30,Premier League,,Sat,Home,D,3,3,Liverpool,1.79333,2.04805,,,,,,,,,,,,,,,Leeds,2026,Liverpool
+06/12/2025,17:30,Premier League,,Sat,Away,D,3,3,Leeds,2.04805,1.79333,,,,,,,,,,,,,,,Liverpool,2026,Leeds
+07/12/2025,14:00,Premier League,,Sun,Home,D,1,1,West Ham,2.10077,1.7064,,,,,,,,,,,,,,,Brighton,2026,West Ham
+07/12/2025,14:00,Premier League,,Sun,Away,D,1,1,Brighton,1.7064,2.10077,,,,,,,,,,,,,,,West Ham,2026,Brighton
+07/12/2025,16:30,Premier League,,Sun,Home,L,1,2,Crystal Palace,0.766771,1.71109,,,,,,,,,,,,,,,Fulham,2026,Crystal Palace
+07/12/2025,16:30,Premier League,,Sun,Away,W,2,1,Fulham,1.71109,0.766771,,,,,,,,,,,,,,,Crystal Palace,2026,Fulham
+08/12/2025,20:00,Premier League,,Mon,Home,L,1,4,Man United,0.262147,4.04708,,,,,,,,,,,,,,,Wolves,2026,Man United
+08/12/2025,20:00,Premier League,,Mon,Away,W,4,1,Wolves,4.04708,0.262147,,,,,,,,,,,,,,,Man United,2026,Wolves
+13/12/2025,15:00,Premier League,,Sat,Home,W,2,0,Everton,2.64457,1.34,,,,,,,,,,,,,,,Chelsea,2026,Everton
+13/12/2025,15:00,Premier League,,Sat,Away,L,0,2,Chelsea,1.34,2.64457,,,,,,,,,,,,,,,Everton,2026,Chelsea
+13/12/2025,15:00,Premier League,,Sat,Home,W,2,0,Brighton,2.4127,1.69004,,,,,,,,,,,,,,,Liverpool,2026,Brighton
+13/12/2025,15:00,Premier League,,Sat,Away,L,0,2,Liverpool,1.69004,2.4127,,,,,,,,,,,,,,,Brighton,2026,Liverpool
+13/12/2025,17:30,Premier League,,Sat,Home,L,2,3,Fulham,2.05486,1.65053,,,,,,,,,,,,,,,Burnley,2026,Fulham
+13/12/2025,17:30,Premier League,,Sat,Away,W,3,2,Burnley,1.65053,2.05486,,,,,,,,,,,,,,,Fulham,2026,Burnley
+13/12/2025,20:00,Premier League,,Sat,Home,W,2,1,Wolves,1.61796,0.61997,,,,,,,,,,,,,,,Arsenal,2026,Wolves
+13/12/2025,20:00,Premier League,,Sat,Away,L,1,2,Arsenal,0.61997,1.61796,,,,,,,,,,,,,,,Wolves,2026,Arsenal
+14/12/2025,14:00,Premier League,,Sun,Home,L,0,3,Man City,1.30092,1.35317,,,,,,,,,,,,,,,Crystal Palace,2026,Man City
+14/12/2025,14:00,Premier League,,Sun,Away,W,3,0,Crystal Palace,1.35317,1.30092,,,,,,,,,,,,,,,Man City,2026,Crystal Palace
+14/12/2025,14:00,Premier League,,Sun,Home,W,3,0,Tottenham,2.32658,0.380246,,,,,,,,,,,,,,,Nott'm Forest,2026,Tottenham
+14/12/2025,14:00,Premier League,,Sun,Away,L,0,3,Nott'm Forest,0.380246,2.32658,,,,,,,,,,,,,,,Tottenham,2026,Nott'm Forest
+14/12/2025,14:00,Premier League,,Sun,Home,W,1,0,Newcastle,0.630045,0.169329,,,,,,,,,,,,,,,Sunderland,2026,Newcastle
+14/12/2025,14:00,Premier League,,Sun,Away,L,0,1,Sunderland,0.169329,0.630045,,,,,,,,,,,,,,,Newcastle,2026,Sunderland
+14/12/2025,14:00,Premier League,,Sun,Home,L,2,3,Aston Villa,1.27701,0.595093,,,,,,,,,,,,,,,West Ham,2026,Aston Villa
+14/12/2025,14:00,Premier League,,Sun,Away,W,3,2,West Ham,0.595093,1.27701,,,,,,,,,,,,,,,Aston Villa,2026,West Ham
+14/12/2025,16:30,Premier League,,Sun,Home,D,1,1,Leeds,0.697006,1.63409,,,,,,,,,,,,,,,Brentford,2026,Leeds
+14/12/2025,16:30,Premier League,,Sun,Away,D,1,1,Brentford,1.63409,0.697006,,,,,,,,,,,,,,,Leeds,2026,Brentford
+15/12/2025,20:00,Premier League,,Mon,Home,D,4,4,Bournemouth,3.21204,2.35196,,,,,,,,,,,,,,,Man United,2026,Bournemouth
+15/12/2025,20:00,Premier League,,Mon,Away,D,4,4,Man United,2.35196,3.21204,,,,,,,,,,,,,,,Bournemouth,2026,Man United
+20/12/2025,12:30,Premier League,,Sat,Home,D,2,2,Chelsea,2.87863,1.0261,,,,,,,,,,,,,,,Newcastle,2026,Chelsea
+20/12/2025,12:30,Premier League,,Sat,Away,D,2,2,Newcastle,1.0261,2.87863,,,,,,,,,,,,,,,Chelsea,2026,Newcastle
+20/12/2025,15:00,Premier League,,Sat,Home,D,1,1,Burnley,1.81847,0.480528,,,,,,,,,,,,,,,Bournemouth,2026,Burnley
+20/12/2025,15:00,Premier League,,Sat,Away,D,1,1,Bournemouth,0.480528,1.81847,,,,,,,,,,,,,,,Burnley,2026,Bournemouth
+20/12/2025,15:00,Premier League,,Sat,Home,D,0,0,Sunderland,0.919272,1.31044,,,,,,,,,,,,,,,Brighton,2026,Sunderland
+20/12/2025,15:00,Premier League,,Sat,Away,D,0,0,Brighton,1.31044,0.919272,,,,,,,,,,,,,,,Sunderland,2026,Brighton
+20/12/2025,15:00,Premier League,,Sat,Home,W,3,0,West Ham,3.58188,1.02143,,,,,,,,,,,,,,,Man City,2026,West Ham
+20/12/2025,15:00,Premier League,,Sat,Away,L,0,3,Man City,1.02143,3.58188,,,,,,,,,,,,,,,West Ham,2026,Man City
+20/12/2025,15:00,Premier League,,Sat,Home,L,0,2,Brentford,1.26823,1.56309,,,,,,,,,,,,,,,Wolves,2026,Brentford
+20/12/2025,15:00,Premier League,,Sat,Away,W,2,0,Wolves,1.56309,1.26823,,,,,,,,,,,,,,,Brentford,2026,Wolves
+20/12/2025,17:30,Premier League,,Sat,Home,L,1,2,Liverpool,1.34905,1.23164,,,,,,,,,,,,,,,Tottenham,2026,Liverpool
+20/12/2025,17:30,Premier League,,Sat,Away,W,2,1,Tottenham,1.23164,1.34905,,,,,,,,,,,,,,,Liverpool,2026,Tottenham
+20/12/2025,20:00,Premier League,,Sat,Home,L,0,1,Arsenal,0.213273,1.84723,,,,,,,,,,,,,,,Everton,2026,Arsenal
+20/12/2025,20:00,Premier League,,Sat,Away,W,1,0,Everton,1.84723,0.213273,,,,,,,,,,,,,,,Arsenal,2026,Everton
+20/12/2025,20:00,Premier League,,Sat,Home,W,4,1,Crystal Palace,2.90786,1.53058,,,,,,,,,,,,,,,Leeds,2026,Crystal Palace
+20/12/2025,20:00,Premier League,,Sat,Away,L,1,4,Leeds,1.53058,2.90786,,,,,,,,,,,,,,,Crystal Palace,2026,Leeds
+21/12/2025,16:30,Premier League,,Sun,Home,W,2,1,Man United,1.86917,1.30455,,,,,,,,,,,,,,,Aston Villa,2026,Man United
+21/12/2025,16:30,Premier League,,Sun,Away,L,1,2,Aston Villa,1.30455,1.86917,,,,,,,,,,,,,,,Man United,2026,Aston Villa
+22/12/2025,20:00,Premier League,,Mon,Home,W,1,0,Nott'm Forest,1.70568,0.486296,,,,,,,,,,,,,,,Fulham,2026,Nott'm Forest
+22/12/2025,20:00,Premier League,,Mon,Away,L,0,1,Fulham,0.486296,1.70568,,,,,,,,,,,,,,,Nott'm Forest,2026,Fulham
+26/12/2025,20:00,Premier League,,Fri,Home,W,1,0,Newcastle,0.940811,1.12998,,,,,,,,,,,,,,,Man United,2026,Newcastle
+26/12/2025,20:00,Premier League,,Fri,Away,L,0,1,Man United,1.12998,0.940811,,,,,,,,,,,,,,,Newcastle,2026,Man United
+27/12/2025,12:30,Premier League,,Sat,Home,L,1,2,Man City,0.600141,1.46468,,,,,,,,,,,,,,,Nott'm Forest,2026,Man City
+27/12/2025,12:30,Premier League,,Sat,Away,W,2,1,Nott'm Forest,1.46468,0.600141,,,,,,,,,,,,,,,Man City,2026,Nott'm Forest
+27/12/2025,15:00,Premier League,,Sat,Home,W,2,1,Brighton,2.54318,0.710064,,,,,,,,,,,,,,,Arsenal,2026,Brighton
+27/12/2025,15:00,Premier League,,Sat,Away,L,1,2,Arsenal,0.710064,2.54318,,,,,,,,,,,,,,,Brighton,2026,Arsenal
+27/12/2025,15:00,Premier League,,Sat,Home,W,4,1,Bournemouth,2.8513,2.56183,,,,,,,,,,,,,,,Brentford,2026,Bournemouth
+27/12/2025,15:00,Premier League,,Sat,Away,L,1,4,Brentford,2.56183,2.8513,,,,,,,,,,,,,,,Bournemouth,2026,Brentford
+27/12/2025,15:00,Premier League,,Sat,Home,D,0,0,Everton,1.24948,1.25204,,,,,,,,,,,,,,,Burnley,2026,Everton
+27/12/2025,15:00,Premier League,,Sat,Away,D,0,0,Burnley,1.25204,1.24948,,,,,,,,,,,,,,,Everton,2026,Burnley
+27/12/2025,15:00,Premier League,,Sat,Home,W,2,1,Wolves,1.56502,0.780664,,,,,,,,,,,,,,,Liverpool,2026,Wolves
+27/12/2025,15:00,Premier League,,Sat,Away,L,1,2,Liverpool,0.780664,1.56502,,,,,,,,,,,,,,,Wolves,2026,Liverpool
+27/12/2025,15:00,Premier League,,Sat,Home,L,0,1,Fulham,1.13719,1.11436,,,,,,,,,,,,,,,West Ham,2026,Fulham
+27/12/2025,15:00,Premier League,,Sat,Away,W,1,0,West Ham,1.11436,1.13719,,,,,,,,,,,,,,,Fulham,2026,West Ham
+27/12/2025,17:30,Premier League,,Sat,Home,L,1,2,Aston Villa,1.97155,2.05918,,,,,,,,,,,,,,,Chelsea,2026,Aston Villa
+27/12/2025,17:30,Premier League,,Sat,Away,W,2,1,Chelsea,2.05918,1.97155,,,,,,,,,,,,,,,Aston Villa,2026,Chelsea
+28/12/2025,14:00,Premier League,,Sun,Home,D,1,1,Leeds,0.805957,2.60653,,,,,,,,,,,,,,,Sunderland,2026,Leeds
+28/12/2025,14:00,Premier League,,Sun,Away,D,1,1,Sunderland,2.60653,0.805957,,,,,,,,,,,,,,,Leeds,2026,Sunderland
+28/12/2025,16:30,Premier League,,Sun,Home,L,0,1,Tottenham,0.929681,0.870768,,,,,,,,,,,,,,,Crystal Palace,2026,Tottenham
+28/12/2025,16:30,Premier League,,Sun,Away,W,1,0,Crystal Palace,0.870768,0.929681,,,,,,,,,,,,,,,Tottenham,2026,Crystal Palace
+30/12/2025,19:30,Premier League,,Tue,Home,L,1,3,Newcastle,1.32551,2.49248,,,,,,,,,,,,,,,Burnley,2026,Newcastle
+30/12/2025,19:30,Premier League,,Tue,Away,W,3,1,Burnley,2.49248,1.32551,,,,,,,,,,,,,,,Newcastle,2026,Burnley
+30/12/2025,19:30,Premier League,,Tue,Home,D,2,2,Bournemouth,2.33294,3.49142,,,,,,,,,,,,,,,Chelsea,2026,Bournemouth
+30/12/2025,19:30,Premier League,,Tue,Away,D,2,2,Chelsea,3.49142,2.33294,,,,,,,,,,,,,,,Bournemouth,2026,Chelsea
+30/12/2025,19:30,Premier League,,Tue,Home,L,0,2,Everton,1.75445,1.69525,,,,,,,,,,,,,,,Nott'm Forest,2026,Everton
+30/12/2025,19:30,Premier League,,Tue,Away,W,2,0,Nott'm Forest,1.69525,1.75445,,,,,,,,,,,,,,,Everton,2026,Nott'm Forest
+30/12/2025,19:30,Premier League,,Tue,Home,D,2,2,Brighton,2.27644,3.08914,,,,,,,,,,,,,,,West Ham,2026,Brighton
+30/12/2025,19:30,Premier League,,Tue,Away,D,2,2,West Ham,3.08914,2.27644,,,,,,,,,,,,,,,Brighton,2026,West Ham
+30/12/2025,20:15,Premier League,,Tue,Home,W,4,1,Aston Villa,4.41335,2.94195,,,,,,,,,,,,,,,Arsenal,2026,Aston Villa
+30/12/2025,20:15,Premier League,,Tue,Away,L,1,4,Arsenal,2.94195,4.41335,,,,,,,,,,,,,,,Aston Villa,2026,Arsenal
+30/12/2025,20:15,Premier League,,Tue,Home,D,1,1,Wolves,1.13306,1.21784,,,,,,,,,,,,,,,Man United,2026,Wolves
+30/12/2025,20:15,Premier League,,Tue,Away,D,1,1,Man United,1.21784,1.13306,,,,,,,,,,,,,,,Wolves,2026,Man United
+01/01/2026,17:30,Premier League,,Thu,Home,D,1,1,Fulham,2.35346,1.75434,,,,,,,,,,,,,,,Crystal Palace,2026,Fulham
+01/01/2026,17:30,Premier League,,Thu,Away,D,1,1,Crystal Palace,1.75434,2.35346,,,,,,,,,,,,,,,Fulham,2026,Crystal Palace
+01/01/2026,17:30,Premier League,,Thu,Home,D,0,0,Leeds,1.67833,0.15936,,,,,,,,,,,,,,,Liverpool,2026,Leeds
+01/01/2026,17:30,Premier League,,Thu,Away,D,0,0,Liverpool,0.15936,1.67833,,,,,,,,,,,,,,,Leeds,2026,Liverpool
+01/01/2026,20:00,Premier League,,Thu,Home,D,0,0,Tottenham,0.556304,0.608309,,,,,,,,,,,,,,,Brentford,2026,Tottenham
+01/01/2026,20:00,Premier League,,Thu,Away,D,0,0,Brentford,0.608309,0.556304,,,,,,,,,,,,,,,Tottenham,2026,Brentford
+01/01/2026,20:00,Premier League,,Thu,Home,D,0,0,Man City,0.962141,2.44247,,,,,,,,,,,,,,,Sunderland,2026,Man City
+01/01/2026,20:00,Premier League,,Thu,Away,D,0,0,Sunderland,2.44247,0.962141,,,,,,,,,,,,,,,Man City,2026,Sunderland
+03/01/2026,12:30,Premier League,,Sat,Home,W,3,1,Nott'm Forest,1.42988,0.8982,,,,,,,,,,,,,,,Aston Villa,2026,Nott'm Forest
+03/01/2026,12:30,Premier League,,Sat,Away,L,1,3,Aston Villa,0.8982,1.42988,,,,,,,,,,,,,,,Nott'm Forest,2026,Aston Villa
+03/01/2026,15:00,Premier League,,Sat,Home,W,3,0,West Ham,2.23925,0.235678,,,,,,,,,,,,,,,Wolves,2026,West Ham
+03/01/2026,15:00,Premier League,,Sat,Away,L,0,3,Wolves,0.235678,2.23925,,,,,,,,,,,,,,,West Ham,2026,Wolves
+03/01/2026,15:00,Premier League,,Sat,Home,W,2,0,Burnley,1.4717,0.254551,,,,,,,,,,,,,,,Brighton,2026,Burnley
+03/01/2026,15:00,Premier League,,Sat,Away,L,0,2,Brighton,0.254551,1.4717,,,,,,,,,,,,,,,Burnley,2026,Brighton
+03/01/2026,17:30,Premier League,,Sat,Home,L,2,3,Arsenal,0.947846,1.28,,,,,,,,,,,,,,,Bournemouth,2026,Arsenal
+03/01/2026,17:30,Premier League,,Sat,Away,W,3,2,Bournemouth,1.28,0.947846,,,,,,,,,,,,,,,Arsenal,2026,Bournemouth
+04/01/2026,12:30,Premier League,,Sun,Home,D,1,1,Man United,0.970138,1.94781,,,,,,,,,,,,,,,Leeds,2026,Man United
+04/01/2026,12:30,Premier League,,Sun,Away,D,1,1,Leeds,1.94781,0.970138,,,,,,,,,,,,,,,Man United,2026,Leeds
+04/01/2026,15:00,Premier League,,Sun,Home,W,2,0,Crystal Palace,2.72764,1.27825,,,,,,,,,,,,,,,Newcastle,2026,Crystal Palace
+04/01/2026,15:00,Premier League,,Sun,Away,L,0,2,Newcastle,1.27825,2.72764,,,,,,,,,,,,,,,Crystal Palace,2026,Newcastle
+04/01/2026,15:00,Premier League,,Sun,Home,D,1,1,Sunderland,1.4175,0.467481,,,,,,,,,,,,,,,Tottenham,2026,Sunderland
+04/01/2026,15:00,Premier League,,Sun,Away,D,1,1,Tottenham,0.467481,1.4175,,,,,,,,,,,,,,,Sunderland,2026,Tottenham
+04/01/2026,15:00,Premier League,,Sun,Home,L,2,4,Brentford,1.00566,3.05179,,,,,,,,,,,,,,,Everton,2026,Brentford
+04/01/2026,15:00,Premier League,,Sun,Away,W,4,2,Everton,3.05179,1.00566,,,,,,,,,,,,,,,Brentford,2026,Everton
+04/01/2026,15:00,Premier League,,Sun,Home,D,2,2,Liverpool,0.609182,1.7188,,,,,,,,,,,,,,,Fulham,2026,Liverpool
+04/01/2026,15:00,Premier League,,Sun,Away,D,2,2,Fulham,1.7188,0.609182,,,,,,,,,,,,,,,Liverpool,2026,Fulham
+04/01/2026,17:30,Premier League,,Sun,Home,D,1,1,Chelsea,1.03049,2.03726,,,,,,,,,,,,,,,Man City,2026,Chelsea
+04/01/2026,17:30,Premier League,,Sun,Away,D,1,1,Man City,2.03726,1.03049,,,,,,,,,,,,,,,Chelsea,2026,Man City
+06/01/2026,20:00,Premier League,,Tue,Home,L,1,2,Nott'm Forest,1.73697,1.26683,,,,,,,,,,,,,,,West Ham,2026,Nott'm Forest
+06/01/2026,20:00,Premier League,,Tue,Away,W,2,1,West Ham,1.26683,1.73697,,,,,,,,,,,,,,,Nott'm Forest,2026,West Ham
+07/01/2026,19:30,Premier League,,Wed,Home,D,1,1,Wolves,1.63321,0.71329,,,,,,,,,,,,,,,Everton,2026,Wolves
+07/01/2026,19:30,Premier League,,Wed,Away,D,1,1,Everton,0.71329,1.63321,,,,,,,,,,,,,,,Wolves,2026,Everton
+07/01/2026,19:30,Premier League,,Wed,Home,W,3,2,Tottenham,1.19014,1.6261,,,,,,,,,,,,,,,Bournemouth,2026,Tottenham
+07/01/2026,19:30,Premier League,,Wed,Away,L,2,3,Bournemouth,1.6261,1.19014,,,,,,,,,,,,,,,Tottenham,2026,Bournemouth
+07/01/2026,19:30,Premier League,,Wed,Home,W,3,0,Sunderland,3.86096,1.50644,,,,,,,,,,,,,,,Brentford,2026,Sunderland
+07/01/2026,19:30,Premier League,,Wed,Away,L,0,3,Brentford,1.50644,3.86096,,,,,,,,,,,,,,,Sunderland,2026,Brentford
+07/01/2026,19:30,Premier League,,Wed,Home,D,0,0,Aston Villa,1.32505,2.07015,,,,,,,,,,,,,,,Crystal Palace,2026,Aston Villa
+07/01/2026,19:30,Premier League,,Wed,Away,D,0,0,Crystal Palace,2.07015,1.32505,,,,,,,,,,,,,,,Aston Villa,2026,Crystal Palace
+07/01/2026,19:30,Premier League,,Wed,Home,W,2,1,Chelsea,1.06013,2.45107,,,,,,,,,,,,,,,Fulham,2026,Chelsea
+07/01/2026,19:30,Premier League,,Wed,Away,L,1,2,Fulham,2.45107,1.06013,,,,,,,,,,,,,,,Chelsea,2026,Fulham
+07/01/2026,19:30,Premier League,,Wed,Home,D,1,1,Brighton,2.95904,1.33162,,,,,,,,,,,,,,,Man City,2026,Brighton
+07/01/2026,19:30,Premier League,,Wed,Away,D,1,1,Man City,1.33162,2.95904,,,,,,,,,,,,,,,Brighton,2026,Man City
+07/01/2026,20:15,Premier League,,Wed,Home,D,2,2,Man United,0.31971,2.52488,,,,,,,,,,,,,,,Burnley,2026,Man United
+07/01/2026,20:15,Premier League,,Wed,Away,D,2,2,Burnley,2.52488,0.31971,,,,,,,,,,,,,,,Man United,2026,Burnley
+07/01/2026,20:15,Premier League,,Wed,Home,W,4,3,Leeds,2.43495,2.35318,,,,,,,,,,,,,,,Newcastle,2026,Leeds
+07/01/2026,20:15,Premier League,,Wed,Away,L,3,4,Newcastle,2.35318,2.43495,,,,,,,,,,,,,,,Leeds,2026,Newcastle
+08/01/2026,20:00,Premier League,,Thu,Home,D,0,0,Liverpool,0.701832,0.318642,,,,,,,,,,,,,,,Arsenal,2026,Liverpool
+08/01/2026,20:00,Premier League,,Thu,Away,D,0,0,Arsenal,0.318642,0.701832,,,,,,,,,,,,,,,Liverpool,2026,Arsenal
+17/01/2026,12:30,Premier League,,Sat,Home,W,2,0,Man City,3.07278,0.387015,,,,,,,,,,,,,,,Man United,2026,Man City
+17/01/2026,12:30,Premier League,,Sat,Away,L,0,2,Man United,0.387015,3.07278,,,,,,,,,,,,,,,Man City,2026,Man United
+17/01/2026,15:00,Premier League,,Sat,Home,W,2,0,Brentford,1.62263,1.47521,,,,,,,,,,,,,,,Chelsea,2026,Brentford
+17/01/2026,15:00,Premier League,,Sat,Away,L,0,2,Chelsea,1.47521,1.62263,,,,,,,,,,,,,,,Brentford,2026,Chelsea
+17/01/2026,15:00,Premier League,,Sat,Home,W,1,0,Fulham,2.16898,0.258796,,,,,,,,,,,,,,,Leeds,2026,Fulham
+17/01/2026,15:00,Premier League,,Sat,Away,L,0,1,Leeds,0.258796,2.16898,,,,,,,,,,,,,,,Fulham,2026,Leeds
+17/01/2026,15:00,Premier League,,Sat,Home,D,1,1,Burnley,3.49045,0.546971,,,,,,,,,,,,,,,Liverpool,2026,Burnley
+17/01/2026,15:00,Premier League,,Sat,Away,D,1,1,Liverpool,0.546971,3.49045,,,,,,,,,,,,,,,Burnley,2026,Liverpool
+17/01/2026,15:00,Premier League,,Sat,Home,W,2,1,Crystal Palace,1.84601,1.15169,,,,,,,,,,,,,,,Sunderland,2026,Crystal Palace
+17/01/2026,15:00,Premier League,,Sat,Away,L,1,2,Sunderland,1.15169,1.84601,,,,,,,,,,,,,,,Crystal Palace,2026,Sunderland
+17/01/2026,15:00,Premier League,,Sat,Home,L,1,2,West Ham,1.65292,2.76761,,,,,,,,,,,,,,,Tottenham,2026,West Ham
+17/01/2026,15:00,Premier League,,Sat,Away,W,2,1,Tottenham,2.76761,1.65292,,,,,,,,,,,,,,,West Ham,2026,Tottenham
+17/01/2026,17:30,Premier League,,Sat,Home,D,0,0,Arsenal,0.318481,2.86323,,,,,,,,,,,,,,,Nott'm Forest,2026,Arsenal
+17/01/2026,17:30,Premier League,,Sat,Away,D,0,0,Nott'm Forest,2.86323,0.318481,,,,,,,,,,,,,,,Arsenal,2026,Nott'm Forest
+18/01/2026,14:00,Premier League,,Sun,Home,D,0,0,Newcastle,0.390216,0.813313,,,,,,,,,,,,,,,Wolves,2026,Newcastle
+18/01/2026,14:00,Premier League,,Sun,Away,D,0,0,Wolves,0.813313,0.390216,,,,,,,,,,,,,,,Newcastle,2026,Wolves
+18/01/2026,16:30,Premier League,,Sun,Home,L,0,1,Everton,0.905393,0.745859,,,,,,,,,,,,,,,Aston Villa,2026,Everton
+18/01/2026,16:30,Premier League,,Sun,Away,W,1,0,Aston Villa,0.745859,0.905393,,,,,,,,,,,,,,,Everton,2026,Aston Villa
+19/01/2026,20:00,Premier League,,Mon,Home,D,1,1,Bournemouth,0.995777,1.69737,,,,,,,,,,,,,,,Brighton,2026,Bournemouth
+19/01/2026,20:00,Premier League,,Mon,Away,D,1,1,Brighton,1.69737,0.995777,,,,,,,,,,,,,,,Bournemouth,2026,Brighton
+24/01/2026,12:30,Premier League,,Sat,Home,W,3,1,Sunderland,2.18675,0.713838,,,,,,,,,,,,,,,West Ham,2026,Sunderland
+24/01/2026,12:30,Premier League,,Sat,Away,L,1,3,West Ham,0.713838,2.18675,,,,,,,,,,,,,,,Sunderland,2026,West Ham
+24/01/2026,15:00,Premier League,,Sat,Home,D,2,2,Tottenham,1.54884,2.59093,,,,,,,,,,,,,,,Burnley,2026,Tottenham
+24/01/2026,15:00,Premier League,,Sat,Away,D,2,2,Burnley,2.59093,1.54884,,,,,,,,,,,,,,,Tottenham,2026,Burnley
+24/01/2026,15:00,Premier League,,Sat,Home,W,2,1,Brighton,1.13243,1.94652,,,,,,,,,,,,,,,Fulham,2026,Brighton
+24/01/2026,15:00,Premier League,,Sat,Away,L,1,2,Fulham,1.94652,1.13243,,,,,,,,,,,,,,,Brighton,2026,Fulham
+24/01/2026,15:00,Premier League,,Sat,Home,W,2,0,Wolves,1.0654,0.542683,,,,,,,,,,,,,,,Man City,2026,Wolves
+24/01/2026,15:00,Premier League,,Sat,Away,L,0,2,Man City,0.542683,1.0654,,,,,,,,,,,,,,,Wolves,2026,Man City
+24/01/2026,17:30,Premier League,,Sat,Home,W,3,2,Liverpool,3.31474,0.937335,,,,,,,,,,,,,,,Bournemouth,2026,Liverpool
+24/01/2026,17:30,Premier League,,Sat,Away,L,2,3,Bournemouth,0.937335,3.31474,,,,,,,,,,,,,,,Liverpool,2026,Bournemouth
+25/01/2026,14:00,Premier League,,Sun,Home,L,0,2,Nott'm Forest,2.00413,1.38958,,,,,,,,,,,,,,,Brentford,2026,Nott'm Forest
+25/01/2026,14:00,Premier League,,Sun,Away,W,2,0,Brentford,1.38958,2.00413,,,,,,,,,,,,,,,Nott'm Forest,2026,Brentford
+25/01/2026,14:00,Premier League,,Sun,Home,L,1,3,Chelsea,2.41793,3.08817,,,,,,,,,,,,,,,Crystal Palace,2026,Chelsea
+25/01/2026,14:00,Premier League,,Sun,Away,W,3,1,Crystal Palace,3.08817,2.41793,,,,,,,,,,,,,,,Chelsea,2026,Crystal Palace
+25/01/2026,14:00,Premier League,,Sun,Home,L,0,2,Aston Villa,1.95484,1.32143,,,,,,,,,,,,,,,Newcastle,2026,Aston Villa
+25/01/2026,14:00,Premier League,,Sun,Away,W,2,0,Newcastle,1.32143,1.95484,,,,,,,,,,,,,,,Aston Villa,2026,Newcastle
+25/01/2026,16:30,Premier League,,Sun,Home,L,2,3,Man United,1.42411,0.640902,,,,,,,,,,,,,,,Arsenal,2026,Man United
+25/01/2026,16:30,Premier League,,Sun,Away,W,3,2,Arsenal,0.640902,1.42411,,,,,,,,,,,,,,,Man United,2026,Arsenal
+26/01/2026,20:00,Premier League,,Mon,Home,D,1,1,Leeds,0.889916,1.6766,,,,,,,,,,,,,,,Everton,2026,Leeds
+26/01/2026,20:00,Premier League,,Mon,Away,D,1,1,Everton,1.6766,0.889916,,,,,,,,,,,,,,,Leeds,2026,Everton
+31/01/2026,15:00,Premier League,,Sat,Home,D,1,1,Everton,1.42825,1.28126,,,,,,,,,,,,,,,Brighton,2026,Everton
+31/01/2026,15:00,Premier League,,Sat,Away,D,1,1,Brighton,1.28126,1.42825,,,,,,,,,,,,,,,Everton,2026,Brighton
+31/01/2026,15:00,Premier League,,Sat,Home,L,0,4,Arsenal,0.17871,3.54427,,,,,,,,,,,,,,,Leeds,2026,Arsenal
+31/01/2026,15:00,Premier League,,Sat,Away,W,4,0,Leeds,3.54427,0.17871,,,,,,,,,,,,,,,Arsenal,2026,Leeds
+31/01/2026,15:00,Premier League,,Sat,Home,L,0,2,Bournemouth,2.10353,1.59116,,,,,,,,,,,,,,,Wolves,2026,Bournemouth
+31/01/2026,15:00,Premier League,,Sat,Away,W,2,0,Wolves,1.59116,2.10353,,,,,,,,,,,,,,,Bournemouth,2026,Wolves
+31/01/2026,17:30,Premier League,,Sat,Home,W,3,2,West Ham,2.66133,1.72585,,,,,,,,,,,,,,,Chelsea,2026,West Ham
+31/01/2026,17:30,Premier League,,Sat,Away,L,2,3,Chelsea,1.72585,2.66133,,,,,,,,,,,,,,,West Ham,2026,Chelsea
+31/01/2026,20:00,Premier League,,Sat,Home,W,4,1,Newcastle,3.09973,0.284319,,,,,,,,,,,,,,,Liverpool,2026,Newcastle
+31/01/2026,20:00,Premier League,,Sat,Away,L,1,4,Liverpool,0.284319,3.09973,,,,,,,,,,,,,,,Newcastle,2026,Liverpool
+01/02/2026,14:00,Premier League,,Sun,Home,L,0,1,Brentford,2.15316,0.314916,,,,,,,,,,,,,,,Aston Villa,2026,Brentford
+01/02/2026,14:00,Premier League,,Sun,Away,W,1,0,Aston Villa,0.314916,2.15316,,,,,,,,,,,,,,,Brentford,2026,Aston Villa
+01/02/2026,14:00,Premier League,,Sun,Home,W,3,2,Fulham,1.84362,1.71998,,,,,,,,,,,,,,,Man United,2026,Fulham
+01/02/2026,14:00,Premier League,,Sun,Away,L,2,3,Man United,1.71998,1.84362,,,,,,,,,,,,,,,Fulham,2026,Man United
+01/02/2026,14:00,Premier League,,Sun,Home,D,1,1,Crystal Palace,0.987254,1.648,,,,,,,,,,,,,,,Nott'm Forest,2026,Crystal Palace
+01/02/2026,14:00,Premier League,,Sun,Away,D,1,1,Nott'm Forest,1.648,0.987254,,,,,,,,,,,,,,,Crystal Palace,2026,Nott'm Forest
+01/02/2026,16:30,Premier League,,Sun,Home,D,2,2,Man City,1.49738,2.03614,,,,,,,,,,,,,,,Tottenham,2026,Man City
+01/02/2026,16:30,Premier League,,Sun,Away,D,2,2,Tottenham,2.03614,1.49738,,,,,,,,,,,,,,,Man City,2026,Tottenham
+02/02/2026,20:00,Premier League,,Mon,Home,W,3,0,Burnley,1.8865,0.126371,,,,,,,,,,,,,,,Sunderland,2026,Burnley
+02/02/2026,20:00,Premier League,,Mon,Away,L,0,3,Sunderland,0.126371,1.8865,,,,,,,,,,,,,,,Burnley,2026,Sunderland
+06/02/2026,20:00,Premier League,,Fri,Home,W,3,1,Nott'm Forest,3.38179,1.6608,,,,,,,,,,,,,,,Leeds,2026,Nott'm Forest
+06/02/2026,20:00,Premier League,,Fri,Away,L,1,3,Leeds,1.6608,3.38179,,,,,,,,,,,,,,,Nott'm Forest,2026,Leeds
+07/02/2026,12:30,Premier League,,Sat,Home,W,2,0,Tottenham,2.16576,0.593404,,,,,,,,,,,,,,,Man United,2026,Tottenham
+07/02/2026,12:30,Premier League,,Sat,Away,L,0,2,Man United,0.593404,2.16576,,,,,,,,,,,,,,,Tottenham,2026,Man United
+07/02/2026,15:00,Premier League,,Sat,Home,D,1,1,Aston Villa,1.82646,0.646496,,,,,,,,,,,,,,,Bournemouth,2026,Aston Villa
+07/02/2026,15:00,Premier League,,Sat,Away,D,1,1,Bournemouth,0.646496,1.82646,,,,,,,,,,,,,,,Aston Villa,2026,Bournemouth
+07/02/2026,15:00,Premier League,,Sat,Home,W,3,0,Sunderland,1.19401,0.427225,,,,,,,,,,,,,,,Arsenal,2026,Sunderland
+07/02/2026,15:00,Premier League,,Sat,Away,L,0,3,Arsenal,0.427225,1.19401,,,,,,,,,,,,,,,Sunderland,2026,Arsenal
+07/02/2026,15:00,Premier League,,Sat,Home,L,0,2,West Ham,1.84644,1.1223,,,,,,,,,,,,,,,Burnley,2026,West Ham
+07/02/2026,15:00,Premier League,,Sat,Away,W,2,0,Burnley,1.1223,1.84644,,,,,,,,,,,,,,,West Ham,2026,Burnley
+07/02/2026,15:00,Premier League,,Sat,Home,L,1,2,Everton,2.20126,1.88778,,,,,,,,,,,,,,,Fulham,2026,Everton
+07/02/2026,15:00,Premier League,,Sat,Away,W,2,1,Fulham,1.88778,2.20126,,,,,,,,,,,,,,,Everton,2026,Fulham
+07/02/2026,15:00,Premier League,,Sat,Home,L,1,3,Chelsea,1.11372,3.76278,,,,,,,,,,,,,,,Wolves,2026,Chelsea
+07/02/2026,15:00,Premier League,,Sat,Away,W,3,1,Wolves,3.76278,1.11372,,,,,,,,,,,,,,,Chelsea,2026,Wolves
+07/02/2026,17:30,Premier League,,Sat,Home,L,2,3,Brentford,3.3215,1.65022,,,,,,,,,,,,,,,Newcastle,2026,Brentford
+07/02/2026,17:30,Premier League,,Sat,Away,W,3,2,Newcastle,1.65022,3.3215,,,,,,,,,,,,,,,Brentford,2026,Newcastle
+08/02/2026,14:00,Premier League,,Sun,Home,L,0,1,Crystal Palace,0.737798,0.928404,,,,,,,,,,,,,,,Brighton,2026,Crystal Palace
+08/02/2026,14:00,Premier League,,Sun,Away,W,1,0,Brighton,0.928404,0.737798,,,,,,,,,,,,,,,Crystal Palace,2026,Brighton
+08/02/2026,16:30,Premier League,,Sun,Home,L,1,2,Man City,1.26652,2.41476,,,,,,,,,,,,,,,Liverpool,2026,Man City
+08/02/2026,16:30,Premier League,,Sun,Away,W,2,1,Liverpool,2.41476,1.26652,,,,,,,,,,,,,,,Man City,2026,Liverpool
+10/02/2026,19:30,Premier League,,Tue,Home,D,2,2,Leeds,3.21176,1.28948,,,,,,,,,,,,,,,Chelsea,2026,Leeds
+10/02/2026,19:30,Premier League,,Tue,Away,D,2,2,Chelsea,1.28948,3.21176,,,,,,,,,,,,,,,Leeds,2026,Chelsea
+10/02/2026,19:30,Premier League,,Tue,Home,L,1,2,Bournemouth,2.33114,1.4121,,,,,,,,,,,,,,,Everton,2026,Bournemouth
+10/02/2026,19:30,Premier League,,Tue,Away,W,2,1,Everton,1.4121,2.33114,,,,,,,,,,,,,,,Bournemouth,2026,Everton
+10/02/2026,19:30,Premier League,,Tue,Home,L,1,2,Newcastle,1.68925,2.46991,,,,,,,,,,,,,,,Tottenham,2026,Newcastle
+10/02/2026,19:30,Premier League,,Tue,Away,W,2,1,Tottenham,2.46991,1.68925,,,,,,,,,,,,,,,Newcastle,2026,Tottenham
+10/02/2026,20:15,Premier League,,Tue,Home,D,1,1,Man United,1.30746,0.735767,,,,,,,,,,,,,,,West Ham,2026,Man United
+10/02/2026,20:15,Premier League,,Tue,Away,D,1,1,West Ham,0.735767,1.30746,,,,,,,,,,,,,,,Man United,2026,West Ham
+11/02/2026,19:30,Premier League,,Wed,Home,W,1,0,Brighton,0.576138,0.481306,,,,,,,,,,,,,,,Aston Villa,2026,Brighton
+11/02/2026,19:30,Premier League,,Wed,Away,L,0,1,Aston Villa,0.481306,0.576138,,,,,,,,,,,,,,,Brighton,2026,Aston Villa
+11/02/2026,19:30,Premier League,,Wed,Home,L,2,3,Burnley,2.1276,0.691273,,,,,,,,,,,,,,,Crystal Palace,2026,Burnley
+11/02/2026,19:30,Premier League,,Wed,Away,W,3,2,Crystal Palace,0.691273,2.1276,,,,,,,,,,,,,,,Burnley,2026,Crystal Palace
+11/02/2026,19:30,Premier League,,Wed,Home,W,3,0,Fulham,1.67722,1.05283,,,,,,,,,,,,,,,Man City,2026,Fulham
+11/02/2026,19:30,Premier League,,Wed,Away,L,0,3,Man City,1.05283,1.67722,,,,,,,,,,,,,,,Fulham,2026,Man City
+11/02/2026,19:30,Premier League,,Wed,Home,D,0,0,Wolves,3.69094,0.406959,,,,,,,,,,,,,,,Nott'm Forest,2026,Wolves
+11/02/2026,19:30,Premier League,,Wed,Away,D,0,0,Nott'm Forest,0.406959,3.69094,,,,,,,,,,,,,,,Wolves,2026,Nott'm Forest
+11/02/2026,20:15,Premier League,,Wed,Home,L,0,1,Liverpool,0.693794,3.08172,,,,,,,,,,,,,,,Sunderland,2026,Liverpool
+11/02/2026,20:15,Premier League,,Wed,Away,W,1,0,Sunderland,3.08172,0.693794,,,,,,,,,,,,,,,Liverpool,2026,Sunderland
+12/02/2026,20:00,Premier League,,Thu,Home,D,1,1,Arsenal,1.81154,0.78418,,,,,,,,,,,,,,,Brentford,2026,Arsenal
+12/02/2026,20:00,Premier League,,Thu,Away,D,1,1,Brentford,0.78418,1.81154,,,,,,,,,,,,,,,Arsenal,2026,Brentford
+18/02/2026,20:00,Premier League,,Wed,Home,D,2,2,Arsenal,0.173119,2.01018,,,,,,,,,,,,,,,Wolves,2026,Arsenal
+18/02/2026,20:00,Premier League,,Wed,Away,D,2,2,Wolves,2.01018,0.173119,,,,,,,,,,,,,,,Arsenal,2026,Wolves
+21/02/2026,15:00,Premier League,,Sat,Home,D,1,1,Leeds,1.25439,1.27855,,,,,,,,,,,,,,,Aston Villa,2026,Leeds
+21/02/2026,15:00,Premier League,,Sat,Away,D,1,1,Aston Villa,1.27855,1.25439,,,,,,,,,,,,,,,Leeds,2026,Aston Villa
+21/02/2026,15:00,Premier League,,Sat,Home,L,0,2,Brighton,1.69023,1.37203,,,,,,,,,,,,,,,Brentford,2026,Brighton
+21/02/2026,15:00,Premier League,,Sat,Away,W,2,0,Brentford,1.37203,1.69023,,,,,,,,,,,,,,,Brighton,2026,Brentford
+21/02/2026,15:00,Premier League,,Sat,Home,D,1,1,Burnley,2.51534,1.01255,,,,,,,,,,,,,,,Chelsea,2026,Burnley
+21/02/2026,15:00,Premier League,,Sat,Away,D,1,1,Chelsea,1.01255,2.51534,,,,,,,,,,,,,,,Burnley,2026,Chelsea
+21/02/2026,17:30,Premier League,,Sat,Home,D,0,0,Bournemouth,2.34412,0.522731,,,,,,,,,,,,,,,West Ham,2026,Bournemouth
+21/02/2026,17:30,Premier League,,Sat,Away,D,0,0,West Ham,0.522731,2.34412,,,,,,,,,,,,,,,Bournemouth,2026,West Ham
+21/02/2026,20:00,Premier League,,Sat,Home,W,2,1,Newcastle,2.22648,0.507954,,,,,,,,,,,,,,,Man City,2026,Newcastle
+21/02/2026,20:00,Premier League,,Sat,Away,L,1,2,Man City,0.507954,2.22648,,,,,,,,,,,,,,,Newcastle,2026,Man City
+22/02/2026,14:00,Premier League,,Sun,Home,W,1,0,Wolves,2.03559,1.67749,,,,,,,,,,,,,,,Crystal Palace,2026,Wolves
+22/02/2026,14:00,Premier League,,Sun,Away,L,0,1,Crystal Palace,1.67749,2.03559,,,,,,,,,,,,,,,Wolves,2026,Crystal Palace
+22/02/2026,14:00,Premier League,,Sun,Home,L,0,1,Liverpool,0.934768,2.39634,,,,,,,,,,,,,,,Nott'm Forest,2026,Liverpool
+22/02/2026,14:00,Premier League,,Sun,Away,W,1,0,Nott'm Forest,2.39634,0.934768,,,,,,,,,,,,,,,Liverpool,2026,Nott'm Forest
+22/02/2026,14:00,Premier League,,Sun,Home,L,1,3,Fulham,1.7609,2.16696,,,,,,,,,,,,,,,Sunderland,2026,Fulham
+22/02/2026,14:00,Premier League,,Sun,Away,W,3,1,Sunderland,2.16696,1.7609,,,,,,,,,,,,,,,Fulham,2026,Sunderland
+22/02/2026,16:30,Premier League,,Sun,Home,L,1,4,Arsenal,0.383264,3.31701,,,,,,,,,,,,,,,Tottenham,2026,Arsenal
+22/02/2026,16:30,Premier League,,Sun,Away,W,4,1,Tottenham,3.31701,0.383264,,,,,,,,,,,,,,,Arsenal,2026,Tottenham
+23/02/2026,20:00,Premier League,,Mon,Home,L,0,1,Man United,0.560924,1.4547,,,,,,,,,,,,,,,Everton,2026,Man United
+23/02/2026,20:00,Premier League,,Mon,Away,W,1,0,Everton,1.4547,0.560924,,,,,,,,,,,,,,,Man United,2026,Everton
 13/08/2016,15:30,Premier League,,Sat,Home,W,2,1,Leicester,0.740018,2.45631,,,,,,,,,,,,,,,Hull,2017,Leicester
 13/08/2016,15:30,Premier League,,Sat,Away,L,1,2,Hull,2.45631,0.740018,,,,,,,,,,,,,,,Leicester,2017,Hull
 13/08/2016,18:00,Premier League,,Sat,Home,L,0,1,West Bromwich Albion,0.990062,0.684593,,,,,,,,,,,,,,,Crystal Palace,2017,West Bromwich Albion
@@ -6839,595 +7381,3 @@ date,time,comp,round,day,venue,result,gf,ga,opponent,xg,xga,poss,attendance,capt
 26/07/2020,15:00,Premier League,,Sun,Away,L,0,2,Chelsea,0.164561,1.15938,,,,,,,,,,,,,,,Wolves,2020,Chelsea
 26/07/2020,15:00,Premier League,,Sun,Home,L,1,2,Brighton,1.44244,1.3696,,,,,,,,,,,,,,,Burnley,2020,Brighton
 26/07/2020,15:00,Premier League,,Sun,Away,W,2,1,Burnley,1.3696,1.44244,,,,,,,,,,,,,,,Brighton,2020,Burnley
-15/08/2025,19:00,Premier League,,Fri,Home,W,4,2,Bournemouth,2.33007,1.57303,,,,,,,,,,,,,,,Liverpool,2026,Bournemouth
-15/08/2025,19:00,Premier League,,Fri,Away,L,2,4,Liverpool,1.57303,2.33007,,,,,,,,,,,,,,,Bournemouth,2026,Liverpool
-16/08/2025,11:30,Premier League,,Sat,Home,D,0,0,Newcastle,0.318601,1.40098,,,,,,,,,,,,,,,Aston Villa,2026,Newcastle
-16/08/2025,11:30,Premier League,,Sat,Away,D,0,0,Aston Villa,1.40098,0.318601,,,,,,,,,,,,,,,Newcastle,2026,Aston Villa
-16/08/2025,14:00,Premier League,,Sat,Home,D,1,1,Fulham,1.44008,0.902883,,,,,,,,,,,,,,,Brighton,2026,Fulham
-16/08/2025,14:00,Premier League,,Sat,Away,D,1,1,Brighton,0.902883,1.44008,,,,,,,,,,,,,,,Fulham,2026,Brighton
-16/08/2025,14:00,Premier League,,Sat,Home,W,3,0,West Ham,0.724368,0.558948,,,,,,,,,,,,,,,Sunderland,2026,West Ham
-16/08/2025,14:00,Premier League,,Sat,Away,L,0,3,Sunderland,0.558948,0.724368,,,,,,,,,,,,,,,West Ham,2026,Sunderland
-16/08/2025,14:00,Premier League,,Sat,Home,W,3,0,Burnley,1.97858,0.734138,,,,,,,,,,,,,,,Tottenham,2026,Burnley
-16/08/2025,14:00,Premier League,,Sat,Away,L,0,3,Tottenham,0.734138,1.97858,,,,,,,,,,,,,,,Burnley,2026,Tottenham
-16/08/2025,16:30,Premier League,,Sat,Home,L,0,4,Man City,0.519436,2.29903,,,,,,,,,,,,,,,Wolves,2026,Man City
-16/08/2025,16:30,Premier League,,Sat,Away,W,4,0,Wolves,2.29903,0.519436,,,,,,,,,,,,,,,Man City,2026,Wolves
-17/08/2025,13:00,Premier League,,Sun,Home,D,0,0,Crystal Palace,1.36793,1.03414,,,,,,,,,,,,,,,Chelsea,2026,Crystal Palace
-17/08/2025,13:00,Premier League,,Sun,Away,D,0,0,Chelsea,1.03414,1.36793,,,,,,,,,,,,,,,Crystal Palace,2026,Chelsea
-17/08/2025,13:00,Premier League,,Sun,Home,W,3,1,Brentford,1.7555,1.32516,,,,,,,,,,,,,,,Nott'm Forest,2026,Brentford
-17/08/2025,13:00,Premier League,,Sun,Away,L,1,3,Nott'm Forest,1.32516,1.7555,,,,,,,,,,,,,,,Brentford,2026,Nott'm Forest
-17/08/2025,15:30,Premier League,,Sun,Home,L,0,1,Arsenal,1.37653,1.3304,,,,,,,,,,,,,,,Man United,2026,Arsenal
-17/08/2025,15:30,Premier League,,Sun,Away,W,1,0,Man United,1.3304,1.37653,,,,,,,,,,,,,,,Arsenal,2026,Man United
-18/08/2025,19:00,Premier League,,Mon,Home,W,1,0,Everton,2.3812,0.674338,,,,,,,,,,,,,,,Leeds,2026,Everton
-18/08/2025,19:00,Premier League,,Mon,Away,L,0,1,Leeds,0.674338,2.3812,,,,,,,,,,,,,,,Everton,2026,Leeds
-22/08/2025,19:00,Premier League,,Fri,Home,L,1,5,Chelsea,0.978572,3.94997,,,,,,,,,,,,,,,West Ham,2026,Chelsea
-22/08/2025,19:00,Premier League,,Fri,Away,W,5,1,West Ham,3.94997,0.978572,,,,,,,,,,,,,,,Chelsea,2026,West Ham
-23/08/2025,11:30,Premier League,,Sat,Home,L,0,2,Tottenham,1.2475,1.28015,,,,,,,,,,,,,,,Man City,2026,Tottenham
-23/08/2025,11:30,Premier League,,Sat,Away,W,2,0,Man City,1.28015,1.2475,,,,,,,,,,,,,,,Tottenham,2026,Man City
-23/08/2025,14:00,Premier League,,Sat,Home,W,1,0,Aston Villa,1.12964,0.976852,,,,,,,,,,,,,,,Brentford,2026,Aston Villa
-23/08/2025,14:00,Premier League,,Sat,Away,L,0,1,Brentford,0.976852,1.12964,,,,,,,,,,,,,,,Aston Villa,2026,Brentford
-23/08/2025,14:00,Premier League,,Sat,Home,W,2,0,Sunderland,1.00381,1.12127,,,,,,,,,,,,,,,Burnley,2026,Sunderland
-23/08/2025,14:00,Premier League,,Sat,Away,L,0,2,Burnley,1.12127,1.00381,,,,,,,,,,,,,,,Sunderland,2026,Burnley
-23/08/2025,14:00,Premier League,,Sat,Home,W,1,0,Wolves,1.78462,0.373367,,,,,,,,,,,,,,,Bournemouth,2026,Wolves
-23/08/2025,14:00,Premier League,,Sat,Away,L,0,1,Bournemouth,0.373367,1.78462,,,,,,,,,,,,,,,Wolves,2026,Bournemouth
-23/08/2025,16:30,Premier League,,Sat,Home,W,5,0,Leeds,2.73761,0.156761,,,,,,,,,,,,,,,Arsenal,2026,Leeds
-23/08/2025,16:30,Premier League,,Sat,Away,L,0,5,Arsenal,0.156761,2.73761,,,,,,,,,,,,,,,Leeds,2026,Arsenal
-24/08/2025,13:00,Premier League,,Sun,Home,D,1,1,Nott'm Forest,1.10188,1.32987,,,,,,,,,,,,,,,Crystal Palace,2026,Nott'm Forest
-24/08/2025,13:00,Premier League,,Sun,Away,D,1,1,Crystal Palace,1.32987,1.10188,,,,,,,,,,,,,,,Nott'm Forest,2026,Crystal Palace
-24/08/2025,13:00,Premier League,,Sun,Home,W,2,0,Brighton,1.80116,2.08487,,,,,,,,,,,,,,,Everton,2026,Brighton
-24/08/2025,13:00,Premier League,,Sun,Away,L,0,2,Everton,2.08487,1.80116,,,,,,,,,,,,,,,Brighton,2026,Everton
-24/08/2025,15:30,Premier League,,Sun,Home,D,1,1,Man United,1.65333,1.54603,,,,,,,,,,,,,,,Fulham,2026,Man United
-24/08/2025,15:30,Premier League,,Sun,Away,D,1,1,Fulham,1.54603,1.65333,,,,,,,,,,,,,,,Man United,2026,Fulham
-25/08/2025,19:00,Premier League,,Mon,Home,L,2,3,Liverpool,1.96342,0.646559,,,,,,,,,,,,,,,Newcastle,2026,Liverpool
-25/08/2025,19:00,Premier League,,Mon,Away,W,3,2,Newcastle,0.646559,1.96342,,,,,,,,,,,,,,,Liverpool,2026,Newcastle
-30/08/2025,11:30,Premier League,,Sat,Home,W,2,0,Fulham,2.4324,0.736228,,,,,,,,,,,,,,,Chelsea,2026,Fulham
-30/08/2025,11:30,Premier League,,Sat,Away,L,0,2,Chelsea,0.736228,2.4324,,,,,,,,,,,,,,,Fulham,2026,Chelsea
-30/08/2025,14:00,Premier League,,Sat,Home,L,0,1,Bournemouth,0.17067,2.1201,,,,,,,,,,,,,,,Tottenham,2026,Bournemouth
-30/08/2025,14:00,Premier League,,Sat,Away,W,1,0,Tottenham,2.1201,0.17067,,,,,,,,,,,,,,,Bournemouth,2026,Tottenham
-30/08/2025,14:00,Premier League,,Sat,Home,L,2,3,Everton,0.943257,2.03791,,,,,,,,,,,,,,,Wolves,2026,Everton
-30/08/2025,14:00,Premier League,,Sat,Away,W,3,2,Wolves,2.03791,0.943257,,,,,,,,,,,,,,,Everton,2026,Wolves
-30/08/2025,14:00,Premier League,,Sat,Home,W,2,1,Brentford,1.57127,1.44604,,,,,,,,,,,,,,,Sunderland,2026,Brentford
-30/08/2025,14:00,Premier League,,Sat,Away,L,1,2,Sunderland,1.44604,1.57127,,,,,,,,,,,,,,,Brentford,2026,Sunderland
-30/08/2025,14:00,Premier League,,Sat,Home,W,3,2,Burnley,4.02237,1.32618,,,,,,,,,,,,,,,Man United,2026,Burnley
-30/08/2025,14:00,Premier League,,Sat,Away,L,2,3,Man United,1.32618,4.02237,,,,,,,,,,,,,,,Burnley,2026,Man United
-30/08/2025,16:30,Premier League,,Sat,Home,D,0,0,Newcastle,0.6773,0.303635,,,,,,,,,,,,,,,Leeds,2026,Newcastle
-30/08/2025,16:30,Premier League,,Sat,Away,D,0,0,Leeds,0.303635,0.6773,,,,,,,,,,,,,,,Newcastle,2026,Leeds
-31/08/2025,13:00,Premier League,,Sun,Home,L,0,3,West Ham,0.716018,2.236,,,,,,,,,,,,,,,Nott'm Forest,2026,West Ham
-31/08/2025,13:00,Premier League,,Sun,Away,W,3,0,Nott'm Forest,2.236,0.716018,,,,,,,,,,,,,,,West Ham,2026,Nott'm Forest
-31/08/2025,13:00,Premier League,,Sun,Home,W,2,1,Man City,2.20864,2.13418,,,,,,,,,,,,,,,Brighton,2026,Man City
-31/08/2025,13:00,Premier League,,Sun,Away,L,1,2,Brighton,2.13418,2.20864,,,,,,,,,,,,,,,Man City,2026,Brighton
-31/08/2025,15:30,Premier League,,Sun,Home,W,1,0,Arsenal,0.481404,0.485679,,,,,,,,,,,,,,,Liverpool,2026,Arsenal
-31/08/2025,15:30,Premier League,,Sun,Away,L,0,1,Liverpool,0.485679,0.481404,,,,,,,,,,,,,,,Arsenal,2026,Liverpool
-31/08/2025,18:00,Premier League,,Sun,Home,L,0,3,Crystal Palace,1.20586,2.59713,,,,,,,,,,,,,,,Aston Villa,2026,Crystal Palace
-31/08/2025,18:00,Premier League,,Sun,Away,W,3,0,Aston Villa,2.59713,1.20586,,,,,,,,,,,,,,,Crystal Palace,2026,Aston Villa
-13/09/2025,11:30,Premier League,,Sat,Home,W,3,0,Nott'm Forest,2.8817,0.293681,,,,,,,,,,,,,,,Arsenal,2026,Nott'm Forest
-13/09/2025,11:30,Premier League,,Sat,Away,L,0,3,Arsenal,0.293681,2.8817,,,,,,,,,,,,,,,Nott'm Forest,2026,Arsenal
-13/09/2025,14:00,Premier League,,Sat,Home,W,1,0,Wolves,1.19186,0.375942,,,,,,,,,,,,,,,Newcastle,2026,Wolves
-13/09/2025,14:00,Premier League,,Sat,Away,L,0,1,Newcastle,0.375942,1.19186,,,,,,,,,,,,,,,Wolves,2026,Newcastle
-13/09/2025,14:00,Premier League,,Sat,Home,W,2,1,Brighton,1.44187,0.624923,,,,,,,,,,,,,,,Bournemouth,2026,Brighton
-13/09/2025,14:00,Premier League,,Sat,Away,L,1,2,Bournemouth,0.624923,1.44187,,,,,,,,,,,,,,,Brighton,2026,Bournemouth
-13/09/2025,14:00,Premier League,,Sat,Home,D,0,0,Sunderland,1.75805,0.354129,,,,,,,,,,,,,,,Crystal Palace,2026,Sunderland
-13/09/2025,14:00,Premier League,,Sat,Away,D,0,0,Crystal Palace,0.354129,1.75805,,,,,,,,,,,,,,,Sunderland,2026,Crystal Palace
-13/09/2025,14:00,Premier League,,Sat,Home,D,0,0,Aston Villa,1.8927,0.354327,,,,,,,,,,,,,,,Everton,2026,Aston Villa
-13/09/2025,14:00,Premier League,,Sat,Away,D,0,0,Everton,0.354327,1.8927,,,,,,,,,,,,,,,Aston Villa,2026,Everton
-13/09/2025,14:00,Premier League,,Sat,Home,W,1,0,Leeds,1.13979,0.830398,,,,,,,,,,,,,,,Fulham,2026,Leeds
-13/09/2025,14:00,Premier League,,Sat,Away,L,0,1,Fulham,0.830398,1.13979,,,,,,,,,,,,,,,Leeds,2026,Fulham
-13/09/2025,16:30,Premier League,,Sat,Home,L,0,3,Tottenham,0.793248,1.51402,,,,,,,,,,,,,,,West Ham,2026,Tottenham
-13/09/2025,16:30,Premier League,,Sat,Away,W,3,0,West Ham,1.51402,0.793248,,,,,,,,,,,,,,,Tottenham,2026,West Ham
-13/09/2025,19:00,Premier League,,Sat,Home,D,2,2,Chelsea,1.17533,0.755999,,,,,,,,,,,,,,,Brentford,2026,Chelsea
-13/09/2025,19:00,Premier League,,Sat,Away,D,2,2,Brentford,0.755999,1.17533,,,,,,,,,,,,,,,Chelsea,2026,Brentford
-14/09/2025,13:00,Premier League,,Sun,Home,L,0,1,Liverpool,0.168041,2.79492,,,,,,,,,,,,,,,Burnley,2026,Liverpool
-14/09/2025,13:00,Premier League,,Sun,Away,W,1,0,Burnley,2.79492,0.168041,,,,,,,,,,,,,,,Liverpool,2026,Burnley
-14/09/2025,15:30,Premier League,,Sun,Home,W,3,0,Man United,1.99725,1.51915,,,,,,,,,,,,,,,Man City,2026,Man United
-14/09/2025,15:30,Premier League,,Sun,Away,L,0,3,Man City,1.51915,1.99725,,,,,,,,,,,,,,,Man United,2026,Man City
-20/09/2025,11:30,Premier League,,Sat,Home,W,2,1,Everton,1.06166,0.721371,,,,,,,,,,,,,,,Liverpool,2026,Everton
-20/09/2025,11:30,Premier League,,Sat,Away,L,1,2,Liverpool,0.721371,1.06166,,,,,,,,,,,,,,,Everton,2026,Liverpool
-20/09/2025,14:00,Premier League,,Sat,Home,L,1,2,Crystal Palace,0.466365,2.33565,,,,,,,,,,,,,,,West Ham,2026,Crystal Palace
-20/09/2025,14:00,Premier League,,Sat,Away,W,2,1,West Ham,2.33565,0.466365,,,,,,,,,,,,,,,Crystal Palace,2026,West Ham
-20/09/2025,14:00,Premier League,,Sat,Home,L,1,3,Leeds,1.5661,0.456988,,,,,,,,,,,,,,,Wolves,2026,Leeds
-20/09/2025,14:00,Premier League,,Sat,Away,W,3,1,Wolves,0.456988,1.5661,,,,,,,,,,,,,,,Leeds,2026,Wolves
-20/09/2025,14:00,Premier League,,Sat,Home,D,2,2,Tottenham,1.40466,1.19181,,,,,,,,,,,,,,,Brighton,2026,Tottenham
-20/09/2025,14:00,Premier League,,Sat,Away,D,2,2,Brighton,1.19181,1.40466,,,,,,,,,,,,,,,Tottenham,2026,Brighton
-20/09/2025,14:00,Premier League,,Sat,Home,D,1,1,Nott'm Forest,1.14159,0.830779,,,,,,,,,,,,,,,Burnley,2026,Nott'm Forest
-20/09/2025,14:00,Premier League,,Sat,Away,D,1,1,Burnley,0.830779,1.14159,,,,,,,,,,,,,,,Nott'm Forest,2026,Burnley
-20/09/2025,16:30,Premier League,,Sat,Home,W,2,1,Chelsea,1.34458,0.469843,,,,,,,,,,,,,,,Man United,2026,Chelsea
-20/09/2025,16:30,Premier League,,Sat,Away,L,1,2,Man United,0.469843,1.34458,,,,,,,,,,,,,,,Chelsea,2026,Man United
-20/09/2025,19:00,Premier League,,Sat,Home,W,3,1,Brentford,1.52431,0.826556,,,,,,,,,,,,,,,Fulham,2026,Brentford
-20/09/2025,19:00,Premier League,,Sat,Away,L,1,3,Fulham,0.826556,1.52431,,,,,,,,,,,,,,,Brentford,2026,Fulham
-21/09/2025,13:00,Premier League,,Sun,Home,D,0,0,Newcastle,0.55066,0.153629,,,,,,,,,,,,,,,Bournemouth,2026,Newcastle
-21/09/2025,13:00,Premier League,,Sun,Away,D,0,0,Bournemouth,0.153629,0.55066,,,,,,,,,,,,,,,Newcastle,2026,Bournemouth
-21/09/2025,13:00,Premier League,,Sun,Home,D,1,1,Aston Villa,0.938312,0.939354,,,,,,,,,,,,,,,Sunderland,2026,Aston Villa
-21/09/2025,13:00,Premier League,,Sun,Away,D,1,1,Sunderland,0.939354,0.938312,,,,,,,,,,,,,,,Aston Villa,2026,Sunderland
-21/09/2025,15:30,Premier League,,Sun,Home,D,1,1,Man City,0.718575,1.1227,,,,,,,,,,,,,,,Arsenal,2026,Man City
-21/09/2025,15:30,Premier League,,Sun,Away,D,1,1,Arsenal,1.1227,0.718575,,,,,,,,,,,,,,,Man City,2026,Arsenal
-27/09/2025,11:30,Premier League,,Sat,Home,W,3,1,Man United,2.78726,2.23609,,,,,,,,,,,,,,,Brentford,2026,Man United
-27/09/2025,11:30,Premier League,,Sat,Away,L,1,3,Brentford,2.23609,2.78726,,,,,,,,,,,,,,,Man United,2026,Brentford
-27/09/2025,14:00,Premier League,,Sat,Home,L,1,3,Brighton,2.02653,2.4751,,,,,,,,,,,,,,,Chelsea,2026,Brighton
-27/09/2025,14:00,Premier League,,Sat,Away,W,3,1,Chelsea,2.4751,2.02653,,,,,,,,,,,,,,,Brighton,2026,Chelsea
-27/09/2025,14:00,Premier League,,Sat,Home,W,2,1,Liverpool,3.53323,3.10176,,,,,,,,,,,,,,,Crystal Palace,2026,Liverpool
-27/09/2025,14:00,Premier League,,Sat,Away,L,1,2,Crystal Palace,3.10176,3.53323,,,,,,,,,,,,,,,Liverpool,2026,Crystal Palace
-27/09/2025,14:00,Premier League,,Sat,Home,D,2,2,Bournemouth,2.04728,1.06033,,,,,,,,,,,,,,,Leeds,2026,Bournemouth
-27/09/2025,14:00,Premier League,,Sat,Away,D,2,2,Leeds,1.06033,2.04728,,,,,,,,,,,,,,,Bournemouth,2026,Leeds
-27/09/2025,14:00,Premier League,,Sat,Home,W,5,1,Burnley,3.22133,0.509491,,,,,,,,,,,,,,,Man City,2026,Burnley
-27/09/2025,14:00,Premier League,,Sat,Away,L,1,5,Man City,0.509491,3.22133,,,,,,,,,,,,,,,Burnley,2026,Man City
-27/09/2025,16:30,Premier League,,Sat,Home,L,0,1,Sunderland,1.4203,1.94154,,,,,,,,,,,,,,,Nott'm Forest,2026,Sunderland
-27/09/2025,16:30,Premier League,,Sat,Away,W,1,0,Nott'm Forest,1.94154,1.4203,,,,,,,,,,,,,,,Sunderland,2026,Nott'm Forest
-27/09/2025,19:00,Premier League,,Sat,Home,D,1,1,Wolves,0.818711,1.15951,,,,,,,,,,,,,,,Tottenham,2026,Wolves
-27/09/2025,19:00,Premier League,,Sat,Away,D,1,1,Tottenham,1.15951,0.818711,,,,,,,,,,,,,,,Wolves,2026,Tottenham
-28/09/2025,13:00,Premier League,,Sun,Home,W,3,1,Fulham,1.36575,0.952612,,,,,,,,,,,,,,,Aston Villa,2026,Fulham
-28/09/2025,13:00,Premier League,,Sun,Away,L,1,3,Aston Villa,0.952612,1.36575,,,,,,,,,,,,,,,Fulham,2026,Aston Villa
-28/09/2025,15:30,Premier League,,Sun,Home,L,1,2,Arsenal,0.739851,2.07048,,,,,,,,,,,,,,,Newcastle,2026,Arsenal
-28/09/2025,15:30,Premier League,,Sun,Away,W,2,1,Newcastle,2.07048,0.739851,,,,,,,,,,,,,,,Arsenal,2026,Newcastle
-29/09/2025,19:00,Premier League,,Mon,Home,D,1,1,West Ham,0.909703,0.775766,,,,,,,,,,,,,,,Everton,2026,West Ham
-29/09/2025,19:00,Premier League,,Mon,Away,D,1,1,Everton,0.775766,0.909703,,,,,,,,,,,,,,,West Ham,2026,Everton
-03/10/2025,19:00,Premier League,,Fri,Home,W,3,1,Fulham,1.33458,0.84335,,,,,,,,,,,,,,,Bournemouth,2026,Fulham
-03/10/2025,19:00,Premier League,,Fri,Away,L,1,3,Bournemouth,0.84335,1.33458,,,,,,,,,,,,,,,Fulham,2026,Bournemouth
-04/10/2025,11:30,Premier League,,Sat,Home,L,1,2,Tottenham,1.48051,0.688198,,,,,,,,,,,,,,,Leeds,2026,Tottenham
-04/10/2025,11:30,Premier League,,Sat,Away,W,2,1,Leeds,0.688198,1.48051,,,,,,,,,,,,,,,Tottenham,2026,Leeds
-04/10/2025,14:00,Premier League,,Sat,Home,W,2,0,West Ham,3.0585,0.864549,,,,,,,,,,,,,,,Arsenal,2026,West Ham
-04/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Arsenal,0.864549,3.0585,,,,,,,,,,,,,,,West Ham,2026,Arsenal
-04/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Sunderland,1.9298,0.807119,,,,,,,,,,,,,,,Man United,2026,Sunderland
-04/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Man United,0.807119,1.9298,,,,,,,,,,,,,,,Sunderland,2026,Man United
-04/10/2025,16:30,Premier League,,Sat,Home,W,2,1,Liverpool,1.23721,2.05981,,,,,,,,,,,,,,,Chelsea,2026,Liverpool
-04/10/2025,16:30,Premier League,,Sat,Away,L,1,2,Chelsea,2.05981,1.23721,,,,,,,,,,,,,,,Liverpool,2026,Chelsea
-05/10/2025,13:00,Premier League,,Sun,Home,W,2,1,Burnley,1.73572,0.502292,,,,,,,,,,,,,,,Aston Villa,2026,Burnley
-05/10/2025,13:00,Premier League,,Sun,Away,L,1,2,Aston Villa,0.502292,1.73572,,,,,,,,,,,,,,,Burnley,2026,Aston Villa
-05/10/2025,13:00,Premier League,,Sun,Home,W,2,1,Crystal Palace,2.13876,2.17789,,,,,,,,,,,,,,,Everton,2026,Crystal Palace
-05/10/2025,13:00,Premier League,,Sun,Away,L,1,2,Everton,2.17789,2.13876,,,,,,,,,,,,,,,Crystal Palace,2026,Everton
-05/10/2025,13:00,Premier League,,Sun,Home,W,2,0,Nott'm Forest,3.81662,0.337689,,,,,,,,,,,,,,,Newcastle,2026,Nott'm Forest
-05/10/2025,13:00,Premier League,,Sun,Away,L,0,2,Newcastle,0.337689,3.81662,,,,,,,,,,,,,,,Nott'm Forest,2026,Newcastle
-05/10/2025,13:00,Premier League,,Sun,Home,D,1,1,Brighton,0.369404,1.39158,,,,,,,,,,,,,,,Wolves,2026,Brighton
-05/10/2025,13:00,Premier League,,Sun,Away,D,1,1,Wolves,1.39158,0.369404,,,,,,,,,,,,,,,Brighton,2026,Wolves
-05/10/2025,15:30,Premier League,,Sun,Home,L,0,1,Man City,0.693758,1.09647,,,,,,,,,,,,,,,Brentford,2026,Man City
-05/10/2025,15:30,Premier League,,Sun,Away,W,1,0,Brentford,1.09647,0.693758,,,,,,,,,,,,,,,Man City,2026,Brentford
-18/10/2025,11:30,Premier League,,Sat,Home,L,0,3,Chelsea,2.0555,2.5583,,,,,,,,,,,,,,,Nott'm Forest,2026,Chelsea
-18/10/2025,11:30,Premier League,,Sat,Away,W,3,0,Nott'm Forest,2.5583,2.0555,,,,,,,,,,,,,,,Chelsea,2026,Nott'm Forest
-18/10/2025,14:00,Premier League,,Sat,Home,W,2,1,Newcastle,0.857104,1.28313,,,,,,,,,,,,,,,Brighton,2026,Newcastle
-18/10/2025,14:00,Premier League,,Sat,Away,L,1,2,Brighton,1.28313,0.857104,,,,,,,,,,,,,,,Newcastle,2026,Brighton
-18/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Leeds,0.509647,2.33152,,,,,,,,,,,,,,,Burnley,2026,Leeds
-18/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Burnley,2.33152,0.509647,,,,,,,,,,,,,,,Leeds,2026,Burnley
-18/10/2025,14:00,Premier League,,Sat,Home,D,3,3,Bournemouth,4.56284,2.0471,,,,,,,,,,,,,,,Crystal Palace,2026,Bournemouth
-18/10/2025,14:00,Premier League,,Sat,Away,D,3,3,Crystal Palace,2.0471,4.56284,,,,,,,,,,,,,,,Bournemouth,2026,Crystal Palace
-18/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Everton,2.4799,0.794622,,,,,,,,,,,,,,,Man City,2026,Everton
-18/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Man City,0.794622,2.4799,,,,,,,,,,,,,,,Everton,2026,Man City
-18/10/2025,14:00,Premier League,,Sat,Home,W,2,0,Wolves,1.02481,0.676323,,,,,,,,,,,,,,,Sunderland,2026,Wolves
-18/10/2025,14:00,Premier League,,Sat,Away,L,0,2,Sunderland,0.676323,1.02481,,,,,,,,,,,,,,,Wolves,2026,Sunderland
-18/10/2025,16:30,Premier League,,Sat,Home,L,0,1,Arsenal,0.502332,2.07823,,,,,,,,,,,,,,,Fulham,2026,Arsenal
-18/10/2025,16:30,Premier League,,Sat,Away,W,1,0,Fulham,2.07823,0.502332,,,,,,,,,,,,,,,Arsenal,2026,Fulham
-19/10/2025,13:00,Premier League,,Sun,Home,L,1,2,Aston Villa,1.51461,0.352231,,,,,,,,,,,,,,,Tottenham,2026,Aston Villa
-19/10/2025,13:00,Premier League,,Sun,Away,W,2,1,Tottenham,0.352231,1.51461,,,,,,,,,,,,,,,Aston Villa,2026,Tottenham
-19/10/2025,15:30,Premier League,,Sun,Home,L,1,2,Man United,2.60972,2.53117,,,,,,,,,,,,,,,Liverpool,2026,Man United
-19/10/2025,15:30,Premier League,,Sun,Away,W,2,1,Liverpool,2.53117,2.60972,,,,,,,,,,,,,,,Man United,2026,Liverpool
-20/10/2025,19:00,Premier League,,Mon,Home,L,0,2,Brentford,0.260251,3.46635,,,,,,,,,,,,,,,West Ham,2026,Brentford
-20/10/2025,19:00,Premier League,,Mon,Away,W,2,0,West Ham,3.46635,0.260251,,,,,,,,,,,,,,,Brentford,2026,West Ham
-24/10/2025,19:00,Premier League,,Fri,Home,W,2,1,West Ham,2.2214,0.498653,,,,,,,,,,,,,,,Leeds,2026,West Ham
-24/10/2025,19:00,Premier League,,Fri,Away,L,1,2,Leeds,0.498653,2.2214,,,,,,,,,,,,,,,West Ham,2026,Leeds
-25/10/2025,14:00,Premier League,,Sat,Home,L,1,2,Sunderland,1.21332,1.5506,,,,,,,,,,,,,,,Chelsea,2026,Sunderland
-25/10/2025,14:00,Premier League,,Sat,Away,W,2,1,Chelsea,1.5506,1.21332,,,,,,,,,,,,,,,Sunderland,2026,Chelsea
-25/10/2025,14:00,Premier League,,Sat,Home,W,2,1,Fulham,2.76806,1.52001,,,,,,,,,,,,,,,Newcastle,2026,Fulham
-25/10/2025,14:00,Premier League,,Sat,Away,L,1,2,Newcastle,1.52001,2.76806,,,,,,,,,,,,,,,Fulham,2026,Newcastle
-25/10/2025,16:30,Premier League,,Sat,Home,W,4,2,Brighton,1.96231,0.947154,,,,,,,,,,,,,,,Man United,2026,Brighton
-25/10/2025,16:30,Premier League,,Sat,Away,L,2,4,Man United,0.947154,1.96231,,,,,,,,,,,,,,,Brighton,2026,Man United
-25/10/2025,19:00,Premier League,,Sat,Home,W,3,2,Liverpool,3.27126,2.11838,,,,,,,,,,,,,,,Brentford,2026,Liverpool
-25/10/2025,19:00,Premier League,,Sat,Away,L,2,3,Brentford,2.11838,3.27126,,,,,,,,,,,,,,,Liverpool,2026,Brentford
-26/10/2025,13:00,Premier League,,Sun,Home,W,2,0,Nott'm Forest,0.656601,0.305493,,,,,,,,,,,,,,,Bournemouth,2026,Nott'm Forest
-26/10/2025,13:00,Premier League,,Sun,Away,L,0,2,Bournemouth,0.305493,0.656601,,,,,,,,,,,,,,,Nott'm Forest,2026,Bournemouth
-26/10/2025,13:00,Premier League,,Sun,Home,W,1,0,Crystal Palace,0.856175,0.350534,,,,,,,,,,,,,,,Arsenal,2026,Crystal Palace
-26/10/2025,13:00,Premier League,,Sun,Away,L,0,1,Arsenal,0.350534,0.856175,,,,,,,,,,,,,,,Crystal Palace,2026,Arsenal
-26/10/2025,13:00,Premier League,,Sun,Home,W,1,0,Man City,0.843906,1.36914,,,,,,,,,,,,,,,Aston Villa,2026,Man City
-26/10/2025,13:00,Premier League,,Sun,Away,L,0,1,Aston Villa,1.36914,0.843906,,,,,,,,,,,,,,,Man City,2026,Aston Villa
-26/10/2025,13:00,Premier League,,Sun,Home,L,2,3,Burnley,2.58132,1.54544,,,,,,,,,,,,,,,Wolves,2026,Burnley
-26/10/2025,13:00,Premier League,,Sun,Away,W,3,2,Wolves,1.54544,2.58132,,,,,,,,,,,,,,,Burnley,2026,Wolves
-26/10/2025,15:30,Premier League,,Sun,Home,L,0,3,Tottenham,1.4032,2.09327,,,,,,,,,,,,,,,Everton,2026,Tottenham
-26/10/2025,15:30,Premier League,,Sun,Away,W,3,0,Everton,2.09327,1.4032,,,,,,,,,,,,,,,Tottenham,2026,Everton
-01/11/2025,15:00,Premier League,,Sat,Home,W,3,0,Leeds,2.64127,0.35919,,,,,,,,,,,,,,,Brighton,2026,Leeds
-01/11/2025,15:00,Premier League,,Sat,Away,L,0,3,Brighton,0.35919,2.64127,,,,,,,,,,,,,,,Leeds,2026,Brighton
-01/11/2025,15:00,Premier League,,Sat,Home,L,0,2,Arsenal,0.679177,2.51649,,,,,,,,,,,,,,,Burnley,2026,Arsenal
-01/11/2025,15:00,Premier League,,Sat,Away,W,2,0,Burnley,2.51649,0.679177,,,,,,,,,,,,,,,Arsenal,2026,Burnley
-01/11/2025,15:00,Premier League,,Sat,Home,W,2,0,Brentford,0.734558,0.820498,,,,,,,,,,,,,,,Crystal Palace,2026,Brentford
-01/11/2025,15:00,Premier League,,Sat,Away,L,0,2,Crystal Palace,0.820498,0.734558,,,,,,,,,,,,,,,Brentford,2026,Crystal Palace
-01/11/2025,15:00,Premier League,,Sat,Home,W,3,0,Wolves,1.91207,0.209934,,,,,,,,,,,,,,,Fulham,2026,Wolves
-01/11/2025,15:00,Premier League,,Sat,Away,L,0,3,Fulham,0.209934,1.91207,,,,,,,,,,,,,,,Wolves,2026,Fulham
-01/11/2025,15:00,Premier League,,Sat,Home,D,2,2,Man United,1.55066,0.91622,,,,,,,,,,,,,,,Nott'm Forest,2026,Man United
-01/11/2025,15:00,Premier League,,Sat,Away,D,2,2,Nott'm Forest,0.91622,1.55066,,,,,,,,,,,,,,,Man United,2026,Nott'm Forest
-01/11/2025,17:30,Premier League,,Sat,Home,L,0,1,Chelsea,0.146954,3.34251,,,,,,,,,,,,,,,Tottenham,2026,Chelsea
-01/11/2025,17:30,Premier League,,Sat,Away,W,1,0,Tottenham,3.34251,0.146954,,,,,,,,,,,,,,,Chelsea,2026,Tottenham
-01/11/2025,20:00,Premier League,,Sat,Home,W,2,0,Aston Villa,1.47021,0.43502,,,,,,,,,,,,,,,Liverpool,2026,Aston Villa
-01/11/2025,20:00,Premier League,,Sat,Away,L,0,2,Liverpool,0.43502,1.47021,,,,,,,,,,,,,,,Aston Villa,2026,Liverpool
-02/11/2025,14:00,Premier League,,Sun,Home,W,3,1,Newcastle,1.41383,0.523615,,,,,,,,,,,,,,,West Ham,2026,Newcastle
-02/11/2025,14:00,Premier League,,Sun,Away,L,1,3,West Ham,0.523615,1.41383,,,,,,,,,,,,,,,Newcastle,2026,West Ham
-02/11/2025,16:30,Premier League,,Sun,Home,W,3,1,Bournemouth,2.48999,0.899846,,,,,,,,,,,,,,,Man City,2026,Bournemouth
-02/11/2025,16:30,Premier League,,Sun,Away,L,1,3,Man City,0.899846,2.48999,,,,,,,,,,,,,,,Bournemouth,2026,Man City
-03/11/2025,20:00,Premier League,,Mon,Home,D,1,1,Everton,1.18068,1.00741,,,,,,,,,,,,,,,Sunderland,2026,Everton
-03/11/2025,20:00,Premier League,,Mon,Away,D,1,1,Sunderland,1.00741,1.18068,,,,,,,,,,,,,,,Everton,2026,Sunderland
-08/11/2025,12:30,Premier League,,Sat,Home,D,2,2,Man United,1.35532,0.820256,,,,,,,,,,,,,,,Tottenham,2026,Man United
-08/11/2025,12:30,Premier League,,Sat,Away,D,2,2,Tottenham,0.820256,1.35532,,,,,,,,,,,,,,,Man United,2026,Tottenham
-08/11/2025,15:00,Premier League,,Sat,Home,W,2,0,Fulham,2.30607,0.424478,,,,,,,,,,,,,,,Everton,2026,Fulham
-08/11/2025,15:00,Premier League,,Sat,Away,L,0,2,Everton,0.424478,2.30607,,,,,,,,,,,,,,,Fulham,2026,Everton
-08/11/2025,15:00,Premier League,,Sat,Home,W,3,2,Burnley,2.96728,1.87478,,,,,,,,,,,,,,,West Ham,2026,Burnley
-08/11/2025,15:00,Premier League,,Sat,Away,L,2,3,West Ham,1.87478,2.96728,,,,,,,,,,,,,,,Burnley,2026,West Ham
-08/11/2025,17:30,Premier League,,Sat,Home,D,2,2,Arsenal,1.20495,2.32943,,,,,,,,,,,,,,,Sunderland,2026,Arsenal
-08/11/2025,17:30,Premier League,,Sat,Away,D,2,2,Sunderland,2.32943,1.20495,,,,,,,,,,,,,,,Arsenal,2026,Sunderland
-08/11/2025,20:00,Premier League,,Sat,Home,W,3,0,Wolves,3.98342,0.111462,,,,,,,,,,,,,,,Chelsea,2026,Wolves
-08/11/2025,20:00,Premier League,,Sat,Away,L,0,3,Chelsea,0.111462,3.98342,,,,,,,,,,,,,,,Wolves,2026,Chelsea
-09/11/2025,14:00,Premier League,,Sun,Home,W,4,0,Bournemouth,1.88282,2.00992,,,,,,,,,,,,,,,Aston Villa,2026,Bournemouth
-09/11/2025,14:00,Premier League,,Sun,Away,L,0,4,Aston Villa,2.00992,1.88282,,,,,,,,,,,,,,,Bournemouth,2026,Aston Villa
-09/11/2025,14:00,Premier League,,Sun,Home,W,3,1,Newcastle,2.73729,0.432277,,,,,,,,,,,,,,,Brentford,2026,Newcastle
-09/11/2025,14:00,Premier League,,Sun,Away,L,1,3,Brentford,0.432277,2.73729,,,,,,,,,,,,,,,Newcastle,2026,Brentford
-09/11/2025,14:00,Premier League,,Sun,Home,D,0,0,Brighton,0.839547,0.637037,,,,,,,,,,,,,,,Crystal Palace,2026,Brighton
-09/11/2025,14:00,Premier League,,Sun,Away,D,0,0,Crystal Palace,0.637037,0.839547,,,,,,,,,,,,,,,Brighton,2026,Crystal Palace
-09/11/2025,14:00,Premier League,,Sun,Home,W,3,1,Leeds,2.49097,0.419461,,,,,,,,,,,,,,,Nott'm Forest,2026,Leeds
-09/11/2025,14:00,Premier League,,Sun,Away,L,1,3,Nott'm Forest,0.419461,2.49097,,,,,,,,,,,,,,,Leeds,2026,Nott'm Forest
-09/11/2025,16:30,Premier League,,Sun,Home,W,3,0,Liverpool,1.59542,1.0281,,,,,,,,,,,,,,,Man City,2026,Liverpool
-09/11/2025,16:30,Premier League,,Sun,Away,L,0,3,Man City,1.0281,1.59542,,,,,,,,,,,,,,,Liverpool,2026,Man City
-22/11/2025,12:30,Premier League,,Sat,Home,L,0,2,Chelsea,0.660943,1.72093,,,,,,,,,,,,,,,Burnley,2026,Chelsea
-22/11/2025,12:30,Premier League,,Sat,Away,W,2,0,Burnley,1.72093,0.660943,,,,,,,,,,,,,,,Chelsea,2026,Burnley
-22/11/2025,15:00,Premier League,,Sat,Home,D,2,2,West Ham,3.48299,0.390782,,,,,,,,,,,,,,,Bournemouth,2026,West Ham
-22/11/2025,15:00,Premier League,,Sat,Away,D,2,2,Bournemouth,0.390782,3.48299,,,,,,,,,,,,,,,West Ham,2026,Bournemouth
-22/11/2025,15:00,Premier League,,Sat,Home,W,2,1,Brentford,0.977488,2.19979,,,,,,,,,,,,,,,Brighton,2026,Brentford
-22/11/2025,15:00,Premier League,,Sat,Away,L,1,2,Brighton,2.19979,0.977488,,,,,,,,,,,,,,,Brentford,2026,Brighton
-22/11/2025,15:00,Premier League,,Sat,Home,W,1,0,Sunderland,2.83729,0.222768,,,,,,,,,,,,,,,Fulham,2026,Sunderland
-22/11/2025,15:00,Premier League,,Sat,Away,L,0,1,Fulham,0.222768,2.83729,,,,,,,,,,,,,,,Sunderland,2026,Fulham
-22/11/2025,15:00,Premier League,,Sat,Home,L,0,3,Nott'm Forest,1.79273,1.19459,,,,,,,,,,,,,,,Liverpool,2026,Nott'm Forest
-22/11/2025,15:00,Premier League,,Sat,Away,W,3,0,Liverpool,1.19459,1.79273,,,,,,,,,,,,,,,Nott'm Forest,2026,Liverpool
-22/11/2025,15:00,Premier League,,Sat,Home,L,0,2,Crystal Palace,1.66409,1.44933,,,,,,,,,,,,,,,Wolves,2026,Crystal Palace
-22/11/2025,15:00,Premier League,,Sat,Away,W,2,0,Wolves,1.44933,1.66409,,,,,,,,,,,,,,,Crystal Palace,2026,Wolves
-22/11/2025,17:30,Premier League,,Sat,Home,W,2,1,Man City,2.40555,2.45648,,,,,,,,,,,,,,,Newcastle,2026,Man City
-22/11/2025,17:30,Premier League,,Sat,Away,L,1,2,Newcastle,2.45648,2.40555,,,,,,,,,,,,,,,Man City,2026,Newcastle
-23/11/2025,14:00,Premier League,,Sun,Home,L,1,2,Aston Villa,1.84668,1.35978,,,,,,,,,,,,,,,Leeds,2026,Aston Villa
-23/11/2025,14:00,Premier League,,Sun,Away,W,2,1,Leeds,1.35978,1.84668,,,,,,,,,,,,,,,Aston Villa,2026,Leeds
-23/11/2025,16:30,Premier League,,Sun,Home,W,4,1,Tottenham,2.27827,0.0300672,,,,,,,,,,,,,,,Arsenal,2026,Tottenham
-23/11/2025,16:30,Premier League,,Sun,Away,L,1,4,Arsenal,0.0300672,2.27827,,,,,,,,,,,,,,,Tottenham,2026,Arsenal
-24/11/2025,20:00,Premier League,,Mon,Home,L,0,1,Everton,2.2737,0.155063,,,,,,,,,,,,,,,Man United,2026,Everton
-24/11/2025,20:00,Premier League,,Mon,Away,W,1,0,Man United,0.155063,2.2737,,,,,,,,,,,,,,,Everton,2026,Man United
-29/11/2025,15:00,Premier League,,Sat,Home,W,3,1,Burnley,3.72106,0.874025,,,,,,,,,,,,,,,Brentford,2026,Burnley
-29/11/2025,15:00,Premier League,,Sat,Away,L,1,3,Brentford,0.874025,3.72106,,,,,,,,,,,,,,,Burnley,2026,Brentford
-29/11/2025,15:00,Premier League,,Sat,Home,W,3,2,Leeds,2.85292,1.75142,,,,,,,,,,,,,,,Man City,2026,Leeds
-29/11/2025,15:00,Premier League,,Sat,Away,L,2,3,Man City,1.75142,2.85292,,,,,,,,,,,,,,,Leeds,2026,Man City
-29/11/2025,15:00,Premier League,,Sat,Home,W,3,2,Bournemouth,1.16955,1.79274,,,,,,,,,,,,,,,Sunderland,2026,Bournemouth
-29/11/2025,15:00,Premier League,,Sat,Away,L,2,3,Sunderland,1.79274,1.16955,,,,,,,,,,,,,,,Bournemouth,2026,Sunderland
-29/11/2025,17:30,Premier League,,Sat,Home,L,1,4,Newcastle,1.01125,2.45882,,,,,,,,,,,,,,,Everton,2026,Newcastle
-29/11/2025,17:30,Premier League,,Sat,Away,W,4,1,Everton,2.45882,1.01125,,,,,,,,,,,,,,,Newcastle,2026,Everton
-29/11/2025,20:00,Premier League,,Sat,Home,L,1,2,Fulham,1.04396,0.494736,,,,,,,,,,,,,,,Tottenham,2026,Fulham
-29/11/2025,20:00,Premier League,,Sat,Away,W,2,1,Tottenham,0.494736,1.04396,,,,,,,,,,,,,,,Fulham,2026,Tottenham
-30/11/2025,12:00,Premier League,,Sun,Home,L,1,2,Man United,2.13561,1.47768,,,,,,,,,,,,,,,Crystal Palace,2026,Man United
-30/11/2025,12:00,Premier League,,Sun,Away,W,2,1,Crystal Palace,1.47768,2.13561,,,,,,,,,,,,,,,Man United,2026,Crystal Palace
-30/11/2025,14:05,Premier League,,Sun,Home,W,1,0,Wolves,1.15486,0.692588,,,,,,,,,,,,,,,Aston Villa,2026,Wolves
-30/11/2025,14:05,Premier League,,Sun,Away,L,0,1,Aston Villa,0.692588,1.15486,,,,,,,,,,,,,,,Wolves,2026,Aston Villa
-30/11/2025,14:05,Premier League,,Sun,Home,L,0,2,Brighton,0.960325,2.0572,,,,,,,,,,,,,,,Nott'm Forest,2026,Brighton
-30/11/2025,14:05,Premier League,,Sun,Away,W,2,0,Nott'm Forest,2.0572,0.960325,,,,,,,,,,,,,,,Brighton,2026,Nott'm Forest
-30/11/2025,14:05,Premier League,,Sun,Home,L,0,2,Liverpool,0.364152,1.56793,,,,,,,,,,,,,,,West Ham,2026,Liverpool
-30/11/2025,14:05,Premier League,,Sun,Away,W,2,0,West Ham,1.56793,0.364152,,,,,,,,,,,,,,,Liverpool,2026,West Ham
-30/11/2025,16:30,Premier League,,Sun,Home,D,1,1,Arsenal,0.791914,1.22828,,,,,,,,,,,,,,,Chelsea,2026,Arsenal
-30/11/2025,16:30,Premier League,,Sun,Away,D,1,1,Chelsea,1.22828,0.791914,,,,,,,,,,,,,,,Arsenal,2026,Chelsea
-02/12/2025,19:30,Premier League,,Tue,Home,L,0,1,Everton,0.635415,1.19573,,,,,,,,,,,,,,,Bournemouth,2026,Everton
-02/12/2025,19:30,Premier League,,Tue,Away,W,1,0,Bournemouth,1.19573,0.635415,,,,,,,,,,,,,,,Everton,2026,Bournemouth
-02/12/2025,19:30,Premier League,,Tue,Home,L,4,5,Man City,0.972635,1.96225,,,,,,,,,,,,,,,Fulham,2026,Man City
-02/12/2025,19:30,Premier League,,Tue,Away,W,5,4,Fulham,1.96225,0.972635,,,,,,,,,,,,,,,Man City,2026,Fulham
-02/12/2025,20:15,Premier League,,Tue,Home,D,2,2,Tottenham,1.88558,1.05205,,,,,,,,,,,,,,,Newcastle,2026,Tottenham
-02/12/2025,20:15,Premier League,,Tue,Away,D,2,2,Newcastle,1.05205,1.88558,,,,,,,,,,,,,,,Tottenham,2026,Newcastle
-03/12/2025,19:30,Premier League,,Wed,Home,W,2,0,Brentford,2.63126,0.588716,,,,,,,,,,,,,,,Arsenal,2026,Brentford
-03/12/2025,19:30,Premier League,,Wed,Away,L,0,2,Arsenal,0.588716,2.63126,,,,,,,,,,,,,,,Brentford,2026,Arsenal
-03/12/2025,19:30,Premier League,,Wed,Home,L,3,4,Aston Villa,1.96298,3.15745,,,,,,,,,,,,,,,Brighton,2026,Aston Villa
-03/12/2025,19:30,Premier League,,Wed,Away,W,4,3,Brighton,3.15745,1.96298,,,,,,,,,,,,,,,Aston Villa,2026,Brighton
-03/12/2025,19:30,Premier League,,Wed,Home,L,0,1,Crystal Palace,1.16852,0.987797,,,,,,,,,,,,,,,Burnley,2026,Crystal Palace
-03/12/2025,19:30,Premier League,,Wed,Away,W,1,0,Burnley,0.987797,1.16852,,,,,,,,,,,,,,,Crystal Palace,2026,Burnley
-03/12/2025,19:30,Premier League,,Wed,Home,L,0,1,Nott'm Forest,1.02461,1.12389,,,,,,,,,,,,,,,Wolves,2026,Nott'm Forest
-03/12/2025,19:30,Premier League,,Wed,Away,W,1,0,Wolves,1.12389,1.02461,,,,,,,,,,,,,,,Nott'm Forest,2026,Wolves
-03/12/2025,20:15,Premier League,,Wed,Home,W,3,1,Chelsea,2.2047,0.964018,,,,,,,,,,,,,,,Leeds,2026,Chelsea
-03/12/2025,20:15,Premier League,,Wed,Away,L,1,3,Leeds,0.964018,2.2047,,,,,,,,,,,,,,,Chelsea,2026,Leeds
-03/12/2025,20:15,Premier League,,Wed,Home,D,1,1,Sunderland,1.37633,0.712662,,,,,,,,,,,,,,,Liverpool,2026,Sunderland
-03/12/2025,20:15,Premier League,,Wed,Away,D,1,1,Liverpool,0.712662,1.37633,,,,,,,,,,,,,,,Sunderland,2026,Liverpool
-04/12/2025,20:00,Premier League,,Thu,Home,D,1,1,West Ham,2.27674,1.36584,,,,,,,,,,,,,,,Man United,2026,West Ham
-04/12/2025,20:00,Premier League,,Thu,Away,D,1,1,Man United,1.36584,2.27674,,,,,,,,,,,,,,,West Ham,2026,Man United
-06/12/2025,12:30,Premier League,,Sat,Home,W,2,1,Arsenal,2.71986,1.85965,,,,,,,,,,,,,,,Aston Villa,2026,Arsenal
-06/12/2025,12:30,Premier League,,Sat,Away,L,1,2,Aston Villa,1.85965,2.71986,,,,,,,,,,,,,,,Arsenal,2026,Aston Villa
-06/12/2025,15:00,Premier League,,Sat,Home,D,0,0,Chelsea,1.41931,0.672602,,,,,,,,,,,,,,,Bournemouth,2026,Chelsea
-06/12/2025,15:00,Premier League,,Sat,Away,D,0,0,Bournemouth,0.672602,1.41931,,,,,,,,,,,,,,,Chelsea,2026,Bournemouth
-06/12/2025,15:00,Premier League,,Sat,Home,W,3,0,Nott'm Forest,1.25348,0.31234,,,,,,,,,,,,,,,Everton,2026,Nott'm Forest
-06/12/2025,15:00,Premier League,,Sat,Away,L,0,3,Everton,0.31234,1.25348,,,,,,,,,,,,,,,Nott'm Forest,2026,Everton
-06/12/2025,15:00,Premier League,,Sat,Home,W,3,0,Sunderland,2.41605,0.626486,,,,,,,,,,,,,,,Man City,2026,Sunderland
-06/12/2025,15:00,Premier League,,Sat,Away,L,0,3,Man City,0.626486,2.41605,,,,,,,,,,,,,,,Sunderland,2026,Man City
-06/12/2025,15:00,Premier League,,Sat,Home,W,2,1,Burnley,1.80708,1.58375,,,,,,,,,,,,,,,Newcastle,2026,Burnley
-06/12/2025,15:00,Premier League,,Sat,Away,L,1,2,Newcastle,1.58375,1.80708,,,,,,,,,,,,,,,Burnley,2026,Newcastle
-06/12/2025,15:00,Premier League,,Sat,Home,W,2,0,Brentford,2.42388,0.470563,,,,,,,,,,,,,,,Tottenham,2026,Brentford
-06/12/2025,15:00,Premier League,,Sat,Away,L,0,2,Tottenham,0.470563,2.42388,,,,,,,,,,,,,,,Brentford,2026,Tottenham
-06/12/2025,17:30,Premier League,,Sat,Home,D,3,3,Liverpool,1.79333,2.04805,,,,,,,,,,,,,,,Leeds,2026,Liverpool
-06/12/2025,17:30,Premier League,,Sat,Away,D,3,3,Leeds,2.04805,1.79333,,,,,,,,,,,,,,,Liverpool,2026,Leeds
-07/12/2025,14:00,Premier League,,Sun,Home,D,1,1,West Ham,2.10077,1.7064,,,,,,,,,,,,,,,Brighton,2026,West Ham
-07/12/2025,14:00,Premier League,,Sun,Away,D,1,1,Brighton,1.7064,2.10077,,,,,,,,,,,,,,,West Ham,2026,Brighton
-07/12/2025,16:30,Premier League,,Sun,Home,L,1,2,Crystal Palace,0.766771,1.71109,,,,,,,,,,,,,,,Fulham,2026,Crystal Palace
-07/12/2025,16:30,Premier League,,Sun,Away,W,2,1,Fulham,1.71109,0.766771,,,,,,,,,,,,,,,Crystal Palace,2026,Fulham
-08/12/2025,20:00,Premier League,,Mon,Home,L,1,4,Man United,0.262147,4.04708,,,,,,,,,,,,,,,Wolves,2026,Man United
-08/12/2025,20:00,Premier League,,Mon,Away,W,4,1,Wolves,4.04708,0.262147,,,,,,,,,,,,,,,Man United,2026,Wolves
-13/12/2025,15:00,Premier League,,Sat,Home,W,2,0,Everton,2.64457,1.34,,,,,,,,,,,,,,,Chelsea,2026,Everton
-13/12/2025,15:00,Premier League,,Sat,Away,L,0,2,Chelsea,1.34,2.64457,,,,,,,,,,,,,,,Everton,2026,Chelsea
-13/12/2025,15:00,Premier League,,Sat,Home,W,2,0,Brighton,2.4127,1.69004,,,,,,,,,,,,,,,Liverpool,2026,Brighton
-13/12/2025,15:00,Premier League,,Sat,Away,L,0,2,Liverpool,1.69004,2.4127,,,,,,,,,,,,,,,Brighton,2026,Liverpool
-13/12/2025,17:30,Premier League,,Sat,Home,L,2,3,Fulham,2.05486,1.65053,,,,,,,,,,,,,,,Burnley,2026,Fulham
-13/12/2025,17:30,Premier League,,Sat,Away,W,3,2,Burnley,1.65053,2.05486,,,,,,,,,,,,,,,Fulham,2026,Burnley
-13/12/2025,20:00,Premier League,,Sat,Home,W,2,1,Wolves,1.61796,0.61997,,,,,,,,,,,,,,,Arsenal,2026,Wolves
-13/12/2025,20:00,Premier League,,Sat,Away,L,1,2,Arsenal,0.61997,1.61796,,,,,,,,,,,,,,,Wolves,2026,Arsenal
-14/12/2025,14:00,Premier League,,Sun,Home,L,0,3,Man City,1.30092,1.35317,,,,,,,,,,,,,,,Crystal Palace,2026,Man City
-14/12/2025,14:00,Premier League,,Sun,Away,W,3,0,Crystal Palace,1.35317,1.30092,,,,,,,,,,,,,,,Man City,2026,Crystal Palace
-14/12/2025,14:00,Premier League,,Sun,Home,W,3,0,Tottenham,2.32658,0.380246,,,,,,,,,,,,,,,Nott'm Forest,2026,Tottenham
-14/12/2025,14:00,Premier League,,Sun,Away,L,0,3,Nott'm Forest,0.380246,2.32658,,,,,,,,,,,,,,,Tottenham,2026,Nott'm Forest
-14/12/2025,14:00,Premier League,,Sun,Home,W,1,0,Newcastle,0.630045,0.169329,,,,,,,,,,,,,,,Sunderland,2026,Newcastle
-14/12/2025,14:00,Premier League,,Sun,Away,L,0,1,Sunderland,0.169329,0.630045,,,,,,,,,,,,,,,Newcastle,2026,Sunderland
-14/12/2025,14:00,Premier League,,Sun,Home,L,2,3,Aston Villa,1.27701,0.595093,,,,,,,,,,,,,,,West Ham,2026,Aston Villa
-14/12/2025,14:00,Premier League,,Sun,Away,W,3,2,West Ham,0.595093,1.27701,,,,,,,,,,,,,,,Aston Villa,2026,West Ham
-14/12/2025,16:30,Premier League,,Sun,Home,D,1,1,Leeds,0.697006,1.63409,,,,,,,,,,,,,,,Brentford,2026,Leeds
-14/12/2025,16:30,Premier League,,Sun,Away,D,1,1,Brentford,1.63409,0.697006,,,,,,,,,,,,,,,Leeds,2026,Brentford
-15/12/2025,20:00,Premier League,,Mon,Home,D,4,4,Bournemouth,3.21204,2.35196,,,,,,,,,,,,,,,Man United,2026,Bournemouth
-15/12/2025,20:00,Premier League,,Mon,Away,D,4,4,Man United,2.35196,3.21204,,,,,,,,,,,,,,,Bournemouth,2026,Man United
-20/12/2025,12:30,Premier League,,Sat,Home,D,2,2,Chelsea,2.87863,1.0261,,,,,,,,,,,,,,,Newcastle,2026,Chelsea
-20/12/2025,12:30,Premier League,,Sat,Away,D,2,2,Newcastle,1.0261,2.87863,,,,,,,,,,,,,,,Chelsea,2026,Newcastle
-20/12/2025,15:00,Premier League,,Sat,Home,D,1,1,Burnley,1.81847,0.480528,,,,,,,,,,,,,,,Bournemouth,2026,Burnley
-20/12/2025,15:00,Premier League,,Sat,Away,D,1,1,Bournemouth,0.480528,1.81847,,,,,,,,,,,,,,,Burnley,2026,Bournemouth
-20/12/2025,15:00,Premier League,,Sat,Home,D,0,0,Sunderland,0.919272,1.31044,,,,,,,,,,,,,,,Brighton,2026,Sunderland
-20/12/2025,15:00,Premier League,,Sat,Away,D,0,0,Brighton,1.31044,0.919272,,,,,,,,,,,,,,,Sunderland,2026,Brighton
-20/12/2025,15:00,Premier League,,Sat,Home,W,3,0,West Ham,3.58188,1.02143,,,,,,,,,,,,,,,Man City,2026,West Ham
-20/12/2025,15:00,Premier League,,Sat,Away,L,0,3,Man City,1.02143,3.58188,,,,,,,,,,,,,,,West Ham,2026,Man City
-20/12/2025,15:00,Premier League,,Sat,Home,L,0,2,Brentford,1.26823,1.56309,,,,,,,,,,,,,,,Wolves,2026,Brentford
-20/12/2025,15:00,Premier League,,Sat,Away,W,2,0,Wolves,1.56309,1.26823,,,,,,,,,,,,,,,Brentford,2026,Wolves
-20/12/2025,17:30,Premier League,,Sat,Home,L,1,2,Liverpool,1.34905,1.23164,,,,,,,,,,,,,,,Tottenham,2026,Liverpool
-20/12/2025,17:30,Premier League,,Sat,Away,W,2,1,Tottenham,1.23164,1.34905,,,,,,,,,,,,,,,Liverpool,2026,Tottenham
-20/12/2025,20:00,Premier League,,Sat,Home,L,0,1,Arsenal,0.213273,1.84723,,,,,,,,,,,,,,,Everton,2026,Arsenal
-20/12/2025,20:00,Premier League,,Sat,Away,W,1,0,Everton,1.84723,0.213273,,,,,,,,,,,,,,,Arsenal,2026,Everton
-20/12/2025,20:00,Premier League,,Sat,Home,W,4,1,Crystal Palace,2.90786,1.53058,,,,,,,,,,,,,,,Leeds,2026,Crystal Palace
-20/12/2025,20:00,Premier League,,Sat,Away,L,1,4,Leeds,1.53058,2.90786,,,,,,,,,,,,,,,Crystal Palace,2026,Leeds
-21/12/2025,16:30,Premier League,,Sun,Home,W,2,1,Man United,1.86917,1.30455,,,,,,,,,,,,,,,Aston Villa,2026,Man United
-21/12/2025,16:30,Premier League,,Sun,Away,L,1,2,Aston Villa,1.30455,1.86917,,,,,,,,,,,,,,,Man United,2026,Aston Villa
-22/12/2025,20:00,Premier League,,Mon,Home,W,1,0,Nott'm Forest,1.70568,0.486296,,,,,,,,,,,,,,,Fulham,2026,Nott'm Forest
-22/12/2025,20:00,Premier League,,Mon,Away,L,0,1,Fulham,0.486296,1.70568,,,,,,,,,,,,,,,Nott'm Forest,2026,Fulham
-26/12/2025,20:00,Premier League,,Fri,Home,W,1,0,Newcastle,0.940811,1.12998,,,,,,,,,,,,,,,Man United,2026,Newcastle
-26/12/2025,20:00,Premier League,,Fri,Away,L,0,1,Man United,1.12998,0.940811,,,,,,,,,,,,,,,Newcastle,2026,Man United
-27/12/2025,12:30,Premier League,,Sat,Home,L,1,2,Man City,0.600141,1.46468,,,,,,,,,,,,,,,Nott'm Forest,2026,Man City
-27/12/2025,12:30,Premier League,,Sat,Away,W,2,1,Nott'm Forest,1.46468,0.600141,,,,,,,,,,,,,,,Man City,2026,Nott'm Forest
-27/12/2025,15:00,Premier League,,Sat,Home,W,2,1,Brighton,2.54318,0.710064,,,,,,,,,,,,,,,Arsenal,2026,Brighton
-27/12/2025,15:00,Premier League,,Sat,Away,L,1,2,Arsenal,0.710064,2.54318,,,,,,,,,,,,,,,Brighton,2026,Arsenal
-27/12/2025,15:00,Premier League,,Sat,Home,W,4,1,Bournemouth,2.8513,2.56183,,,,,,,,,,,,,,,Brentford,2026,Bournemouth
-27/12/2025,15:00,Premier League,,Sat,Away,L,1,4,Brentford,2.56183,2.8513,,,,,,,,,,,,,,,Bournemouth,2026,Brentford
-27/12/2025,15:00,Premier League,,Sat,Home,D,0,0,Everton,1.24948,1.25204,,,,,,,,,,,,,,,Burnley,2026,Everton
-27/12/2025,15:00,Premier League,,Sat,Away,D,0,0,Burnley,1.25204,1.24948,,,,,,,,,,,,,,,Everton,2026,Burnley
-27/12/2025,15:00,Premier League,,Sat,Home,W,2,1,Wolves,1.56502,0.780664,,,,,,,,,,,,,,,Liverpool,2026,Wolves
-27/12/2025,15:00,Premier League,,Sat,Away,L,1,2,Liverpool,0.780664,1.56502,,,,,,,,,,,,,,,Wolves,2026,Liverpool
-27/12/2025,15:00,Premier League,,Sat,Home,L,0,1,Fulham,1.13719,1.11436,,,,,,,,,,,,,,,West Ham,2026,Fulham
-27/12/2025,15:00,Premier League,,Sat,Away,W,1,0,West Ham,1.11436,1.13719,,,,,,,,,,,,,,,Fulham,2026,West Ham
-27/12/2025,17:30,Premier League,,Sat,Home,L,1,2,Aston Villa,1.97155,2.05918,,,,,,,,,,,,,,,Chelsea,2026,Aston Villa
-27/12/2025,17:30,Premier League,,Sat,Away,W,2,1,Chelsea,2.05918,1.97155,,,,,,,,,,,,,,,Aston Villa,2026,Chelsea
-28/12/2025,14:00,Premier League,,Sun,Home,D,1,1,Leeds,0.805957,2.60653,,,,,,,,,,,,,,,Sunderland,2026,Leeds
-28/12/2025,14:00,Premier League,,Sun,Away,D,1,1,Sunderland,2.60653,0.805957,,,,,,,,,,,,,,,Leeds,2026,Sunderland
-28/12/2025,16:30,Premier League,,Sun,Home,L,0,1,Tottenham,0.929681,0.870768,,,,,,,,,,,,,,,Crystal Palace,2026,Tottenham
-28/12/2025,16:30,Premier League,,Sun,Away,W,1,0,Crystal Palace,0.870768,0.929681,,,,,,,,,,,,,,,Tottenham,2026,Crystal Palace
-30/12/2025,19:30,Premier League,,Tue,Home,L,1,3,Newcastle,1.32551,2.49248,,,,,,,,,,,,,,,Burnley,2026,Newcastle
-30/12/2025,19:30,Premier League,,Tue,Away,W,3,1,Burnley,2.49248,1.32551,,,,,,,,,,,,,,,Newcastle,2026,Burnley
-30/12/2025,19:30,Premier League,,Tue,Home,D,2,2,Bournemouth,2.33294,3.49142,,,,,,,,,,,,,,,Chelsea,2026,Bournemouth
-30/12/2025,19:30,Premier League,,Tue,Away,D,2,2,Chelsea,3.49142,2.33294,,,,,,,,,,,,,,,Bournemouth,2026,Chelsea
-30/12/2025,19:30,Premier League,,Tue,Home,L,0,2,Everton,1.75445,1.69525,,,,,,,,,,,,,,,Nott'm Forest,2026,Everton
-30/12/2025,19:30,Premier League,,Tue,Away,W,2,0,Nott'm Forest,1.69525,1.75445,,,,,,,,,,,,,,,Everton,2026,Nott'm Forest
-30/12/2025,19:30,Premier League,,Tue,Home,D,2,2,Brighton,2.27644,3.08914,,,,,,,,,,,,,,,West Ham,2026,Brighton
-30/12/2025,19:30,Premier League,,Tue,Away,D,2,2,West Ham,3.08914,2.27644,,,,,,,,,,,,,,,Brighton,2026,West Ham
-30/12/2025,20:15,Premier League,,Tue,Home,W,4,1,Aston Villa,4.41335,2.94195,,,,,,,,,,,,,,,Arsenal,2026,Aston Villa
-30/12/2025,20:15,Premier League,,Tue,Away,L,1,4,Arsenal,2.94195,4.41335,,,,,,,,,,,,,,,Aston Villa,2026,Arsenal
-30/12/2025,20:15,Premier League,,Tue,Home,D,1,1,Wolves,1.13306,1.21784,,,,,,,,,,,,,,,Man United,2026,Wolves
-30/12/2025,20:15,Premier League,,Tue,Away,D,1,1,Man United,1.21784,1.13306,,,,,,,,,,,,,,,Wolves,2026,Man United
-01/01/2026,17:30,Premier League,,Thu,Home,D,1,1,Fulham,2.35346,1.75434,,,,,,,,,,,,,,,Crystal Palace,2026,Fulham
-01/01/2026,17:30,Premier League,,Thu,Away,D,1,1,Crystal Palace,1.75434,2.35346,,,,,,,,,,,,,,,Fulham,2026,Crystal Palace
-01/01/2026,17:30,Premier League,,Thu,Home,D,0,0,Leeds,1.67833,0.15936,,,,,,,,,,,,,,,Liverpool,2026,Leeds
-01/01/2026,17:30,Premier League,,Thu,Away,D,0,0,Liverpool,0.15936,1.67833,,,,,,,,,,,,,,,Leeds,2026,Liverpool
-01/01/2026,20:00,Premier League,,Thu,Home,D,0,0,Tottenham,0.556304,0.608309,,,,,,,,,,,,,,,Brentford,2026,Tottenham
-01/01/2026,20:00,Premier League,,Thu,Away,D,0,0,Brentford,0.608309,0.556304,,,,,,,,,,,,,,,Tottenham,2026,Brentford
-01/01/2026,20:00,Premier League,,Thu,Home,D,0,0,Man City,0.962141,2.44247,,,,,,,,,,,,,,,Sunderland,2026,Man City
-01/01/2026,20:00,Premier League,,Thu,Away,D,0,0,Sunderland,2.44247,0.962141,,,,,,,,,,,,,,,Man City,2026,Sunderland
-03/01/2026,12:30,Premier League,,Sat,Home,W,3,1,Nott'm Forest,1.42988,0.8982,,,,,,,,,,,,,,,Aston Villa,2026,Nott'm Forest
-03/01/2026,12:30,Premier League,,Sat,Away,L,1,3,Aston Villa,0.8982,1.42988,,,,,,,,,,,,,,,Nott'm Forest,2026,Aston Villa
-03/01/2026,15:00,Premier League,,Sat,Home,W,3,0,West Ham,2.23925,0.235678,,,,,,,,,,,,,,,Wolves,2026,West Ham
-03/01/2026,15:00,Premier League,,Sat,Away,L,0,3,Wolves,0.235678,2.23925,,,,,,,,,,,,,,,West Ham,2026,Wolves
-03/01/2026,15:00,Premier League,,Sat,Home,W,2,0,Burnley,1.4717,0.254551,,,,,,,,,,,,,,,Brighton,2026,Burnley
-03/01/2026,15:00,Premier League,,Sat,Away,L,0,2,Brighton,0.254551,1.4717,,,,,,,,,,,,,,,Burnley,2026,Brighton
-03/01/2026,17:30,Premier League,,Sat,Home,L,2,3,Arsenal,0.947846,1.28,,,,,,,,,,,,,,,Bournemouth,2026,Arsenal
-03/01/2026,17:30,Premier League,,Sat,Away,W,3,2,Bournemouth,1.28,0.947846,,,,,,,,,,,,,,,Arsenal,2026,Bournemouth
-04/01/2026,12:30,Premier League,,Sun,Home,D,1,1,Man United,0.970138,1.94781,,,,,,,,,,,,,,,Leeds,2026,Man United
-04/01/2026,12:30,Premier League,,Sun,Away,D,1,1,Leeds,1.94781,0.970138,,,,,,,,,,,,,,,Man United,2026,Leeds
-04/01/2026,15:00,Premier League,,Sun,Home,W,2,0,Crystal Palace,2.72764,1.27825,,,,,,,,,,,,,,,Newcastle,2026,Crystal Palace
-04/01/2026,15:00,Premier League,,Sun,Away,L,0,2,Newcastle,1.27825,2.72764,,,,,,,,,,,,,,,Crystal Palace,2026,Newcastle
-04/01/2026,15:00,Premier League,,Sun,Home,D,1,1,Sunderland,1.4175,0.467481,,,,,,,,,,,,,,,Tottenham,2026,Sunderland
-04/01/2026,15:00,Premier League,,Sun,Away,D,1,1,Tottenham,0.467481,1.4175,,,,,,,,,,,,,,,Sunderland,2026,Tottenham
-04/01/2026,15:00,Premier League,,Sun,Home,L,2,4,Brentford,1.00566,3.05179,,,,,,,,,,,,,,,Everton,2026,Brentford
-04/01/2026,15:00,Premier League,,Sun,Away,W,4,2,Everton,3.05179,1.00566,,,,,,,,,,,,,,,Brentford,2026,Everton
-04/01/2026,15:00,Premier League,,Sun,Home,D,2,2,Liverpool,0.609182,1.7188,,,,,,,,,,,,,,,Fulham,2026,Liverpool
-04/01/2026,15:00,Premier League,,Sun,Away,D,2,2,Fulham,1.7188,0.609182,,,,,,,,,,,,,,,Liverpool,2026,Fulham
-04/01/2026,17:30,Premier League,,Sun,Home,D,1,1,Chelsea,1.03049,2.03726,,,,,,,,,,,,,,,Man City,2026,Chelsea
-04/01/2026,17:30,Premier League,,Sun,Away,D,1,1,Man City,2.03726,1.03049,,,,,,,,,,,,,,,Chelsea,2026,Man City
-06/01/2026,20:00,Premier League,,Tue,Home,L,1,2,Nott'm Forest,1.73697,1.26683,,,,,,,,,,,,,,,West Ham,2026,Nott'm Forest
-06/01/2026,20:00,Premier League,,Tue,Away,W,2,1,West Ham,1.26683,1.73697,,,,,,,,,,,,,,,Nott'm Forest,2026,West Ham
-07/01/2026,19:30,Premier League,,Wed,Home,D,1,1,Wolves,1.63321,0.71329,,,,,,,,,,,,,,,Everton,2026,Wolves
-07/01/2026,19:30,Premier League,,Wed,Away,D,1,1,Everton,0.71329,1.63321,,,,,,,,,,,,,,,Wolves,2026,Everton
-07/01/2026,19:30,Premier League,,Wed,Home,W,3,2,Tottenham,1.19014,1.6261,,,,,,,,,,,,,,,Bournemouth,2026,Tottenham
-07/01/2026,19:30,Premier League,,Wed,Away,L,2,3,Bournemouth,1.6261,1.19014,,,,,,,,,,,,,,,Tottenham,2026,Bournemouth
-07/01/2026,19:30,Premier League,,Wed,Home,W,3,0,Sunderland,3.86096,1.50644,,,,,,,,,,,,,,,Brentford,2026,Sunderland
-07/01/2026,19:30,Premier League,,Wed,Away,L,0,3,Brentford,1.50644,3.86096,,,,,,,,,,,,,,,Sunderland,2026,Brentford
-07/01/2026,19:30,Premier League,,Wed,Home,D,0,0,Aston Villa,1.32505,2.07015,,,,,,,,,,,,,,,Crystal Palace,2026,Aston Villa
-07/01/2026,19:30,Premier League,,Wed,Away,D,0,0,Crystal Palace,2.07015,1.32505,,,,,,,,,,,,,,,Aston Villa,2026,Crystal Palace
-07/01/2026,19:30,Premier League,,Wed,Home,W,2,1,Chelsea,1.06013,2.45107,,,,,,,,,,,,,,,Fulham,2026,Chelsea
-07/01/2026,19:30,Premier League,,Wed,Away,L,1,2,Fulham,2.45107,1.06013,,,,,,,,,,,,,,,Chelsea,2026,Fulham
-07/01/2026,19:30,Premier League,,Wed,Home,D,1,1,Brighton,2.95904,1.33162,,,,,,,,,,,,,,,Man City,2026,Brighton
-07/01/2026,19:30,Premier League,,Wed,Away,D,1,1,Man City,1.33162,2.95904,,,,,,,,,,,,,,,Brighton,2026,Man City
-07/01/2026,20:15,Premier League,,Wed,Home,D,2,2,Man United,0.31971,2.52488,,,,,,,,,,,,,,,Burnley,2026,Man United
-07/01/2026,20:15,Premier League,,Wed,Away,D,2,2,Burnley,2.52488,0.31971,,,,,,,,,,,,,,,Man United,2026,Burnley
-07/01/2026,20:15,Premier League,,Wed,Home,W,4,3,Leeds,2.43495,2.35318,,,,,,,,,,,,,,,Newcastle,2026,Leeds
-07/01/2026,20:15,Premier League,,Wed,Away,L,3,4,Newcastle,2.35318,2.43495,,,,,,,,,,,,,,,Leeds,2026,Newcastle
-08/01/2026,20:00,Premier League,,Thu,Home,D,0,0,Liverpool,0.701832,0.318642,,,,,,,,,,,,,,,Arsenal,2026,Liverpool
-08/01/2026,20:00,Premier League,,Thu,Away,D,0,0,Arsenal,0.318642,0.701832,,,,,,,,,,,,,,,Liverpool,2026,Arsenal
-17/01/2026,12:30,Premier League,,Sat,Home,W,2,0,Man City,3.07278,0.387015,,,,,,,,,,,,,,,Man United,2026,Man City
-17/01/2026,12:30,Premier League,,Sat,Away,L,0,2,Man United,0.387015,3.07278,,,,,,,,,,,,,,,Man City,2026,Man United
-17/01/2026,15:00,Premier League,,Sat,Home,W,2,0,Brentford,1.62263,1.47521,,,,,,,,,,,,,,,Chelsea,2026,Brentford
-17/01/2026,15:00,Premier League,,Sat,Away,L,0,2,Chelsea,1.47521,1.62263,,,,,,,,,,,,,,,Brentford,2026,Chelsea
-17/01/2026,15:00,Premier League,,Sat,Home,W,1,0,Fulham,2.16898,0.258796,,,,,,,,,,,,,,,Leeds,2026,Fulham
-17/01/2026,15:00,Premier League,,Sat,Away,L,0,1,Leeds,0.258796,2.16898,,,,,,,,,,,,,,,Fulham,2026,Leeds
-17/01/2026,15:00,Premier League,,Sat,Home,D,1,1,Burnley,3.49045,0.546971,,,,,,,,,,,,,,,Liverpool,2026,Burnley
-17/01/2026,15:00,Premier League,,Sat,Away,D,1,1,Liverpool,0.546971,3.49045,,,,,,,,,,,,,,,Burnley,2026,Liverpool
-17/01/2026,15:00,Premier League,,Sat,Home,W,2,1,Crystal Palace,1.84601,1.15169,,,,,,,,,,,,,,,Sunderland,2026,Crystal Palace
-17/01/2026,15:00,Premier League,,Sat,Away,L,1,2,Sunderland,1.15169,1.84601,,,,,,,,,,,,,,,Crystal Palace,2026,Sunderland
-17/01/2026,15:00,Premier League,,Sat,Home,L,1,2,West Ham,1.65292,2.76761,,,,,,,,,,,,,,,Tottenham,2026,West Ham
-17/01/2026,15:00,Premier League,,Sat,Away,W,2,1,Tottenham,2.76761,1.65292,,,,,,,,,,,,,,,West Ham,2026,Tottenham
-17/01/2026,17:30,Premier League,,Sat,Home,D,0,0,Arsenal,0.318481,2.86323,,,,,,,,,,,,,,,Nott'm Forest,2026,Arsenal
-17/01/2026,17:30,Premier League,,Sat,Away,D,0,0,Nott'm Forest,2.86323,0.318481,,,,,,,,,,,,,,,Arsenal,2026,Nott'm Forest
-18/01/2026,14:00,Premier League,,Sun,Home,D,0,0,Newcastle,0.390216,0.813313,,,,,,,,,,,,,,,Wolves,2026,Newcastle
-18/01/2026,14:00,Premier League,,Sun,Away,D,0,0,Wolves,0.813313,0.390216,,,,,,,,,,,,,,,Newcastle,2026,Wolves
-18/01/2026,16:30,Premier League,,Sun,Home,L,0,1,Everton,0.905393,0.745859,,,,,,,,,,,,,,,Aston Villa,2026,Everton
-18/01/2026,16:30,Premier League,,Sun,Away,W,1,0,Aston Villa,0.745859,0.905393,,,,,,,,,,,,,,,Everton,2026,Aston Villa
-19/01/2026,20:00,Premier League,,Mon,Home,D,1,1,Bournemouth,0.995777,1.69737,,,,,,,,,,,,,,,Brighton,2026,Bournemouth
-19/01/2026,20:00,Premier League,,Mon,Away,D,1,1,Brighton,1.69737,0.995777,,,,,,,,,,,,,,,Bournemouth,2026,Brighton
-24/01/2026,12:30,Premier League,,Sat,Home,W,3,1,Sunderland,2.18675,0.713838,,,,,,,,,,,,,,,West Ham,2026,Sunderland
-24/01/2026,12:30,Premier League,,Sat,Away,L,1,3,West Ham,0.713838,2.18675,,,,,,,,,,,,,,,Sunderland,2026,West Ham
-24/01/2026,15:00,Premier League,,Sat,Home,D,2,2,Tottenham,1.54884,2.59093,,,,,,,,,,,,,,,Burnley,2026,Tottenham
-24/01/2026,15:00,Premier League,,Sat,Away,D,2,2,Burnley,2.59093,1.54884,,,,,,,,,,,,,,,Tottenham,2026,Burnley
-24/01/2026,15:00,Premier League,,Sat,Home,W,2,1,Brighton,1.13243,1.94652,,,,,,,,,,,,,,,Fulham,2026,Brighton
-24/01/2026,15:00,Premier League,,Sat,Away,L,1,2,Fulham,1.94652,1.13243,,,,,,,,,,,,,,,Brighton,2026,Fulham
-24/01/2026,15:00,Premier League,,Sat,Home,W,2,0,Wolves,1.0654,0.542683,,,,,,,,,,,,,,,Man City,2026,Wolves
-24/01/2026,15:00,Premier League,,Sat,Away,L,0,2,Man City,0.542683,1.0654,,,,,,,,,,,,,,,Wolves,2026,Man City
-24/01/2026,17:30,Premier League,,Sat,Home,W,3,2,Liverpool,3.31474,0.937335,,,,,,,,,,,,,,,Bournemouth,2026,Liverpool
-24/01/2026,17:30,Premier League,,Sat,Away,L,2,3,Bournemouth,0.937335,3.31474,,,,,,,,,,,,,,,Liverpool,2026,Bournemouth
-25/01/2026,14:00,Premier League,,Sun,Home,L,0,2,Nott'm Forest,2.00413,1.38958,,,,,,,,,,,,,,,Brentford,2026,Nott'm Forest
-25/01/2026,14:00,Premier League,,Sun,Away,W,2,0,Brentford,1.38958,2.00413,,,,,,,,,,,,,,,Nott'm Forest,2026,Brentford
-25/01/2026,14:00,Premier League,,Sun,Home,L,1,3,Chelsea,2.41793,3.08817,,,,,,,,,,,,,,,Crystal Palace,2026,Chelsea
-25/01/2026,14:00,Premier League,,Sun,Away,W,3,1,Crystal Palace,3.08817,2.41793,,,,,,,,,,,,,,,Chelsea,2026,Crystal Palace
-25/01/2026,14:00,Premier League,,Sun,Home,L,0,2,Aston Villa,1.95484,1.32143,,,,,,,,,,,,,,,Newcastle,2026,Aston Villa
-25/01/2026,14:00,Premier League,,Sun,Away,W,2,0,Newcastle,1.32143,1.95484,,,,,,,,,,,,,,,Aston Villa,2026,Newcastle
-25/01/2026,16:30,Premier League,,Sun,Home,L,2,3,Man United,1.42411,0.640902,,,,,,,,,,,,,,,Arsenal,2026,Man United
-25/01/2026,16:30,Premier League,,Sun,Away,W,3,2,Arsenal,0.640902,1.42411,,,,,,,,,,,,,,,Man United,2026,Arsenal
-26/01/2026,20:00,Premier League,,Mon,Home,D,1,1,Leeds,0.889916,1.6766,,,,,,,,,,,,,,,Everton,2026,Leeds
-26/01/2026,20:00,Premier League,,Mon,Away,D,1,1,Everton,1.6766,0.889916,,,,,,,,,,,,,,,Leeds,2026,Everton
-31/01/2026,15:00,Premier League,,Sat,Home,D,1,1,Everton,1.42825,1.28126,,,,,,,,,,,,,,,Brighton,2026,Everton
-31/01/2026,15:00,Premier League,,Sat,Away,D,1,1,Brighton,1.28126,1.42825,,,,,,,,,,,,,,,Everton,2026,Brighton
-31/01/2026,15:00,Premier League,,Sat,Home,L,0,4,Arsenal,0.17871,3.54427,,,,,,,,,,,,,,,Leeds,2026,Arsenal
-31/01/2026,15:00,Premier League,,Sat,Away,W,4,0,Leeds,3.54427,0.17871,,,,,,,,,,,,,,,Arsenal,2026,Leeds
-31/01/2026,15:00,Premier League,,Sat,Home,L,0,2,Bournemouth,2.10353,1.59116,,,,,,,,,,,,,,,Wolves,2026,Bournemouth
-31/01/2026,15:00,Premier League,,Sat,Away,W,2,0,Wolves,1.59116,2.10353,,,,,,,,,,,,,,,Bournemouth,2026,Wolves
-31/01/2026,17:30,Premier League,,Sat,Home,W,3,2,West Ham,2.66133,1.72585,,,,,,,,,,,,,,,Chelsea,2026,West Ham
-31/01/2026,17:30,Premier League,,Sat,Away,L,2,3,Chelsea,1.72585,2.66133,,,,,,,,,,,,,,,West Ham,2026,Chelsea
-31/01/2026,20:00,Premier League,,Sat,Home,W,4,1,Newcastle,3.09973,0.284319,,,,,,,,,,,,,,,Liverpool,2026,Newcastle
-31/01/2026,20:00,Premier League,,Sat,Away,L,1,4,Liverpool,0.284319,3.09973,,,,,,,,,,,,,,,Newcastle,2026,Liverpool
-01/02/2026,14:00,Premier League,,Sun,Home,L,0,1,Brentford,2.15316,0.314916,,,,,,,,,,,,,,,Aston Villa,2026,Brentford
-01/02/2026,14:00,Premier League,,Sun,Away,W,1,0,Aston Villa,0.314916,2.15316,,,,,,,,,,,,,,,Brentford,2026,Aston Villa
-01/02/2026,14:00,Premier League,,Sun,Home,W,3,2,Fulham,1.84362,1.71998,,,,,,,,,,,,,,,Man United,2026,Fulham
-01/02/2026,14:00,Premier League,,Sun,Away,L,2,3,Man United,1.71998,1.84362,,,,,,,,,,,,,,,Fulham,2026,Man United
-01/02/2026,14:00,Premier League,,Sun,Home,D,1,1,Crystal Palace,0.987254,1.648,,,,,,,,,,,,,,,Nott'm Forest,2026,Crystal Palace
-01/02/2026,14:00,Premier League,,Sun,Away,D,1,1,Nott'm Forest,1.648,0.987254,,,,,,,,,,,,,,,Crystal Palace,2026,Nott'm Forest
-01/02/2026,16:30,Premier League,,Sun,Home,D,2,2,Man City,1.49738,2.03614,,,,,,,,,,,,,,,Tottenham,2026,Man City
-01/02/2026,16:30,Premier League,,Sun,Away,D,2,2,Tottenham,2.03614,1.49738,,,,,,,,,,,,,,,Man City,2026,Tottenham
-02/02/2026,20:00,Premier League,,Mon,Home,W,3,0,Burnley,1.8865,0.126371,,,,,,,,,,,,,,,Sunderland,2026,Burnley
-02/02/2026,20:00,Premier League,,Mon,Away,L,0,3,Sunderland,0.126371,1.8865,,,,,,,,,,,,,,,Burnley,2026,Sunderland
-06/02/2026,20:00,Premier League,,Fri,Home,W,3,1,Nott'm Forest,3.38179,1.6608,,,,,,,,,,,,,,,Leeds,2026,Nott'm Forest
-06/02/2026,20:00,Premier League,,Fri,Away,L,1,3,Leeds,1.6608,3.38179,,,,,,,,,,,,,,,Nott'm Forest,2026,Leeds
-07/02/2026,12:30,Premier League,,Sat,Home,W,2,0,Tottenham,2.16576,0.593404,,,,,,,,,,,,,,,Man United,2026,Tottenham
-07/02/2026,12:30,Premier League,,Sat,Away,L,0,2,Man United,0.593404,2.16576,,,,,,,,,,,,,,,Tottenham,2026,Man United
-07/02/2026,15:00,Premier League,,Sat,Home,D,1,1,Aston Villa,1.82646,0.646496,,,,,,,,,,,,,,,Bournemouth,2026,Aston Villa
-07/02/2026,15:00,Premier League,,Sat,Away,D,1,1,Bournemouth,0.646496,1.82646,,,,,,,,,,,,,,,Aston Villa,2026,Bournemouth
-07/02/2026,15:00,Premier League,,Sat,Home,W,3,0,Sunderland,1.19401,0.427225,,,,,,,,,,,,,,,Arsenal,2026,Sunderland
-07/02/2026,15:00,Premier League,,Sat,Away,L,0,3,Arsenal,0.427225,1.19401,,,,,,,,,,,,,,,Sunderland,2026,Arsenal
-07/02/2026,15:00,Premier League,,Sat,Home,L,0,2,West Ham,1.84644,1.1223,,,,,,,,,,,,,,,Burnley,2026,West Ham
-07/02/2026,15:00,Premier League,,Sat,Away,W,2,0,Burnley,1.1223,1.84644,,,,,,,,,,,,,,,West Ham,2026,Burnley
-07/02/2026,15:00,Premier League,,Sat,Home,L,1,2,Everton,2.20126,1.88778,,,,,,,,,,,,,,,Fulham,2026,Everton
-07/02/2026,15:00,Premier League,,Sat,Away,W,2,1,Fulham,1.88778,2.20126,,,,,,,,,,,,,,,Everton,2026,Fulham
-07/02/2026,15:00,Premier League,,Sat,Home,L,1,3,Chelsea,1.11372,3.76278,,,,,,,,,,,,,,,Wolves,2026,Chelsea
-07/02/2026,15:00,Premier League,,Sat,Away,W,3,1,Wolves,3.76278,1.11372,,,,,,,,,,,,,,,Chelsea,2026,Wolves
-07/02/2026,17:30,Premier League,,Sat,Home,L,2,3,Brentford,3.3215,1.65022,,,,,,,,,,,,,,,Newcastle,2026,Brentford
-07/02/2026,17:30,Premier League,,Sat,Away,W,3,2,Newcastle,1.65022,3.3215,,,,,,,,,,,,,,,Brentford,2026,Newcastle
-08/02/2026,14:00,Premier League,,Sun,Home,L,0,1,Crystal Palace,0.737798,0.928404,,,,,,,,,,,,,,,Brighton,2026,Crystal Palace
-08/02/2026,14:00,Premier League,,Sun,Away,W,1,0,Brighton,0.928404,0.737798,,,,,,,,,,,,,,,Crystal Palace,2026,Brighton
-08/02/2026,16:30,Premier League,,Sun,Home,L,1,2,Man City,1.26652,2.41476,,,,,,,,,,,,,,,Liverpool,2026,Man City
-08/02/2026,16:30,Premier League,,Sun,Away,W,2,1,Liverpool,2.41476,1.26652,,,,,,,,,,,,,,,Man City,2026,Liverpool
-10/02/2026,19:30,Premier League,,Tue,Home,D,2,2,Leeds,3.21176,1.28948,,,,,,,,,,,,,,,Chelsea,2026,Leeds
-10/02/2026,19:30,Premier League,,Tue,Away,D,2,2,Chelsea,1.28948,3.21176,,,,,,,,,,,,,,,Leeds,2026,Chelsea
-10/02/2026,19:30,Premier League,,Tue,Home,L,1,2,Bournemouth,2.33114,1.4121,,,,,,,,,,,,,,,Everton,2026,Bournemouth
-10/02/2026,19:30,Premier League,,Tue,Away,W,2,1,Everton,1.4121,2.33114,,,,,,,,,,,,,,,Bournemouth,2026,Everton
-10/02/2026,19:30,Premier League,,Tue,Home,L,1,2,Newcastle,1.68925,2.46991,,,,,,,,,,,,,,,Tottenham,2026,Newcastle
-10/02/2026,19:30,Premier League,,Tue,Away,W,2,1,Tottenham,2.46991,1.68925,,,,,,,,,,,,,,,Newcastle,2026,Tottenham
-10/02/2026,20:15,Premier League,,Tue,Home,D,1,1,Man United,1.30746,0.735767,,,,,,,,,,,,,,,West Ham,2026,Man United
-10/02/2026,20:15,Premier League,,Tue,Away,D,1,1,West Ham,0.735767,1.30746,,,,,,,,,,,,,,,Man United,2026,West Ham
-11/02/2026,19:30,Premier League,,Wed,Home,W,1,0,Brighton,0.576138,0.481306,,,,,,,,,,,,,,,Aston Villa,2026,Brighton
-11/02/2026,19:30,Premier League,,Wed,Away,L,0,1,Aston Villa,0.481306,0.576138,,,,,,,,,,,,,,,Brighton,2026,Aston Villa
-11/02/2026,19:30,Premier League,,Wed,Home,L,2,3,Burnley,2.1276,0.691273,,,,,,,,,,,,,,,Crystal Palace,2026,Burnley
-11/02/2026,19:30,Premier League,,Wed,Away,W,3,2,Crystal Palace,0.691273,2.1276,,,,,,,,,,,,,,,Burnley,2026,Crystal Palace
-11/02/2026,19:30,Premier League,,Wed,Home,W,3,0,Fulham,1.67722,1.05283,,,,,,,,,,,,,,,Man City,2026,Fulham
-11/02/2026,19:30,Premier League,,Wed,Away,L,0,3,Man City,1.05283,1.67722,,,,,,,,,,,,,,,Fulham,2026,Man City
-11/02/2026,19:30,Premier League,,Wed,Home,D,0,0,Wolves,3.69094,0.406959,,,,,,,,,,,,,,,Nott'm Forest,2026,Wolves
-11/02/2026,19:30,Premier League,,Wed,Away,D,0,0,Nott'm Forest,0.406959,3.69094,,,,,,,,,,,,,,,Wolves,2026,Nott'm Forest
-11/02/2026,20:15,Premier League,,Wed,Home,L,0,1,Liverpool,0.693794,3.08172,,,,,,,,,,,,,,,Sunderland,2026,Liverpool
-11/02/2026,20:15,Premier League,,Wed,Away,W,1,0,Sunderland,3.08172,0.693794,,,,,,,,,,,,,,,Liverpool,2026,Sunderland
-12/02/2026,20:00,Premier League,,Thu,Home,D,1,1,Arsenal,1.81154,0.78418,,,,,,,,,,,,,,,Brentford,2026,Arsenal
-12/02/2026,20:00,Premier League,,Thu,Away,D,1,1,Brentford,0.78418,1.81154,,,,,,,,,,,,,,,Arsenal,2026,Brentford
-18/02/2026,20:00,Premier League,,Wed,Home,D,2,2,Arsenal,0.173119,2.01018,,,,,,,,,,,,,,,Wolves,2026,Arsenal
-18/02/2026,20:00,Premier League,,Wed,Away,D,2,2,Wolves,2.01018,0.173119,,,,,,,,,,,,,,,Arsenal,2026,Wolves
-21/02/2026,15:00,Premier League,,Sat,Home,D,1,1,Leeds,1.25439,1.27855,,,,,,,,,,,,,,,Aston Villa,2026,Leeds
-21/02/2026,15:00,Premier League,,Sat,Away,D,1,1,Aston Villa,1.27855,1.25439,,,,,,,,,,,,,,,Leeds,2026,Aston Villa
-21/02/2026,15:00,Premier League,,Sat,Home,L,0,2,Brighton,1.69023,1.37203,,,,,,,,,,,,,,,Brentford,2026,Brighton
-21/02/2026,15:00,Premier League,,Sat,Away,W,2,0,Brentford,1.37203,1.69023,,,,,,,,,,,,,,,Brighton,2026,Brentford
-21/02/2026,15:00,Premier League,,Sat,Home,D,1,1,Burnley,2.51534,1.01255,,,,,,,,,,,,,,,Chelsea,2026,Burnley
-21/02/2026,15:00,Premier League,,Sat,Away,D,1,1,Chelsea,1.01255,2.51534,,,,,,,,,,,,,,,Burnley,2026,Chelsea
-21/02/2026,17:30,Premier League,,Sat,Home,D,0,0,Bournemouth,2.34412,0.522731,,,,,,,,,,,,,,,West Ham,2026,Bournemouth
-21/02/2026,17:30,Premier League,,Sat,Away,D,0,0,West Ham,0.522731,2.34412,,,,,,,,,,,,,,,Bournemouth,2026,West Ham
-21/02/2026,20:00,Premier League,,Sat,Home,W,2,1,Newcastle,2.22648,0.507954,,,,,,,,,,,,,,,Man City,2026,Newcastle
-21/02/2026,20:00,Premier League,,Sat,Away,L,1,2,Man City,0.507954,2.22648,,,,,,,,,,,,,,,Newcastle,2026,Man City
-22/02/2026,14:00,Premier League,,Sun,Home,W,1,0,Wolves,2.03559,1.67749,,,,,,,,,,,,,,,Crystal Palace,2026,Wolves
-22/02/2026,14:00,Premier League,,Sun,Away,L,0,1,Crystal Palace,1.67749,2.03559,,,,,,,,,,,,,,,Wolves,2026,Crystal Palace
-22/02/2026,14:00,Premier League,,Sun,Home,L,0,1,Liverpool,0.934768,2.39634,,,,,,,,,,,,,,,Nott'm Forest,2026,Liverpool
-22/02/2026,14:00,Premier League,,Sun,Away,W,1,0,Nott'm Forest,2.39634,0.934768,,,,,,,,,,,,,,,Liverpool,2026,Nott'm Forest
-22/02/2026,14:00,Premier League,,Sun,Home,L,1,3,Fulham,1.7609,2.16696,,,,,,,,,,,,,,,Sunderland,2026,Fulham
-22/02/2026,14:00,Premier League,,Sun,Away,W,3,1,Sunderland,2.16696,1.7609,,,,,,,,,,,,,,,Fulham,2026,Sunderland
-22/02/2026,16:30,Premier League,,Sun,Home,L,1,4,Arsenal,0.383264,3.31701,,,,,,,,,,,,,,,Tottenham,2026,Arsenal
-22/02/2026,16:30,Premier League,,Sun,Away,W,4,1,Tottenham,3.31701,0.383264,,,,,,,,,,,,,,,Arsenal,2026,Tottenham
-23/02/2026,20:00,Premier League,,Mon,Home,L,0,1,Man United,0.560924,1.4547,,,,,,,,,,,,,,,Everton,2026,Man United
-23/02/2026,20:00,Premier League,,Mon,Away,W,1,0,Everton,1.4547,0.560924,,,,,,,,,,,,,,,Man United,2026,Everton
-27/02/2026,20:00,Premier League,,Fri,Home,W,2,0,Aston Villa,1.50771,1.31328,,,,,,,,,,,,,,,Wolves,2026,Aston Villa
-27/02/2026,20:00,Premier League,,Fri,Away,L,0,2,Wolves,1.31328,1.50771,,,,,,,,,,,,,,,Aston Villa,2026,Wolves
-28/02/2026,12:30,Premier League,,Sat,Home,D,1,1,Sunderland,1.82434,1.07887,,,,,,,,,,,,,,,Bournemouth,2026,Sunderland
-28/02/2026,12:30,Premier League,,Sat,Away,D,1,1,Bournemouth,1.07887,1.82434,,,,,,,,,,,,,,,Sunderland,2026,Bournemouth
-28/02/2026,15:00,Premier League,,Sat,Home,L,3,4,Brentford,0.823824,2.44595,,,,,,,,,,,,,,,Burnley,2026,Brentford
-28/02/2026,15:00,Premier League,,Sat,Away,W,4,3,Burnley,2.44595,0.823824,,,,,,,,,,,,,,,Brentford,2026,Burnley
-28/02/2026,15:00,Premier League,,Sat,Home,W,5,2,West Ham,2.09939,1.3517,,,,,,,,,,,,,,,Liverpool,2026,West Ham
-28/02/2026,15:00,Premier League,,Sat,Away,L,2,5,Liverpool,1.3517,2.09939,,,,,,,,,,,,,,,West Ham,2026,Liverpool
-28/02/2026,15:00,Premier League,,Sat,Home,L,2,3,Everton,1.11889,2.40731,,,,,,,,,,,,,,,Newcastle,2026,Everton
-28/02/2026,15:00,Premier League,,Sat,Away,W,3,2,Newcastle,2.40731,1.11889,,,,,,,,,,,,,,,Everton,2026,Newcastle
-28/02/2026,17:30,Premier League,,Sat,Home,L,0,1,Man City,1.37824,2.46834,,,,,,,,,,,,,,,Leeds,2026,Man City
-28/02/2026,17:30,Premier League,,Sat,Away,W,1,0,Leeds,2.46834,1.37824,,,,,,,,,,,,,,,Man City,2026,Leeds
-01/03/2026,14:00,Premier League,,Sun,Home,W,2,1,Nott'm Forest,1.20107,0.83055,,,,,,,,,,,,,,,Brighton,2026,Nott'm Forest
-01/03/2026,14:00,Premier League,,Sun,Away,L,1,2,Brighton,0.83055,1.20107,,,,,,,,,,,,,,,Nott'm Forest,2026,Brighton
-01/03/2026,14:00,Premier League,,Sun,Home,W,2,1,Tottenham,2.3207,0.952091,,,,,,,,,,,,,,,Fulham,2026,Tottenham
-01/03/2026,14:00,Premier League,,Sun,Away,L,1,2,Fulham,0.952091,2.3207,,,,,,,,,,,,,,,Tottenham,2026,Fulham
-01/03/2026,14:00,Premier League,,Sun,Home,W,2,1,Crystal Palace,2.34609,0.384699,,,,,,,,,,,,,,,Man United,2026,Crystal Palace
-01/03/2026,14:00,Premier League,,Sun,Away,L,1,2,Man United,0.384699,2.34609,,,,,,,,,,,,,,,Crystal Palace,2026,Man United
-01/03/2026,16:30,Premier League,,Sun,Home,W,2,1,Chelsea,1.71598,1.35268,,,,,,,,,,,,,,,Arsenal,2026,Chelsea
-01/03/2026,16:30,Premier League,,Sun,Away,L,1,2,Arsenal,1.35268,1.71598,,,,,,,,,,,,,,,Chelsea,2026,Arsenal
-03/03/2026,19:30,Premier League,,Tue,Home,D,0,0,Brentford,2.3177,0.673328,,,,,,,,,,,,,,,Bournemouth,2026,Brentford
-03/03/2026,19:30,Premier League,,Tue,Away,D,0,0,Bournemouth,0.673328,2.3177,,,,,,,,,,,,,,,Brentford,2026,Bournemouth
-03/03/2026,19:30,Premier League,,Tue,Home,W,2,0,Burnley,1.15845,0.762229,,,,,,,,,,,,,,,Everton,2026,Burnley
-03/03/2026,19:30,Premier League,,Tue,Away,L,0,2,Everton,0.762229,1.15845,,,,,,,,,,,,,,,Burnley,2026,Everton
-03/03/2026,19:30,Premier League,,Tue,Home,L,0,1,Sunderland,0.888232,0.843856,,,,,,,,,,,,,,,Leeds,2026,Sunderland
-03/03/2026,19:30,Premier League,,Tue,Away,W,1,0,Leeds,0.843856,0.888232,,,,,,,,,,,,,,,Sunderland,2026,Leeds
-03/03/2026,20:15,Premier League,,Tue,Home,W,2,1,Liverpool,0.636033,2.17217,,,,,,,,,,,,,,,Wolves,2026,Liverpool
-03/03/2026,20:15,Premier League,,Tue,Away,L,1,2,Wolves,2.17217,0.636033,,,,,,,,,,,,,,,Liverpool,2026,Wolves
-04/03/2026,19:30,Premier League,,Wed,Home,L,1,4,Chelsea,1.06854,3.38883,,,,,,,,,,,,,,,Aston Villa,2026,Chelsea
-04/03/2026,19:30,Premier League,,Wed,Away,W,4,1,Aston Villa,3.38883,1.06854,,,,,,,,,,,,,,,Chelsea,2026,Aston Villa
-04/03/2026,19:30,Premier League,,Wed,Home,L,0,1,Arsenal,0.919228,0.514803,,,,,,,,,,,,,,,Brighton,2026,Arsenal
-04/03/2026,19:30,Premier League,,Wed,Away,W,1,0,Brighton,0.514803,0.919228,,,,,,,,,,,,,,,Arsenal,2026,Brighton
-04/03/2026,19:30,Premier League,,Wed,Home,L,0,1,West Ham,0.628123,1.49528,,,,,,,,,,,,,,,Fulham,2026,West Ham
-04/03/2026,19:30,Premier League,,Wed,Away,W,1,0,Fulham,1.49528,0.628123,,,,,,,,,,,,,,,West Ham,2026,Fulham
-04/03/2026,19:30,Premier League,,Wed,Home,D,2,2,Nott'm Forest,2.72655,1.23642,,,,,,,,,,,,,,,Man City,2026,Nott'm Forest
-04/03/2026,19:30,Premier League,,Wed,Away,D,2,2,Man City,1.23642,2.72655,,,,,,,,,,,,,,,Nott'm Forest,2026,Man City
-04/03/2026,20:15,Premier League,,Wed,Home,W,2,1,Man United,1.96637,1.80571,,,,,,,,,,,,,,,Newcastle,2026,Man United
-04/03/2026,20:15,Premier League,,Wed,Away,L,1,2,Newcastle,1.80571,1.96637,,,,,,,,,,,,,,,Man United,2026,Newcastle
-05/03/2026,20:00,Premier League,,Thu,Home,L,1,3,Crystal Palace,1.29615,1.91515,,,,,,,,,,,,,,,Tottenham,2026,Crystal Palace
-05/03/2026,20:00,Premier League,,Thu,Away,W,3,1,Tottenham,1.91515,1.29615,,,,,,,,,,,,,,,Crystal Palace,2026,Tottenham
-14/03/2026,15:00,Premier League,,Sat,Home,D,0,0,Bournemouth,1.67695,2.36979,,,,,,,,,,,,,,,Burnley,2026,Bournemouth
-14/03/2026,15:00,Premier League,,Sat,Away,D,0,0,Burnley,2.36979,1.67695,,,,,,,,,,,,,,,Bournemouth,2026,Burnley
-14/03/2026,15:00,Premier League,,Sat,Home,L,0,1,Brighton,0.659083,1.12832,,,,,,,,,,,,,,,Sunderland,2026,Brighton
-14/03/2026,15:00,Premier League,,Sat,Away,W,1,0,Sunderland,1.12832,0.659083,,,,,,,,,,,,,,,Brighton,2026,Sunderland
-14/03/2026,17:30,Premier League,,Sat,Home,W,2,0,Everton,1.90855,1.17847,,,,,,,,,,,,,,,Arsenal,2026,Everton
-14/03/2026,17:30,Premier League,,Sat,Away,L,0,2,Arsenal,1.17847,1.90855,,,,,,,,,,,,,,,Everton,2026,Arsenal
-14/03/2026,17:30,Premier League,,Sat,Home,L,0,1,Newcastle,1.72508,1.03251,,,,,,,,,,,,,,,Chelsea,2026,Newcastle
-14/03/2026,17:30,Premier League,,Sat,Away,W,1,0,Chelsea,1.03251,1.72508,,,,,,,,,,,,,,,Newcastle,2026,Chelsea
-14/03/2026,20:00,Premier League,,Sat,Home,D,1,1,Man City,0.488982,1.9546,,,,,,,,,,,,,,,West Ham,2026,Man City
-14/03/2026,20:00,Premier League,,Sat,Away,D,1,1,West Ham,1.9546,0.488982,,,,,,,,,,,,,,,Man City,2026,West Ham
