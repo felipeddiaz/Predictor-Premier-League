@@ -3,43 +3,43 @@ ENTRENAMIENTO MERCADO: OVER_UNDER
 ======================================================================
 
 🔧 Calculando xG rolling...
-   ✅ xG rolling agregado: 733 partidos con datos históricos
+   ✅ xG rolling agregado: 3657 partidos con datos históricos
 
 🔧 Calculando features de posición en tabla...
-   Procesando 7 temporadas...
-   ✅ Features de tabla calculadas: 645 partidos con posición real
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
 
 🔧 Features de forma/momentum agregadas: 15 columnas
 
  Calculando features de descanso / fatiga...
-   Descanso: 734/762 partidos con datos reales (96.3%)
-   Partidos con contexto europeo: 38 (5.0%)
+   Descanso: 3529/3691 partidos con datos reales (95.6%)
+   Partidos con contexto europeo: 478 (13.0%)
 
 🔧 Calculando features de arbitro...
-   Arbitro: 37 arbitros distintos, 5 features calculadas
+   Arbitro: 50 arbitros distintos, 5 features calculadas
    Calculando Elo ratings...
-   Elo: 28 equipos rastreados, rango [1440 - 1577]
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
    SoR: features agregadas (HT_SoR5 / AT_SoR5)
 
 Modelo           LogLoss    Brier       F1      Acc      ROI
 --------------------------------------------------------------
-RF_Basico         0.7069   0.2559   0.6436  52.94%   +0.35%
-RF_Balanceado     0.7122   0.2584   0.6138  52.29%   -4.22%
-XGBoost           0.6916   0.2492   0.5229  52.29%   +7.18%
+RF_Basico         0.6833   0.2449   0.6796  57.51%   -1.59%
+RF_Balanceado     0.6815   0.2441   0.6674  57.24%   +2.13%
+XGBoost           0.6835   0.2452   0.6302  56.97%   -3.11%
 
-GANADOR: XGBoost | LogLoss=0.6916 Brier=0.2492 ROI=0.07184466019417478
+GANADOR: RF_Balanceado | LogLoss=0.6815 Brier=0.2441 ROI=0.02132947976878613
 
 Walk-forward:
 Season      LogLoss    Brier       F1      Acc      ROI
 ----------------------------------------------------------
-2020-21      0.6931   0.2500   0.6550  48.70%   +7.53%
-2021-22      0.7998   0.2933   0.5231  52.31%   -5.32%
-2022-23      0.8134   0.2980   0.5517  47.09%  -16.00%
-2023-24      0.7265   0.2640   0.6571  55.28%   -3.38%
-2024-25      0.7711   0.2805   0.5821  52.14%   -2.55%
-2025-26      0.6625   0.2363   0.6190  55.56%  +28.12%
+2020-21      0.6902   0.2485   0.5598  54.47%   +8.54%
+2021-22      0.7183   0.2620   0.5253  48.16%  -22.48%
+2022-23      0.6926   0.2494   0.5912  53.42%   -9.85%
+2023-24      0.6852   0.2457   0.6971  58.16%  -19.31%
+2024-25      0.6782   0.2426   0.6775  58.16%   -4.23%
+2025-26      0.6895   0.2480   0.6414  54.61%   +6.48%
 ----------------------------------------------------------
-PROMEDIO     0.7444   0.2703   0.5980  51.84%   +1.40%
+PROMEDIO     0.6924   0.2494   0.6154  54.50%   -6.81%
 
 Modelo guardado: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\modelo_over_under.pkl
-Features guardadas: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\features_over_under.pkl (25)
+Features guardadas: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\features_over_under.pkl (21)

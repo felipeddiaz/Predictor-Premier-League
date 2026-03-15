@@ -16,6 +16,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 from xgboost import XGBClassifier
 
 from config import (
+    ARCHIVO_FEATURES,
     ARCHIVO_FEATURES_MERCADOS,
     RANDOM_SEED,
     TEST_SIZE,
@@ -35,6 +36,33 @@ from utils import (
 )
 
 warnings.filterwarnings("ignore")
+
+
+def _cargar_dataset_binarios() -> pd.DataFrame:
+    """
+    Base de entrenamiento: RESTAURADO (completo).
+    Cuotas O/U: se traen desde con_features solo para evaluacion ROI.
+    """
+    df = pd.read_csv(ARCHIVO_FEATURES)
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce", format="mixed", dayfirst=True)
+    df = df.dropna(subset=["Date"]).copy()
+
+    if os.path.exists(ARCHIVO_FEATURES_MERCADOS):
+        odds_cols = [
+            "Date", "HomeTeam", "AwayTeam",
+            "B365>2.5", "B365<2.5", "P>2.5", "P<2.5",
+            "B365C>2.5", "B365C<2.5", "PC>2.5", "PC<2.5",
+        ]
+        df_odds = pd.read_csv(ARCHIVO_FEATURES_MERCADOS)
+        keep = [c for c in odds_cols if c in df_odds.columns]
+        if {"Date", "HomeTeam", "AwayTeam"}.issubset(keep):
+            df_odds = df_odds[keep].copy()
+            df_odds["Date"] = pd.to_datetime(df_odds["Date"], errors="coerce", format="mixed", dayfirst=True)
+            df_odds = df_odds.dropna(subset=["Date"])
+            df_odds = df_odds.drop_duplicates(subset=["Date", "HomeTeam", "AwayTeam"], keep="last")
+            df = df.merge(df_odds, on=["Date", "HomeTeam", "AwayTeam"], how="left")
+
+    return df.sort_values("Date").reset_index(drop=True)
 
 
 def _asignar_temporada(dates: pd.Series) -> pd.Series:
@@ -267,9 +295,7 @@ def entrenar_mercado_binario(nombre_mercado: str, target_col: str, features: lis
     print(f"ENTRENAMIENTO MERCADO: {nombre_mercado}")
     print("=" * 70)
 
-    df = pd.read_csv(ARCHIVO_FEATURES_MERCADOS)
-    df["Date"] = pd.to_datetime(df["Date"], errors="coerce", dayfirst=True)
-    df = df.dropna(subset=["Date"]).sort_values("Date").reset_index(drop=True)
+    df = _cargar_dataset_binarios()
 
     df = _preparar_base(df)
     if nombre_mercado == "OVER_UNDER":

@@ -1,0 +1,21 @@
+C:\Users\LAP\Desktop\mi_predictor_pl\herramientas\scrapear_fixtures_lanusstats.py:122: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  d = datetime.utcfromtimestamp(ts).date()
+Rango scraping: 2026-03-13 -> 2026-03-15
+[001/3] 2026-03-13: events=322 rows=2
+
+Resumen nuevas filas:
+Season   Comp     
+2025-26  Europa Lg    2
+
+Nuevas filas (sin dedupe): 2
+Total combinado: 1917
+Max fecha final: 2026-03-12
+
+[DRY RUN] No se escribio CSV
+Exception ignored in: <function Chrome.__del__ at 0x000001E67396ECA0>
+Traceback (most recent call last):
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\undetected_chromedriver\__init__.py", line 843, in __del__
+    self.quit()
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\undetected_chromedriver\__init__.py", line 798, in quit
+    time.sleep(0.1)
+OSError: [WinError 6] Controlador no válido

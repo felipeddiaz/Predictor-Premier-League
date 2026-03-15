@@ -1,0 +1,92 @@
+Leyendo archivos de C:\Users\LAP\Desktop\mi_predictor_pl\datos\raw\historicos ...
+
+  champions_lg_2016-17.csv: 32 filas
+  champions_lg_2017-18.csv: 47 filas
+  champions_lg_2018-19.csv: 46 filas
+  champions_lg_2019-20.csv: 33 filas
+  champions_lg_2020-21.csv: 42 filas
+  champions_lg_2021-22.csv: 43 filas
+  champions_lg_2022-23.csv: 39 filas
+  champions_lg_2023-24.csv: 32 filas
+  champions_lg_2024-25.csv: 46 filas
+  champions_lg_2025-26.csv: 56 filas
+  efl_cup_2016-17.csv: 40 filas
+  efl_cup_2017-18.csv: 41 filas
+  efl_cup_2018-19.csv: 41 filas
+  efl_cup_2019-20.csv: 39 filas
+  efl_cup_2020-21.csv: 34 filas
+  efl_cup_2021-22.csv: 38 filas
+  efl_cup_2022-23.csv: 75 filas
+  efl_cup_2023-24.csv: 83 filas
+  efl_cup_2024-25.csv: 84 filas
+  efl_cup_2025-26.csv: 59 filas
+  europa_lg_2016-17.csv: 27 filas
+  europa_lg_2017-18.csv: 24 filas
+  europa_lg_2018-19.csv: 36 filas
+  europa_lg_2019-20.csv: 37 filas
+  europa_lg_2020-21.csv: 40 filas
+  europa_lg_2021-22.csv: 18 filas
+  europa_lg_2022-23.csv: 20 filas
+  europa_lg_2023-24.csv: 28 filas
+  europa_lg_2024-25.csv: 30 filas
+  europa_lg_2025-26.csv: 20 filas
+  fa_cup_2016-17.csv: 60 filas
+  fa_cup_2017-18.csv: 67 filas
+  fa_cup_2018-19.csv: 56 filas
+  fa_cup_2019-20.csv: 67 filas
+  fa_cup_2020-21.csv: 60 filas
+  fa_cup_2021-22.csv: 55 filas
+  fa_cup_2022-23.csv: 90 filas
+  fa_cup_2023-24.csv: 94 filas
+  fa_cup_2024-25.csv: 80 filas
+  fa_cup_2025-26.csv: 58 filas
+
+Total filas cargadas: 1917
+
+Desglose por temporada y competicion:
+Season   Comp        
+2016-17  Champions Lg    32
+         EFL Cup         40
+         Europa Lg       27
+         FA Cup          60
+2017-18  Champions Lg    47
+         EFL Cup         41
+         Europa Lg       24
+         FA Cup          67
+2018-19  Champions Lg    46
+         EFL Cup         41
+         Europa Lg       36
+         FA Cup          56
+2019-20  Champions Lg    33
+         EFL Cup         39
+         Europa Lg       37
+         FA Cup          67
+2020-21  Champions Lg    42
+         EFL Cup         34
+         Europa Lg       40
+         FA Cup          60
+2021-22  Champions Lg    43
+         EFL Cup         38
+         Europa Lg       18
+         FA Cup          55
+2022-23  Champions Lg    39
+         EFL Cup         75
+         Europa Lg       20
+         FA Cup          90
+2023-24  Champions Lg    32
+         EFL Cup         83
+         Europa Lg       28
+         FA Cup          94
+2024-25  Champions Lg    46
+         EFL Cup         84
+         Europa Lg       30
+         FA Cup          80
+2025-26  Champions Lg    56
+         EFL Cup         59
+         Europa Lg       20
+         FA Cup          58
+
+Backup creado: C:\Users\LAP\Desktop\mi_predictor_pl\datos\raw\fbref_fixtures.csv.consolidador_backup
+
+Escrito: C:\Users\LAP\Desktop\mi_predictor_pl\datos\raw\fbref_fixtures.csv  (1917 filas, 6 columnas)
+Listo.

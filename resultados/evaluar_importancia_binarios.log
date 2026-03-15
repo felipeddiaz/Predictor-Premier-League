@@ -1,0 +1,173 @@
+========================================================================
+Evaluando importancia: over_under
+========================================================================
+
+🔧 Calculando xG rolling...
+   ✅ xG rolling agregado: 3657 partidos con datos históricos
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+ Calculando features de descanso / fatiga...
+   Descanso: 3529/3691 partidos con datos reales (95.6%)
+   Partidos con contexto europeo: 478 (13.0%)
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+   SoR: features agregadas (HT_SoR5 / AT_SoR5)
+LogLoss=0.6898 | Brier=0.2483 | Acc=52.77% | Features=31 | Keep=25 | Drop=6
+
+Importancia por feature (%):
+#   Feature                           Intrinsic%     Perm%+   PermMean
+--------------------------------------------------------------------------
+1   xG_Total                               5.66%     22.73%   0.002485
+2   HT_Elo                                 4.18%     16.33%   0.001785
+3   AT_BTTS_Rate5                          3.47%     12.59%   0.001377
+4   HT_xG_Avg                              3.14%     11.24%   0.001229
+5   Elo_Diff                               3.55%      8.88%   0.000970
+6   AT_Days_Rest                           3.03%      4.92%   0.000538
+7   AT_ShotsTarget5                        3.38%      4.83%   0.000528
+8   AT_xGA_Avg                             2.63%      3.58%   0.000391
+9   HT_xGA_Avg                             3.17%      2.80%   0.000306
+10  HT_xG_Residual5                        3.18%      2.69%   0.000294
+11  AT_Shots5                              3.92%      2.21%   0.000242
+12  xG_Diff                                3.30%      2.19%   0.000240
+13  AT_AvgShotsTarget                      2.81%      1.71%   0.000187
+14  AT_AvgGoals                            2.71%      1.11%   0.000121
+15  H2H_BTTS_Rate                          2.61%      0.69%   0.000075
+16  HT_ShotsTarget5                        2.44%      0.63%   0.000069
+17  HT_AvgGoals                            3.28%      0.46%   0.000051
+18  AT_xG_Avg                              3.14%      0.20%   0.000021
+19  H2H_Total_Goals_Avg                    2.66%      0.12%   0.000014
+20  HT_BTTS_Rate5                          2.62%      0.07%   0.000008
+21  HT_AvgShotsTarget                      3.09%      0.02%   0.000002
+22  AT_TotalGoals5                         2.75%      0.00%  -0.000058
+23  AT_Over25_Rate5                        3.08%      0.00%  -0.000087
+24  H2H_Over25_Rate                        2.60%      0.00%  -0.000168
+25  AT_Elo                                 3.24%      0.00%  -0.000201
+26  HT_Shots5                              2.98%      0.00%  -0.000271
+27  HT_TotalGoals5                         3.55%      0.00%  -0.000623
+28  HT_Days_Rest                           2.98%      0.00%  -0.000698
+29  Rest_Diff                              3.30%      0.00%  -0.001044
+30  AT_xG_Residual5                        3.52%      0.00%  -0.001167
+31  HT_Over25_Rate5                        4.04%      0.00%  -0.001333
+
+========================================================================
+Evaluando importancia: tarjetas
+========================================================================
+
+🔧 Calculando xG rolling...
+   ✅ xG rolling agregado: 3657 partidos con datos históricos
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+ Calculando features de descanso / fatiga...
+   Descanso: 3529/3691 partidos con datos reales (95.6%)
+   Partidos con contexto europeo: 478 (13.0%)
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+   SoR: features agregadas (HT_SoR5 / AT_SoR5)
+LogLoss=0.6922 | Brier=0.2495 | Acc=53.99% | Features=19 | Keep=16 | Drop=3
+
+Importancia por feature (%):
+#   Feature                           Intrinsic%     Perm%+   PermMean
+--------------------------------------------------------------------------
+1   AT_Days_Rest                           5.33%     46.64%   0.000289
+2   HT_Days_Rest                           6.86%     27.49%   0.000170
+3   HT_YellowFor5                          5.32%     22.03%   0.000136
+4   Ref_Aggressiveness_Interaction         4.58%      2.31%   0.000014
+5   H2H_Yellow_Avg                         6.04%      1.29%   0.000008
+6   Ref_Yellow_Avg                         5.51%      0.25%   0.000002
+7   HT_YellowAvg5                          5.41%      0.00%   0.000000
+8   AT_YellowAvg5                          5.36%      0.00%   0.000000
+9   AT_RedRate5                            4.94%      0.00%   0.000000
+10  Ref_Cards_Total_Avg                    5.96%      0.00%   0.000000
+11  HT_RedRate5                            7.13%      0.00%   0.000000
+12  AT_Form_D                              5.51%      0.00%   0.000000
+13  AT_Form_W                              2.31%      0.00%   0.000000
+14  HT_Form_D                              4.96%      0.00%   0.000000
+15  HT_Form_L                              5.94%      0.00%   0.000000
+16  AT_Form_L                              2.96%      0.00%   0.000000
+17  Rest_Diff                              5.02%      0.00%   0.000000
+18  AT_YellowFor5                          5.01%      0.00%  -0.000007
+19  HT_Form_W                              5.86%      0.00%  -0.000052
+
+========================================================================
+Evaluando importancia: corners
+========================================================================
+
+🔧 Calculando xG rolling...
+   ✅ xG rolling agregado: 3657 partidos con datos históricos
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+ Calculando features de descanso / fatiga...
+   Descanso: 3529/3691 partidos con datos reales (95.6%)
+   Partidos con contexto europeo: 478 (13.0%)
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+   SoR: features agregadas (HT_SoR5 / AT_SoR5)
+LogLoss=0.6918 | Brier=0.2493 | Acc=53.18% | Features=35 | Keep=25 | Drop=10
+
+Importancia por feature (%):
+#   Feature                           Intrinsic%     Perm%+   PermMean
+--------------------------------------------------------------------------
+1   AT_Form_L                              3.18%     19.56%   0.001702
+2   AT_Fouls5                              2.77%     13.68%   0.001190
+3   Elo_Diff                               2.52%     10.02%   0.000872
+4   HT_CornersTotal5                       3.58%      8.55%   0.000745
+5   HT_CornersFor5                         2.80%      6.99%   0.000609
+6   Position_Diff                          3.32%      6.06%   0.000528
+7   HT_Pressure                            2.90%      5.74%   0.000499
+8   HT_AvgShotsTarget                      3.51%      5.26%   0.000458
+9   Corner_Dominance_Diff                  2.73%      4.84%   0.000421
+10  AT_xG_Avg                              2.23%      4.17%   0.000363
+11  AT_Form_W                              3.29%      3.20%   0.000279
+12  HT_Form_L                              3.03%      2.90%   0.000253
+13  HT_Elo                                 2.75%      2.74%   0.000238
+14  HT_Form_W                              2.17%      1.73%   0.000151
+15  AT_Position                            2.51%      1.46%   0.000127
+16  HT_Position                            2.49%      1.28%   0.000112
+17  HT_AvgGoals                            1.98%      0.75%   0.000065
+18  AT_AvgGoals                            2.70%      0.65%   0.000057
+19  AT_AvgShotsTarget                      3.22%      0.40%   0.000035
+20  AT_CornersTotal5                       2.89%      0.00%  -0.000097
+21  HT_CornersAgainst5                     2.02%      0.00%  -0.000101
+22  AT_Pressure                            2.79%      0.00%  -0.000170
+23  AT_ShotsTarget5                        2.19%      0.00%  -0.000172
+24  xG_Total                               2.62%      0.00%  -0.000206
+25  HT_ShotsTarget5                        2.74%      0.00%  -0.000470
+26  H2H_Corners_Avg                        2.50%      0.00%  -0.000521
+27  HT_Corner_Dominance5                   2.83%      0.00%  -0.000609
+28  HT_Fouls5                              3.27%      0.00%  -0.000627
+29  AT_CornersFor5                         3.16%      0.00%  -0.000672
+30  AT_Elo                                 3.66%      0.00%  -0.000695
+31  HT_xG_Avg                              3.17%      0.00%  -0.000784
+32  AT_Shots5                              3.06%      0.00%  -0.000853
+33  AT_CornersAgainst5                     3.38%      0.00%  -0.001035
+34  HT_Shots5                              3.18%      0.00%  -0.001073
+35  AT_Corner_Dominance5                   2.85%      0.00%  -0.001221
+
+
+Reportes generados:
+- resultados\feature_importance_binarios\resumen_importancia_binarios.csv
+- resultados\feature_importance_binarios\resumen_importancia_binarios.md

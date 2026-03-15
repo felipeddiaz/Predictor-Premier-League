@@ -6,11 +6,11 @@ from pipeline.mercados_binarios import entrenar_mercado_binario
 
 
 FEATURES_TARJETAS = [
-    'HT_YellowAvg5', 'AT_YellowAvg5', 'HT_YellowFor5', 'AT_YellowFor5',
+    'HT_YellowAvg5', 'AT_YellowAvg5', 'HT_YellowFor5',
     'HT_RedRate5', 'AT_RedRate5',
     'Ref_Yellow_Avg', 'Ref_Cards_Total_Avg', 'H2H_Yellow_Avg',
     'Ref_Aggressiveness_Interaction',
-    'HT_Form_W', 'HT_Form_D', 'HT_Form_L', 'AT_Form_W', 'AT_Form_D', 'AT_Form_L',
+    'HT_Form_D', 'HT_Form_L', 'AT_Form_W', 'AT_Form_D', 'AT_Form_L',
     'HT_Days_Rest', 'AT_Days_Rest', 'Rest_Diff',
 ]
 
