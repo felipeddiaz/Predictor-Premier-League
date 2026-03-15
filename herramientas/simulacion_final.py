@@ -68,7 +68,6 @@ from utils import (
     agregar_features_descanso,
     agregar_features_elo,
     agregar_features_sor,
-    agregar_features_interaccion,
 )
 from core.sistema_expected_value import eliminar_vig, kelly_criterion
 
@@ -112,7 +111,6 @@ def cargar_y_preparar():
     df = agregar_features_arbitro(df)
     df = agregar_features_elo(df)
     df = agregar_features_sor(df)
-    df = agregar_features_interaccion(df)
 
     # FE solo para modelo con cuotas
     df = agregar_features_cuotas_derivadas(df)

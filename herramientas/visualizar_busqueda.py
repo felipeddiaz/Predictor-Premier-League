@@ -115,7 +115,6 @@ with mock.patch('builtins.print'):
     df = utils.agregar_features_arbitro(df)
     df = utils.agregar_features_elo(df)
     df = utils.agregar_features_sor(df)
-    df = utils.agregar_features_interaccion(df)
 
 if MODO_SIN_CUOTAS:
     # Filtrar solo partidos con H2H

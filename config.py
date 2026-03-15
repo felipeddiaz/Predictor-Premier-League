@@ -150,8 +150,6 @@ FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
 UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
-UMBRAL_EDGE_DC = 0.15           # Umbral minimo para doble oportunidad (fallback)
-MARGEN_DC_SINTETICO = 0.95      # Margen aplicado a cuotas DC sinteticas
 CUOTA_MAXIMA = 4.0              # No apostar en underdogs extremos
 PROBABILIDAD_MINIMA = 0.45      # Probabilidad mínima del modelo
 
@@ -337,19 +335,6 @@ FEATURES_SOR = [
     'HT_SoR5', 'AT_SoR5'
 ]
 
-# Features de interaccion — calculadas en utils.agregar_features_interaccion()
-FEATURES_INTERACCION = [
-    'HT_xG_Efficiency',    # Goles reales / xG esperados (local)
-    'AT_xG_Efficiency',    # Goles reales / xG esperados (visitante)
-    'xG_Efficiency_Diff',  # Diferencia de eficiencia xG
-    'HT_Form_vs_Elo',      # Puntos recientes * dificultad calendario (local)
-    'AT_Form_vs_Elo',      # Puntos recientes * dificultad calendario (visitante)
-    'Form_Quality_Diff',   # Diferencia de forma ponderada
-    'HT_Fatigue_Score',    # Congestion * Europa (local)
-    'AT_Fatigue_Score',    # Congestion * Europa (visitante)
-    'Fatigue_Diff',        # Diferencia de fatiga
-]
-
 # P1-Audit: Features con cuotas de apertura (sin closing lines)
 # Usadas por el modelo principal (02_entrenar_modelo.py)
 FEATURES_CON_CUOTAS_APERTURA = (
@@ -388,8 +373,7 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
     + FEATURES_ELO            #  4: Elo ratings
     + FEATURES_SOR            #  2: strength of schedule
-    + FEATURES_INTERACCION    #  9: interacciones (xG efficiency, forma*SoR, fatiga)
-    # Total: 111 features — cero cuotas, cero señales de mercado
+    # Total: 102 features — cero cuotas, cero señales de mercado
 )
 
 # P3-Audit: ALL_FEATURES ahora apunta a la versión limpia (solo apertura).
