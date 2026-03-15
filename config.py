@@ -149,11 +149,11 @@ PARAMS_XGB = {
 FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
-UMBRAL_EDGE_MINIMO = 0.08       # Edge minimo recomendado por sensibilidad (max Sharpe)
-UMBRAL_EDGE_DC = 0.12           # Umbral minimo para doble oportunidad (fallback)
+UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
+UMBRAL_EDGE_DC = 0.15           # Umbral minimo para doble oportunidad (fallback)
 MARGEN_DC_SINTETICO = 0.95      # Margen aplicado a cuotas DC sinteticas
-CUOTA_MAXIMA = 6.0              # No apostar en underdogs extremos
-PROBABILIDAD_MINIMA = 0.50      # Probabilidad mínima del modelo
+CUOTA_MAXIMA = 4.0              # No apostar en underdogs extremos
+PROBABILIDAD_MINIMA = 0.45      # Probabilidad mínima del modelo
 
 # Capa 3: Kelly Criterion
 KELLY_FRACTION = 0.25           # Kelly fraccionario (25% del Kelly completo)

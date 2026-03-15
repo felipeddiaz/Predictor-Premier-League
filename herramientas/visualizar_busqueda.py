@@ -68,7 +68,7 @@ import utils
 # FLAGS PRINCIPALES — cambia aquí antes de ejecutar
 # ============================================================================
 
-MODO_SIN_CUOTAS = False   # False = datos CON cuotas  |  True = datos SIN cuotas
+MODO_SIN_CUOTAS = True   # False = datos CON cuotas  |  True = datos SIN cuotas
 MODO_XGB = True           # False = Random Forest     |  True = XGBoost
 
 N_TRIALS = 200            # MedianPruner permite más trials sin costo extra
