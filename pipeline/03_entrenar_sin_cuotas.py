@@ -113,19 +113,31 @@ def _roi_simulado(
     margen_dc=None,
     usar_fallback_dc=True,
     return_detalle=False,
+    modo_dc='inteligente',
 ):
     """
     ROI simulado con apuestas planas sobre value bets.
 
-    Lógica escalonada:
-    1. Si max edge 1X2 >= umbral → apuesta 1X2
-    2. Si no, evalúa doble oportunidad (1X, X2, 12) como fallback
-    3. Si max edge DC >= UMBRAL_EDGE_DC → apuesta DC
-    4. Si no → no apuesta
+    Modos de DC (modo_dc):
+        'fallback'     : (original) DC solo cuando 1X2 no pasa el edge.
+        'inteligente'  : DC basado en diagnostico_dc() — se evalua en
+                         paralelo a 1X2, no como fallback. Solo apuesta DC
+                         cuando la forma de la distribucion lo justifica.
+        'desactivado'  : Solo apuestas 1X2, sin DC.
+
+    Logica 'inteligente':
+    1. Evalua 1X2: si max edge >= umbral → candidato 1X2
+    2. Evalua DC: si diagnostico_dc() recomienda DC y edge >= umbral_dc
+       → candidato DC
+    3. Si ambos candidatos existen, elige el de mayor edge
+    4. Si solo uno existe, lo toma
+    5. Si ninguno pasa → no apuesta
 
     Returns:
         dict con ROI total, desglose 1X2/DC, o None si no hay cuotas.
     """
+    from core.sistema_expected_value import diagnostico_dc
+
     if edge_minimo is None:
         edge_minimo = UMBRAL_EDGE_MINIMO
     if umbral_dc is None:
@@ -146,6 +158,9 @@ def _roi_simulado(
     n_apuestas_1x2 = 0
     n_apuestas_dc = 0
 
+    # Mapa: mercado DC -> clase que pierde
+    _clase_pierde = {'1X': 2, 'X2': 0, '12': 1}
+
     for i in range(len(y_true)):
         cuota_h, cuota_d, cuota_a = cuotas[i]
         if np.any(np.isnan([cuota_h, cuota_d, cuota_a])) or np.any(cuotas[i] <= 1.0):
@@ -153,53 +168,100 @@ def _roi_simulado(
 
         prob_mercado = 1.0 / cuotas[i]
 
+        # --- Candidato 1X2 ---
         edges = probs[i] - prob_mercado
         mejor_resultado = int(np.argmax(edges))
-        mejor_edge = edges[mejor_resultado]
+        mejor_edge_1x2 = edges[mejor_resultado]
+        tiene_1x2 = mejor_edge_1x2 >= edge_minimo
 
-        if mejor_edge >= edge_minimo:
-            # --- Apuesta 1X2 (sin cambios) ---
+        # --- Candidato DC ---
+        tiene_dc = False
+        dc_mercado = None
+        dc_edge = 0.0
+        dc_cuota = 0.0
+        dc_clase_pierde = -1
+
+        if modo_dc != 'desactivado':
+            if modo_dc == 'inteligente':
+                # DC inteligente: evaluar en paralelo a 1X2
+                diag = diagnostico_dc(probs[i])
+                if diag['usar_dc'] and diag.get('confianza_dc') in ('alta', 'media'):
+                    total_prob = prob_mercado.sum()
+                    fair = prob_mercado / total_prob
+                    mercado = diag['mercado']
+                    clase_p = _clase_pierde[mercado]
+
+                    if mercado == '1X':
+                        p_mod = probs[i][0] + probs[i][1]
+                        p_fair = fair[0] + fair[1]
+                    elif mercado == 'X2':
+                        p_mod = probs[i][1] + probs[i][2]
+                        p_fair = fair[1] + fair[2]
+                    else:
+                        p_mod = probs[i][0] + probs[i][2]
+                        p_fair = fair[0] + fair[2]
+
+                    edge_dc = p_mod - p_fair
+                    if edge_dc >= umbral_dc and p_fair > 0:
+                        tiene_dc = True
+                        dc_mercado = mercado
+                        dc_edge = edge_dc
+                        dc_cuota = (1.0 / p_fair) * margen_dc
+                        dc_clase_pierde = clase_p
+
+            elif modo_dc == 'fallback' and not tiene_1x2:
+                # DC fallback: solo si 1X2 no paso
+                total_prob = prob_mercado.sum()
+                fair = prob_mercado / total_prob
+
+                dc_opciones = [
+                    ('1X', probs[i][0] + probs[i][1], fair[0] + fair[1], 2),
+                    ('X2', probs[i][1] + probs[i][2], fair[1] + fair[2], 0),
+                    ('12', probs[i][0] + probs[i][2], fair[0] + fair[2], 1),
+                ]
+
+                for nombre, p_mod, p_fair, clase_p in dc_opciones:
+                    edge_dc_cand = p_mod - p_fair
+                    if edge_dc_cand >= umbral_dc and edge_dc_cand > dc_edge and p_fair > 0:
+                        tiene_dc = True
+                        dc_mercado = nombre
+                        dc_edge = edge_dc_cand
+                        dc_cuota = (1.0 / p_fair) * margen_dc
+                        dc_clase_pierde = clase_p
+
+        # --- Decidir ---
+        if tiene_1x2 and tiene_dc:
+            # Ambos candidatos: elegir por edge
+            if mejor_edge_1x2 >= dc_edge:
+                apostado += 1.0
+                n_apuestas_1x2 += 1
+                if y_true.iloc[i] == mejor_resultado:
+                    ganancia += cuotas[i][mejor_resultado] - 1.0
+                else:
+                    ganancia -= 1.0
+            else:
+                apostado += 1.0
+                n_apuestas_dc += 1
+                if y_true.iloc[i] != dc_clase_pierde:
+                    ganancia += dc_cuota - 1.0
+                else:
+                    ganancia -= 1.0
+        elif tiene_1x2:
             apostado += 1.0
             n_apuestas_1x2 += 1
             if y_true.iloc[i] == mejor_resultado:
                 ganancia += cuotas[i][mejor_resultado] - 1.0
             else:
                 ganancia -= 1.0
-        else:
-            # --- Fallback: Doble Oportunidad ---
-            # Fair probs del mercado (normalizar para eliminar vig)
-            total_prob = prob_mercado.sum()
-            fair = prob_mercado / total_prob
-
-            # Opciones DC: (nombre, prob_modelo, prob_mercado, clase_que_pierde)
-            dc_opciones = [
-                (probs[i][0] + probs[i][1], fair[0] + fair[1], 2),  # 1X: pierde si Away
-                (probs[i][1] + probs[i][2], fair[1] + fair[2], 0),  # X2: pierde si Home
-                (probs[i][0] + probs[i][2], fair[0] + fair[2], 1),  # 12: pierde si Draw
-            ]
-
-            mejor_dc_edge = -1.0
-            mejor_dc = None
-            for prob_mod, prob_merc, clase_pierde in dc_opciones:
-                dc_edge = prob_mod - prob_merc
-                if dc_edge > mejor_dc_edge:
-                    mejor_dc_edge = dc_edge
-                    cuota_dc = (1.0 / prob_merc) * MARGEN_DC_SINTETICO
-                    mejor_dc = (cuota_dc, clase_pierde)
-
-            if mejor_dc is not None and mejor_dc_edge >= UMBRAL_EDGE_DC:
-                apostado += 1.0
-                n_apuestas_dc += 1
-                cuota_dc, clase_pierde = mejor_dc
-                # DC gana si el resultado NO es la clase que pierde
-                if y_true.iloc[i] != clase_pierde:
-                    ganancia += cuota_dc - 1.0
-                else:
-                    ganancia -= 1.0
+        elif tiene_dc:
+            apostado += 1.0
+            n_apuestas_dc += 1
+            if y_true.iloc[i] != dc_clase_pierde:
+                ganancia += dc_cuota - 1.0
+            else:
+                ganancia -= 1.0
 
     if apostado == 0:
-        if return_detalle:
-            return None
         return None
 
     return {
