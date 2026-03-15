@@ -31,14 +31,20 @@ from config import (
     PROBABILIDAD_MINIMA,
 )
 from utils import (
+    agregar_xg_rolling,
     agregar_features_tabla,
     agregar_features_cuotas_derivadas,
     agregar_features_asian_handicap,
     agregar_features_rolling_extra,
     agregar_features_multi_escala,
+    agregar_features_ewm,
     agregar_features_forma_momentum,
+    agregar_features_descanso,
     agregar_features_pinnacle_move,
     agregar_features_arbitro,
+    agregar_features_elo,
+    agregar_features_sor,
+    agregar_features_interaccion,
 )
 from core.sistema_expected_value import eliminar_vig, diagnostico_dc
 
@@ -55,14 +61,25 @@ def _asignar_temporada(dates):
 def cargar_y_preparar():
     df = pd.read_csv(ARCHIVO_FEATURES)
     df['Date'] = pd.to_datetime(df['Date'])
+
+    # FE compartido (con y sin cuotas)
+    df = agregar_xg_rolling(df)
     df = agregar_features_tabla(df)
+    df = agregar_features_multi_escala(df)
+    df = agregar_features_ewm(df)
+    df = agregar_features_forma_momentum(df)
+    df = agregar_features_descanso(df)
+    df = agregar_features_arbitro(df)
+    df = agregar_features_elo(df)
+    df = agregar_features_sor(df)
+    df = agregar_features_interaccion(df)
+
+    # FE solo para modelo con cuotas
     df = agregar_features_cuotas_derivadas(df)
     df = agregar_features_asian_handicap(df)
     df = agregar_features_rolling_extra(df)
-    df = agregar_features_multi_escala(df)
-    df = agregar_features_forma_momentum(df)
     df = agregar_features_pinnacle_move(df)
-    df = agregar_features_arbitro(df)
+
     df['_Season'] = _asignar_temporada(df['Date'])
     features_con = [f for f in ALL_FEATURES if f in df.columns]
     features_sin = [f for f in FEATURES_ESTRUCTURALES if f in df.columns]

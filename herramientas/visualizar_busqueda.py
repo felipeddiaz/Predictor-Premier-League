@@ -109,9 +109,13 @@ with mock.patch('builtins.print'):
         df = utils.agregar_features_rolling_extra(df)
         df = utils.agregar_features_pinnacle_move(df)
     df = utils.agregar_features_multi_escala(df)
+    df = utils.agregar_features_ewm(df)
     df = utils.agregar_features_forma_momentum(df)
-    df = utils.agregar_features_arbitro(df)
     df = utils.agregar_features_descanso(df)
+    df = utils.agregar_features_arbitro(df)
+    df = utils.agregar_features_elo(df)
+    df = utils.agregar_features_sor(df)
+    df = utils.agregar_features_interaccion(df)
 
 if MODO_SIN_CUOTAS:
     # Filtrar solo partidos con H2H

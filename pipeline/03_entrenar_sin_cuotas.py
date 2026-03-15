@@ -84,6 +84,7 @@ from utils import (
     agregar_features_arbitro,
     agregar_features_elo,
     agregar_features_sor,
+    agregar_features_interaccion,
 )
 
 warnings.filterwarnings('ignore')
@@ -330,6 +331,7 @@ def cargar_datos():
     df = agregar_features_arbitro(df)
     df = agregar_features_elo(df)
     df = agregar_features_sor(df)
+    df = agregar_features_interaccion(df)
 
     # Solo partidos con H2H disponible
     if 'H2H_Available' in df.columns:
