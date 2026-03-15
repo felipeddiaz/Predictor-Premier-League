@@ -466,8 +466,8 @@ class Predictor:
                 X = pd.DataFrame([fila], columns=features)
                 prob = modelo.predict_proba(X)[0][1]  # P(Over)
                 setattr(resultado, attr, float(prob))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"  Advertencia: {attr} no pudo predecirse ({e})")
 
         return resultado
 
@@ -543,12 +543,21 @@ class Predictor:
                 if col in ultimo_h2h.index and pd.notna(ultimo_h2h[col]):
                     datos[col] = float(ultimo_h2h[col])
 
-        # Referee features — usar último partido del enriquecido
-        if len(df) > 0:
-            ultimo_global = df.iloc[-1]
-            for col in ['Ref_Yellow_Avg', 'Ref_Cards_Total_Avg', 'Ref_Aggressiveness_Interaction']:
-                if col in ultimo_global.index and pd.notna(ultimo_global[col]):
-                    datos[col] = float(ultimo_global[col])
+        # Referee features — del último partido del equipo LOCAL (no global)
+        partidos_local = df[
+            (df['HomeTeam'] == local) | (df['AwayTeam'] == local)
+        ]
+        if len(partidos_local) > 0:
+            ultimo_local = partidos_local.iloc[-1]
+            for col in ['Ref_Yellow_Avg', 'Ref_Cards_Total_Avg']:
+                if col in ultimo_local.index and pd.notna(ultimo_local[col]):
+                    datos[col] = float(ultimo_local[col])
+
+        # Recalcular Ref_Aggressiveness_Interaction con valores del partido actual
+        ref_yellow = datos.get('Ref_Yellow_Avg', 0.0)
+        ht_yellow = datos.get('HT_YellowAvg5', 0.0)
+        at_yellow = datos.get('AT_YellowAvg5', 0.0)
+        datos['Ref_Aggressiveness_Interaction'] = ref_yellow * (ht_yellow + at_yellow)
 
         return datos
 
