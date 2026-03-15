@@ -29,9 +29,9 @@ NUMERO_JORNADA = 15
 # ============================================================================
 
 PARTIDOS_JORNADA = [
-    Partido(local='Crystal Palace', visitante='Leeds United', cuota_h=2.51, cuota_d=3.28, cuota_a=2.94),
+    Partido(local='Crystal Palace', visitante='Leeds', cuota_h=2.51, cuota_d=3.28, cuota_a=2.94),
     Partido(local='Man United', visitante='Aston Villa', cuota_h=1.71, cuota_d=4.16, cuota_a=4.53),
-    Partido(local='Nottingham Forest', visitante='Fulham', cuota_h=2.26, cuota_d=3.40, cuota_a=3.26),
+    Partido(local="Nott'm Forest", visitante='Fulham', cuota_h=2.26, cuota_d=3.40, cuota_a=3.26),
     Partido(local='Liverpool', visitante='Tottenham', cuota_h=1.29, cuota_d=6.17, cuota_a=9.10),
     Partido(local='Brentford', visitante='Wolves', cuota_h=1.60, cuota_d=4.20, cuota_a=5.75),
 ]
