@@ -29,21 +29,11 @@ NUMERO_JORNADA = 15
 # ============================================================================
 
 PARTIDOS_JORNADA = [
-    # Martes 2 de Diciembre
-    Partido(local='Bournemouth',  visitante='Everton',       cuota_h=2.30, cuota_d=3.40, cuota_a=3.10),
-    Partido(local='Fulham',       visitante='Man City',       cuota_h=5.00, cuota_d=4.25, cuota_a=1.67),
-    Partido(local='Newcastle',    visitante='Tottenham',      cuota_h=2.50, cuota_d=3.60, cuota_a=2.70),
-
-    # Miercoles 3 de Diciembre
-    Partido(local='Arsenal',      visitante='Brentford',      cuota_h=1.30, cuota_d=5.50, cuota_a=10.00),
-    Partido(local='Brighton',     visitante='Aston Villa',    cuota_h=2.60, cuota_d=3.50, cuota_a=2.60),
-    Partido(local='Burnley',      visitante='Crystal Palace', cuota_h=2.90, cuota_d=3.30, cuota_a=2.45),
-    Partido(local='Wolves',       visitante="Nott'm Forest",  cuota_h=2.35, cuota_d=3.40, cuota_a=3.00),
-    Partido(local='Leeds',        visitante='Chelsea',        cuota_h=4.50, cuota_d=4.00, cuota_a=1.75),
-    Partido(local='Liverpool',    visitante='Sunderland',     cuota_h=1.25, cuota_d=6.50, cuota_a=11.00),
-
-    # Jueves 4 de Diciembre
-    Partido(local='Man United',   visitante='West Ham',       cuota_h=1.65, cuota_d=4.20, cuota_a=5.00),
+    Partido(local='Crystal Palace', visitante='Leeds United', cuota_h=2.51, cuota_d=3.28, cuota_a=2.94),
+    Partido(local='Man United', visitante='Aston Villa', cuota_h=1.71, cuota_d=4.16, cuota_a=4.53),
+    Partido(local='Nottingham Forest', visitante='Fulham', cuota_h=2.26, cuota_d=3.40, cuota_a=3.26),
+    Partido(local='Liverpool', visitante='Tottenham', cuota_h=1.29, cuota_d=6.17, cuota_a=9.10),
+    Partido(local='Brentford', visitante='Wolves', cuota_h=1.60, cuota_d=4.20, cuota_a=5.75),
 ]
 
 # ============================================================================
