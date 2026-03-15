@@ -1,341 +1,210 @@
 # -*- coding: utf-8 -*-
 """
-ANÁLISIS DE FEATURES
-Script independiente para analizar qué features aportan más al modelo.
-NO modifica nada, solo analiza y reporta.
-Incluye análisis de CUOTAS puras y derivadas.
+ANÁLISIS DE IMPORTANCIA DE FEATURES — Todos los modelos.
+
+Carga los modelos entrenados y extrae feature_importances_ directamente.
+Analiza: modelo principal (1X2), over/under, tarjetas, corners.
+Identifica features redundantes y de baja importancia.
 """
 import os
 import warnings
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score
-from sklearn.model_selection import train_test_split
 
-from config import ARCHIVO_FEATURES, PESOS_OPTIMOS, RUTA_MODELOS
+from config import RUTA_MODELOS
 
 warnings.filterwarnings('ignore')
 
-SEED = 42
 
-# Usar los pesos optimizados del proyecto en lugar de valores ad-hoc
-PESOS_PERSONALIZADOS = PESOS_OPTIMOS
+def _extraer_importancias(modelo, features):
+    """Extrae feature_importances_ de un modelo (RF, XGB o CalibratedClassifierCV)."""
+    if hasattr(modelo, 'feature_importances_'):
+        return modelo.feature_importances_
+
+    # CalibratedClassifierCV: extraer del estimador base
+    if hasattr(modelo, 'calibrated_classifiers_'):
+        importancias = []
+        for cc in modelo.calibrated_classifiers_:
+            if hasattr(cc.estimator, 'feature_importances_'):
+                importancias.append(cc.estimator.feature_importances_)
+        if importancias:
+            return np.mean(importancias, axis=0)
+
+    if hasattr(modelo, 'estimator') and hasattr(modelo.estimator, 'feature_importances_'):
+        return modelo.estimator.feature_importances_
+
+    return None
+
+
+def _analizar_modelo(nombre, modelo, features):
+    """Analiza un modelo y retorna DataFrame de importancias."""
+    imp = _extraer_importancias(modelo, features)
+    if imp is None:
+        print(f"  No se pudieron extraer importancias de {nombre}")
+        return None
+
+    df = pd.DataFrame({
+        'Feature': features,
+        'Importancia': imp,
+    }).sort_values('Importancia', ascending=False)
+
+    total = df['Importancia'].sum()
+    df['Porcentaje'] = (df['Importancia'] / total) * 100 if total > 0 else 0
+    df['Porcentaje_Acumulado'] = df['Porcentaje'].cumsum()
+    df['Modelo'] = nombre
+    return df
+
+
+MODELOS_A_ANALIZAR = [
+    ('1X2 Principal', 'modelo_final_optimizado.pkl', 'features.pkl'),
+    ('1X2 Sin Cuotas', 'modelo_value_betting.pkl', 'features_value_betting.pkl'),
+    ('Over/Under 2.5', 'modelo_over_under.pkl', 'features_over_under.pkl'),
+    ('Tarjetas 3.5', 'modelo_tarjetas.pkl', 'features_tarjetas.pkl'),
+    ('Corners 9.5', 'modelo_corners.pkl', 'features_corners.pkl'),
+]
 
 
 if __name__ == '__main__':
-    np.random.seed(SEED)
+    print("=" * 70)
+    print("   ANÁLISIS DE IMPORTANCIA DE FEATURES — TODOS LOS MODELOS")
+    print("=" * 70)
 
-    # ============================================================================
-    # CARGAR DATOS
-    # ============================================================================
+    resultados_todos = []
 
-    print("="*70)
-    print("   ANÁLISIS DE IMPORTANCIA DE FEATURES")
-    print("="*70)
+    for nombre, modelo_file, features_file in MODELOS_A_ANALIZAR:
+        ruta_modelo = os.path.join(RUTA_MODELOS, modelo_file)
+        ruta_features = os.path.join(RUTA_MODELOS, features_file)
 
-    df = pd.read_csv(ARCHIVO_FEATURES)
-    df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
-    print(f"\n✅ Datos cargados: {len(df)} partidos")
+        if not os.path.exists(ruta_modelo) or not os.path.exists(ruta_features):
+            print(f"\n  {nombre}: archivos no encontrados, saltando")
+            continue
 
-    # ============================================================================
-    # DEFINIR FEATURES
-    # ============================================================================
+        modelo = joblib.load(ruta_modelo)
+        features = joblib.load(ruta_features)
 
-    # P3-Audit: Solo cuotas de apertura (eliminadas closing odds)
-    features_cuotas = ['B365H', 'B365D', 'B365A']
+        print(f"\n{'=' * 70}")
+        print(f"  {nombre} ({len(features)} features)")
+        print(f"{'=' * 70}")
 
-    # Crear probabilidades implícitas si hay cuotas (solo apertura)
-    if all(col in df.columns for col in ['B365H', 'B365D', 'B365A']):
-        print("\n   Calculando probabilidades implícitas de cuotas (apertura)...")
+        df_imp = _analizar_modelo(nombre, modelo, features)
+        if df_imp is None:
+            continue
 
-        prob_h = 1 / df['B365H']
-        prob_d = 1 / df['B365D']
-        prob_a = 1 / df['B365A']
-        total = prob_h + prob_d + prob_a
+        resultados_todos.append(df_imp)
 
-        df['Prob_H'] = prob_h / total
-        df['Prob_D'] = prob_d / total
-        df['Prob_A'] = prob_a / total
-        df['Prob_Diff_HA'] = df['Prob_H'] - df['Prob_A']
-        df['Prob_Ratio_HA'] = df['Prob_H'] / (df['Prob_A'] + 0.01)
-        df['Prob_Max'] = df[['Prob_H', 'Prob_D', 'Prob_A']].max(axis=1)
-        df['Prob_Spread'] = df['Prob_Max'] - df[['Prob_H', 'Prob_D', 'Prob_A']].min(axis=1)
+        # Ranking
+        print(f"\n{'#':<4} {'Feature':<35} {'%':<8} {'% Acum':<8}")
+        print("-" * 60)
+        for i, (_, row) in enumerate(df_imp.iterrows(), 1):
+            marker = " *" if row['Porcentaje'] < 1.0 else ""
+            print(f"{i:<4} {row['Feature']:<35} {row['Porcentaje']:<8.2f} {row['Porcentaje_Acumulado']:<8.1f}{marker}")
 
-        print("   Probabilidades calculadas")
+        # Top features (50% acumulado)
+        top_50 = df_imp[df_imp['Porcentaje_Acumulado'] <= 50]
+        if len(top_50) == 0:
+            top_50 = df_imp.head(1)
+        print(f"\n  Top {len(top_50)} features acumulan ~50% de importancia")
 
-    # Features de probabilidades (solo apertura)
-    features_prob = [
-        'Prob_H', 'Prob_D', 'Prob_A', 'Prob_Diff_HA', 'Prob_Ratio_HA',
-        'Prob_Max', 'Prob_Spread',
-    ]
+        # Features con poca importancia
+        low = df_imp[df_imp['Porcentaje'] < 1.0]
+        if len(low) > 0:
+            print(f"  {len(low)} features aportan < 1% cada una (total: {low['Porcentaje'].sum():.1f}%)")
+            for _, row in low.iterrows():
+                print(f"    - {row['Feature']} ({row['Porcentaje']:.2f}%)")
 
-    # Features base
-    features_base = [
-        'HT_AvgGoals', 'AT_AvgGoals', 'HT_AvgShotsTarget', 'AT_AvgShotsTarget',
-        'HT_Form_W', 'HT_Form_D', 'HT_Form_L', 'AT_Form_W', 'AT_Form_D', 'AT_Form_L',
-    ]
+    # ========================================================================
+    # ANÁLISIS CRUZADO: features de baja importancia en TODOS los modelos
+    # ========================================================================
+    if resultados_todos:
+        print(f"\n{'=' * 70}")
+        print("  ANÁLISIS CRUZADO — Features de baja importancia")
+        print(f"{'=' * 70}")
 
-    # Features H2H
-    features_h2h = [
-        'H2H_Available', 'H2H_Matches', 'H2H_Home_Wins', 'H2H_Draws', 'H2H_Away_Wins',
-        'H2H_Home_Goals_Avg', 'H2H_Away_Goals_Avg', 'H2H_Home_Win_Rate', 'H2H_BTTS_Rate',
-        'H2H_Goal_Diff', 'H2H_Win_Advantage', 'H2H_Total_Goals_Avg', 'H2H_Home_Consistent',
-    ]
+        df_all = pd.concat(resultados_todos, ignore_index=True)
 
-    # Todas las features disponibles
-    all_possible = features_cuotas + features_prob + features_base + features_h2h
-    features = [f for f in all_possible if f in df.columns]
+        # Features que aparecen en al menos un modelo con < 1%
+        low_features = df_all[df_all['Porcentaje'] < 1.0].groupby('Feature').agg(
+            modelos_low=('Modelo', 'count'),
+            modelos_total=('Modelo', lambda x: len(x)),
+            pct_promedio=('Porcentaje', 'mean'),
+        ).sort_values('pct_promedio')
 
-    print(f"\n📊 Features disponibles para análisis: {len(features)}")
-    print(f"   • Cuotas puras: {len([f for f in features_cuotas if f in features])}")
-    print(f"   • Probabilidades: {len([f for f in features_prob if f in features])}")
-    print(f"   • Base: {len([f for f in features_base if f in features])}")
-    print(f"   • H2H: {len([f for f in features_h2h if f in features])}")
+        # Features < 1% en TODOS los modelos donde aparecen
+        candidatas_eliminar = low_features[low_features['modelos_low'] == low_features['modelos_total']]
 
-    # Preparar datos
-    X = df[features].fillna(0)
-    y = df['FTR_numeric']
-
-    # Split temporal
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-
-    # ============================================================================
-    # ENTRENAR MODELO PARA ANALIZAR IMPORTANCIA
-    # ============================================================================
-
-    print("\n🔧 Entrenando modelo para análisis...")
-
-    modelo = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=15,
-        min_samples_leaf=5,
-        class_weight=PESOS_PERSONALIZADOS,
-        random_state=SEED,
-        n_jobs=1,
-    )
-    modelo.fit(X_train, y_train)
-
-    pred = modelo.predict(X_test)
-    acc = accuracy_score(y_test, pred)
-    f1 = f1_score(y_test, pred, average='weighted')
-    print(f"✅ Modelo entrenado - Accuracy: {acc:.2%} | F1: {f1:.4f}")
-
-    # ============================================================================
-    # 1. IMPORTANCIA SEGÚN EL MODELO
-    # ============================================================================
-
-    print("\n" + "="*70)
-    print("1. IMPORTANCIA SEGÚN EL MODELO")
-    print("="*70)
-
-    importancias = modelo.feature_importances_
-
-    df_imp = pd.DataFrame({
-        'Feature': features,
-        'Importancia': importancias,
-    }).sort_values('Importancia', ascending=False)
-
-    total_imp = df_imp['Importancia'].sum()
-    df_imp['Porcentaje'] = (df_imp['Importancia'] / total_imp) * 100
-    df_imp['Porcentaje_Acumulado'] = df_imp['Porcentaje'].cumsum()
-
-    print(f"\n📊 RANKING COMPLETO DE FEATURES ({len(features)} total):")
-    print("-"*75)
-    print(f"{'#':<4} {'Feature':<35} {'Importancia':<12} {'%':<8} {'% Acum':<8}")
-    print("-"*75)
-
-    for i, (_, row) in enumerate(df_imp.iterrows(), 1):
-        print(f"{i:<4} {row['Feature']:<35} {row['Importancia']:<12.4f} {row['Porcentaje']:<8.2f} {row['Porcentaje_Acumulado']:<8.1f}")
-
-    # ============================================================================
-    # 2. RESUMEN POR CATEGORÍA
-    # ============================================================================
-
-    print("\n" + "="*70)
-    print("2. RESUMEN POR CATEGORÍA DE FEATURES")
-    print("="*70)
-
-    categorias = {
-        'Cuotas Puras': features_cuotas,
-        'Probabilidades': features_prob,
-        'Base': features_base,
-        'H2H': features_h2h,
-    }
-
-    resumen_cat = {}
-    for cat, feat_list in categorias.items():
-        features_cat = [f for f in feat_list if f in features]
-        if features_cat:
-            imp_cat = df_imp[df_imp['Feature'].isin(features_cat)]['Porcentaje'].sum()
-            resumen_cat[cat] = {
-                'n_features': len(features_cat),
-                'porcentaje': imp_cat,
-                'features': features_cat,
-            }
-
-    print(f"\n{'Categoría':<20} {'# Features':<12} {'% Importancia':<15}")
-    print("-"*50)
-    for cat, data in sorted(resumen_cat.items(), key=lambda x: -x[1]['porcentaje']):
-        print(f"{cat:<20} {data['n_features']:<12} {data['porcentaje']:<15.2f}%")
-
-    # ============================================================================
-    # 3. COMPARACIÓN: CUOTAS PURAS vs PROBABILIDADES
-    # ============================================================================
-
-    print("\n" + "="*70)
-    print("3. COMPARACIÓN: CUOTAS PURAS vs PROBABILIDADES DERIVADAS")
-    print("="*70)
-
-    cuotas_en_modelo = [f for f in features_cuotas if f in features]
-    probs_en_modelo = [f for f in features_prob if f in features]
-
-    imp_cuotas = 0.0
-    imp_probs = 0.0
-
-    if cuotas_en_modelo:
-        imp_cuotas = float(df_imp[df_imp['Feature'].isin(cuotas_en_modelo)]['Porcentaje'].sum())
-        print(f"\n📊 CUOTAS PURAS ({len(cuotas_en_modelo)} features): {imp_cuotas:.2f}%")
-        for f in cuotas_en_modelo:
-            pct = df_imp[df_imp['Feature'] == f]['Porcentaje'].values
-            if len(pct) > 0:
-                print(f"   • {f:<20} {pct[0]:.2f}%")
-
-    if probs_en_modelo:
-        imp_probs = float(df_imp[df_imp['Feature'].isin(probs_en_modelo)]['Porcentaje'].sum())
-        print(f"\n📊 PROBABILIDADES DERIVADAS ({len(probs_en_modelo)} features): {imp_probs:.2f}%")
-        for f in probs_en_modelo:
-            pct = df_imp[df_imp['Feature'] == f]['Porcentaje'].values
-            if len(pct) > 0:
-                print(f"   • {f:<20} {pct[0]:.2f}%")
-
-    if cuotas_en_modelo and probs_en_modelo:
-        print(f"\n🏆 VEREDICTO:")
-        if imp_cuotas > imp_probs:
-            print(f"   Las CUOTAS PURAS aportan más ({imp_cuotas:.1f}% vs {imp_probs:.1f}%)")
+        if len(candidatas_eliminar) > 0:
+            print(f"\n  {len(candidatas_eliminar)} features son < 1% en TODOS los modelos donde aparecen:")
+            for feat, row in candidatas_eliminar.iterrows():
+                print(f"    - {feat} (promedio: {row['pct_promedio']:.2f}%, en {int(row['modelos_total'])} modelo(s))")
+            print("\n  Estas features son candidatas a eliminarse del entrenamiento.")
         else:
-            print(f"   Las PROBABILIDADES DERIVADAS aportan más ({imp_probs:.1f}% vs {imp_cuotas:.1f}%)")
+            print("\n  No hay features < 1% en todos sus modelos.")
 
-    # ============================================================================
-    # 4. TOP FEATURES
-    # ============================================================================
+        # Redundancia (correlación) — solo para modelo principal
+        print(f"\n{'=' * 70}")
+        print("  FEATURES REDUNDANTES (Correlación > 0.85)")
+        print(f"{'=' * 70}")
 
-    print("\n" + "="*70)
-    print("4. TOP FEATURES (Acumulan 50% de importancia)")
-    print("="*70)
+        from config import ARCHIVO_FEATURES
+        if os.path.exists(ARCHIVO_FEATURES):
+            df_data = pd.read_csv(ARCHIVO_FEATURES)
+            # Usar features del modelo sin cuotas (más amplio)
+            feats_vb = joblib.load(os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')) if os.path.exists(os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')) else []
+            feats_ok = [f for f in feats_vb if f in df_data.columns]
+            if feats_ok:
+                X = df_data[feats_ok].apply(pd.to_numeric, errors='coerce').fillna(0)
+                corr = X.corr().abs()
+                pares = []
+                cols = list(corr.columns)
+                for ci in range(len(cols)):
+                    for cj in range(ci + 1, len(cols)):
+                        if corr.iloc[ci, cj] > 0.85:
+                            pares.append((cols[ci], cols[cj], corr.iloc[ci, cj]))
+                if pares:
+                    pares.sort(key=lambda x: -x[2])
+                    print(f"\n  {len(pares)} pares con correlación > 0.85:")
+                    for f1, f2, c in pares[:20]:
+                        print(f"    {f1:<30} <-> {f2:<30} ({c:.2f})")
+                    if len(pares) > 20:
+                        print(f"    ... y {len(pares) - 20} pares más")
+                else:
+                    print("\n  No hay features altamente correlacionadas.")
 
-    top_50 = df_imp[df_imp['Porcentaje_Acumulado'] <= 50]
-    if len(top_50) == 0:
-        top_50 = df_imp.head(1)
+        # Guardar CSV consolidado
+        csv_path = os.path.join(RUTA_MODELOS, 'feature_importance_analysis.csv')
+        df_all.to_csv(csv_path, index=False)
+        print(f"\n  Guardado: {csv_path}")
 
-    print(f"\n🏆 Las siguientes {len(top_50)} features acumulan ~50% de la importancia:")
-    print("-"*50)
-    for _, row in top_50.iterrows():
-        print(f"   • {row['Feature']:<30} ({row['Porcentaje']:.2f}%)")
+        # Gráfico por modelo
+        fig, axes = plt.subplots(2, 2, figsize=(16, 14))
+        axes = axes.flatten()
+        for idx, df_imp in enumerate(resultados_todos[:4]):
+            ax = axes[idx]
+            nombre_modelo = df_imp['Modelo'].iloc[0]
+            top_15 = df_imp.head(15)
+            colors = ['#e74c3c' if p < 1.0 else '#2ecc71' if p > 5.0 else '#3498db'
+                       for p in top_15['Porcentaje']]
+            ax.barh(range(len(top_15)), list(top_15['Porcentaje']), color=colors)
+            ax.set_yticks(range(len(top_15)))
+            ax.set_yticklabels(list(top_15['Feature']), fontsize=8)
+            ax.set_xlabel('Importancia (%)')
+            ax.set_title(nombre_modelo, fontweight='bold')
+            ax.invert_yaxis()
 
-    # ============================================================================
-    # 5. FEATURES CON POCA IMPORTANCIA
-    # ============================================================================
+        for idx in range(len(resultados_todos), 4):
+            axes[idx].set_visible(False)
 
-    print("\n" + "="*70)
-    print("5. FEATURES CON POCA IMPORTANCIA (<1%)")
-    print("="*70)
+        plt.suptitle('Importancia de Features por Modelo\n(Verde >5% | Azul 1-5% | Rojo <1%)',
+                     fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        img_path = os.path.join(RUTA_MODELOS, 'feature_importance_analysis.png')
+        plt.savefig(img_path, dpi=150, bbox_inches='tight')
+        plt.close()
+        print(f"  Guardado: {img_path}")
 
-    low_imp = df_imp[df_imp['Porcentaje'] < 1.0]
-    print(f"\n⚠️ {len(low_imp)} features aportan menos del 1% cada una:")
-    print("-"*50)
-    for _, row in low_imp.iterrows():
-        print(f"   • {row['Feature']:<30} ({row['Porcentaje']:.2f}%)")
-    print(f"\n   📊 Estas {len(low_imp)} features juntas aportan: {low_imp['Porcentaje'].sum():.1f}%")
-
-    # ============================================================================
-    # 6. FEATURES REDUNDANTES
-    # ============================================================================
-
-    print("\n" + "="*70)
-    print("6. FEATURES REDUNDANTES (Correlación > 0.85)")
-    print("="*70)
-
-    corr_matrix = X.corr().abs()
-
-    redundantes = []
-    cols = list(corr_matrix.columns)
-    for ci in range(len(cols)):
-        for cj in range(ci + 1, len(cols)):
-            if corr_matrix.iloc[ci, cj] > 0.85:
-                feat1, feat2 = cols[ci], cols[cj]
-                imp1_vals = df_imp[df_imp['Feature'] == feat1]['Porcentaje'].values
-                imp2_vals = df_imp[df_imp['Feature'] == feat2]['Porcentaje'].values
-                imp1 = float(imp1_vals[0]) if len(imp1_vals) > 0 else 0.0
-                imp2 = float(imp2_vals[0]) if len(imp2_vals) > 0 else 0.0
-
-                redundantes.append({
-                    'Feature_1': feat1,
-                    'Feature_2': feat2,
-                    'Correlacion': corr_matrix.iloc[ci, cj],
-                    'Imp_1': imp1,
-                    'Imp_2': imp2,
-                    'Eliminar': feat1 if imp1 < imp2 else feat2,
-                })
-
-    if redundantes:
-        df_red = pd.DataFrame(redundantes).sort_values('Correlacion', ascending=False)
-        print(f"\n⚠️ {len(df_red)} pares de features muy correlacionadas:")
-        print("-"*85)
-        print(f"{'Feature 1':<25} {'Feature 2':<25} {'Corr':<8} {'Sugerencia Eliminar':<25}")
-        print("-"*85)
-        for _, row in df_red.head(25).iterrows():
-            print(f"{row['Feature_1']:<25} {row['Feature_2']:<25} {row['Correlacion']:<8.2f} {row['Eliminar']:<25}")
-        if len(df_red) > 25:
-            print(f"   ... y {len(df_red) - 25} pares más")
-    else:
-        print("\n✅ No hay features altamente correlacionadas")
-
-    # ============================================================================
-    # 7. GUARDAR RESULTADOS
-    # ============================================================================
-
-    print("\n" + "="*70)
-    print("7. GUARDANDO RESULTADOS")
-    print("="*70)
-
-    os.makedirs(RUTA_MODELOS, exist_ok=True)
-
-    csv_path = os.path.join(RUTA_MODELOS, 'feature_importance_analysis.csv')
-    img_path = os.path.join(RUTA_MODELOS, 'feature_importance_analysis.png')
-
-    df_imp.to_csv(csv_path, index=False)
-    print(f"✅ Guardado: {csv_path}")
-
-    # Gráfico
-    plt.figure(figsize=(12, 10))
-    top_20 = df_imp.head(20)
-    feat_list_top20 = list(top_20['Feature'])
-    colors = [
-        '#2ecc71' if f in features_cuotas
-        else '#3498db' if f in features_prob
-        else '#95a5a6'
-        for f in feat_list_top20
-    ]
-    plt.barh(range(len(top_20)), list(top_20['Porcentaje']), color=colors)
-    plt.yticks(range(len(top_20)), feat_list_top20)
-    plt.xlabel('Porcentaje de Importancia (%)')
-    plt.title(
-        'Top 20 Features por Importancia\n(Verde=Cuotas, Azul=Probabilidades, Gris=Otras)',
-        fontsize=14, fontweight='bold',
-    )
-    plt.gca().invert_yaxis()
-
-    for i, (_, row) in enumerate(top_20.iterrows()):
-        plt.text(row['Porcentaje'] + 0.1, i, f"{row['Porcentaje']:.1f}%", va='center')
-
-    plt.tight_layout()
-    plt.savefig(img_path, dpi=150, bbox_inches='tight')
-    print(f"✅ Guardado: {img_path}")
-    plt.close()
-
-    print("\n" + "="*70)
+    print(f"\n{'=' * 70}")
     print("   ANÁLISIS COMPLETADO")
-    print("="*70)
+    print(f"{'=' * 70}")

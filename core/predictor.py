@@ -31,6 +31,12 @@ from config import (
     ARCHIVO_FEATURES_PKL,
     ARCHIVO_MODELO_VB,
     ARCHIVO_FEATURES_VB,
+    ARCHIVO_MODELO_OU,
+    ARCHIVO_FEATURES_OU,
+    ARCHIVO_MODELO_TARJETAS,
+    ARCHIVO_FEATURES_TARJETAS,
+    ARCHIVO_MODELO_CORNERS,
+    ARCHIVO_FEATURES_CORNERS,
     FACTOR_CONSERVADOR,
     UMBRAL_EDGE_MINIMO,
     CUOTA_MAXIMA,
@@ -41,8 +47,15 @@ from config import (
     MONEDA,
 )
 import utils
-from utils import calcular_h2h_features, EnsembleLGBM_XGB  # noqa: F401 — necesario para deserializar ensemble
-from core.models import Partido, Prediccion, ConfigJornada
+from utils import (
+    calcular_h2h_features,
+    EnsembleLGBM_XGB,  # noqa: F401 — necesario para deserializar ensemble
+    agregar_features_arbitro,
+    agregar_features_goles_binarias,
+    agregar_features_tarjetas_binarias,
+    agregar_features_corners_binarias,
+)
+from core.models import Partido, Prediccion, PrediccionBinaria, ConfigJornada
 
 # Carpeta de salida para reportes — siempre en la raiz del proyecto
 # (dos niveles arriba de core/)
@@ -120,6 +133,13 @@ class Predictor:
         self._features = None
         self._df_historico = None
         self._bankroll = bankroll
+        # Modelos binarios
+        self._modelo_ou = None
+        self._features_ou = None
+        self._modelo_tarjetas = None
+        self._features_tarjetas = None
+        self._modelo_corners = None
+        self._features_corners = None
 
     # -------------------------------------------------------------------------
     # CARGA
@@ -177,13 +197,31 @@ class Predictor:
                 df_enriq = utils.agregar_features_descanso(df_enriq)
                 df_enriq = utils.agregar_features_elo(df_enriq)
                 df_enriq = utils.agregar_features_sor(df_enriq)
+                df_enriq = utils.agregar_features_arbitro(df_enriq)
+                df_enriq = utils.agregar_features_goles_binarias(df_enriq)
+                df_enriq = utils.agregar_features_tarjetas_binarias(df_enriq)
+                df_enriq = utils.agregar_features_corners_binarias(df_enriq)
             self._df_enriquecido = df_enriq
         except Exception as e:
             print(f"Advertencia: no se pudo enriquecer el historico ({e}). Usando CSV base.")
             self._df_enriquecido = self._df_historico
 
+        # Cargar modelos binarios (opcionales)
+        binarios_cargados = []
+        for attr_m, attr_f, ruta_m, ruta_f, label in [
+            ('_modelo_ou', '_features_ou', ARCHIVO_MODELO_OU, ARCHIVO_FEATURES_OU, 'Over/Under'),
+            ('_modelo_tarjetas', '_features_tarjetas', ARCHIVO_MODELO_TARJETAS, ARCHIVO_FEATURES_TARJETAS, 'Tarjetas'),
+            ('_modelo_corners', '_features_corners', ARCHIVO_MODELO_CORNERS, ARCHIVO_FEATURES_CORNERS, 'Corners'),
+        ]:
+            if os.path.exists(ruta_m) and os.path.exists(ruta_f):
+                setattr(self, attr_m, joblib.load(ruta_m))
+                setattr(self, attr_f, joblib.load(ruta_f))
+                binarios_cargados.append(label)
+
         print(f"Modelo cargado  : {os.path.basename(modelo_file)}")
         print(f"Features        : {len(self._features)}")
+        if binarios_cargados:
+            print(f"Modelos binarios: {', '.join(binarios_cargados)}")
         print(f"Historico       : {len(self._df_historico)} partidos\n")
         return True
 
@@ -395,6 +433,126 @@ class Predictor:
         )
 
     # -------------------------------------------------------------------------
+    # PREDICCION DE MERCADOS BINARIOS
+    # -------------------------------------------------------------------------
+
+    def predecir_mercados_binarios(self, partido: Partido) -> PrediccionBinaria:
+        """
+        Predice mercados binarios (O/U goles, tarjetas, corners) para un partido.
+
+        Extrae las features del último partido de cada equipo del histórico
+        enriquecido y ejecuta cada modelo binario disponible.
+        """
+        resultado = PrediccionBinaria()
+        df = getattr(self, '_df_enriquecido', None)
+        if df is None or len(df) == 0:
+            return resultado
+
+        local = partido.local
+        visitante = partido.visitante
+
+        # Extraer features del último partido de cada equipo
+        datos = self._extraer_features_binarias(local, visitante)
+
+        for modelo, features, attr in [
+            (self._modelo_ou, self._features_ou, 'prob_over25'),
+            (self._modelo_tarjetas, self._features_tarjetas, 'prob_over35_cards'),
+            (self._modelo_corners, self._features_corners, 'prob_over95_corners'),
+        ]:
+            if modelo is None or features is None:
+                continue
+            try:
+                fila = {f: datos.get(f, 0.0) for f in features}
+                X = pd.DataFrame([fila], columns=features)
+                prob = modelo.predict_proba(X)[0][1]  # P(Over)
+                setattr(resultado, attr, float(prob))
+            except Exception:
+                pass
+
+        return resultado
+
+    def _extraer_features_binarias(self, local: str, visitante: str) -> dict:
+        """Extrae features para modelos binarios del histórico enriquecido."""
+        df = self._df_enriquecido
+        datos = {}
+
+        for equipo, es_local in [(local, True), (visitante, False)]:
+            partidos = df[(df['HomeTeam'] == equipo) | (df['AwayTeam'] == equipo)]
+            if len(partidos) == 0:
+                continue
+            ultimo = partidos.iloc[-1]
+            jugaba_local = ultimo['HomeTeam'] == equipo
+
+            # Prefijo del modelo: HT_ si es_local, AT_ si no
+            prefix = 'HT' if es_local else 'AT'
+            # Prefijo en el DataFrame depende de si jugaba en casa
+            src_prefix = 'HT' if jugaba_local else 'AT'
+            other_prefix = 'AT' if jugaba_local else 'HT'
+
+            # Features que siguen patrón directo: HT_xxx -> HT_xxx (si local) o AT_xxx
+            # El modelo espera HT_ para local y AT_ para visitante
+            # El DataFrame tiene HT_ para home y AT_ para away
+            feat_map_same = [
+                'AvgGoals', 'AvgShotsTarget', 'xG_Avg', 'xGA_Avg',
+                'TotalGoals5', 'Over25_Rate5', 'BTTS_Rate5',
+                'Shots5', 'ShotsTarget5', 'xG_Residual5',
+                'YellowAvg5', 'YellowFor5', 'RedRate5',
+                'CornersFor5', 'CornersAgainst5', 'CornersTotal5',
+                'Corner_Dominance5', 'Fouls5',
+                'Days_Rest', 'Elo',
+                'Form_W', 'Form_D', 'Form_L',
+                'Position', 'Pressure',
+            ]
+
+            for feat in feat_map_same:
+                col_src = f'{src_prefix}_{feat}'
+                col_dst = f'{prefix}_{feat}'
+                if col_src in ultimo.index and pd.notna(ultimo[col_src]):
+                    datos[col_dst] = float(ultimo[col_src])
+                else:
+                    # Try the other prefix (equipo jugaba como away, feature tiene prefijo AT_)
+                    col_other = f'{other_prefix}_{feat}'
+                    if col_other in ultimo.index and pd.notna(ultimo[col_other]):
+                        datos[col_dst] = float(ultimo[col_other])
+
+        # Features derivadas (no prefijadas)
+        ht_xg = datos.get('HT_xG_Avg', 0)
+        at_xg = datos.get('AT_xG_Avg', 0)
+        datos['xG_Diff'] = ht_xg - at_xg
+        datos['xG_Total'] = ht_xg + at_xg
+        datos['Elo_Diff'] = datos.get('HT_Elo', 1500) - datos.get('AT_Elo', 1500)
+        datos['Rest_Diff'] = datos.get('HT_Days_Rest', 7) - datos.get('AT_Days_Rest', 7)
+        datos['Position_Diff'] = datos.get('AT_Position', 10) - datos.get('HT_Position', 10)
+        datos['Corner_Dominance_Diff'] = datos.get('HT_Corner_Dominance5', 0) - datos.get('AT_Corner_Dominance5', 0)
+
+        # H2H features para binarios
+        try:
+            h2h = calcular_h2h_features(self._df_historico, local, visitante)
+            datos.update(h2h)
+        except Exception:
+            pass
+
+        # H2H Over25_Rate, Yellow_Avg, Corners_Avg — del df enriquecido
+        h2h_partidos = df[
+            ((df['HomeTeam'] == local) & (df['AwayTeam'] == visitante)) |
+            ((df['HomeTeam'] == visitante) & (df['AwayTeam'] == local))
+        ]
+        if len(h2h_partidos) > 0:
+            ultimo_h2h = h2h_partidos.iloc[-1]
+            for col in ['H2H_Over25_Rate', 'H2H_Yellow_Avg', 'H2H_Corners_Avg']:
+                if col in ultimo_h2h.index and pd.notna(ultimo_h2h[col]):
+                    datos[col] = float(ultimo_h2h[col])
+
+        # Referee features — usar último partido del enriquecido
+        if len(df) > 0:
+            ultimo_global = df.iloc[-1]
+            for col in ['Ref_Yellow_Avg', 'Ref_Cards_Total_Avg', 'Ref_Aggressiveness_Interaction']:
+                if col in ultimo_global.index and pd.notna(ultimo_global[col]):
+                    datos[col] = float(ultimo_global[col])
+
+        return datos
+
+    # -------------------------------------------------------------------------
     # PREDICCION DE JORNADA COMPLETA
     # -------------------------------------------------------------------------
 
@@ -411,10 +569,14 @@ class Predictor:
         predicciones = []
         total = len(config.partidos)
 
+        tiene_binarios = any([self._modelo_ou, self._modelo_tarjetas, self._modelo_corners])
+
         for i, partido in enumerate(config.partidos, 1):
             print(f"[{i}/{total}] {partido.local} vs {partido.visitante}...", end=' ')
             pred = self.predecir_partido(partido)
             if pred:
+                if tiene_binarios:
+                    pred.mercados_binarios = self.predecir_mercados_binarios(partido)
                 predicciones.append(pred)
                 print(f"{pred.resultado_predicho} ({pred.confianza:.1%})")
             else:
@@ -444,6 +606,13 @@ class Predictor:
         Retorna la ruta del archivo generado, o None si fallo.
         """
         resultados = [p.a_dict() for p in predicciones]
+        # Agregar mercados binarios al dict para los reportes
+        for r, p in zip(resultados, predicciones):
+            mb = p.mercados_binarios
+            if mb:
+                r['prob_over25'] = mb.prob_over25
+                r['prob_over35_cards'] = mb.prob_over35_cards
+                r['prob_over95_corners'] = mb.prob_over95_corners
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         tag = f"jornada{numero_jornada}_{timestamp}"
 
@@ -874,6 +1043,26 @@ class Predictor:
             pdf.cell(0, 5,
                 f"   Forma: {r['local']} ({r['forma_local']}) | "
                 f"{r['visitante']} ({r['forma_visitante']})", 0, 1)
+
+            # Mercados binarios
+            p_ou = r.get('prob_over25')
+            p_tc = r.get('prob_over35_cards')
+            p_cn = r.get('prob_over95_corners')
+            if any(v is not None for v in [p_ou, p_tc, p_cn]):
+                pdf.set_font('Arial', 'B', 9)
+                pdf.cell(0, 5, '   Mercados adicionales:', 0, 1)
+                pdf.set_font('Arial', '', 9)
+                if p_ou is not None:
+                    side = "Over" if p_ou >= 0.5 else "Under"
+                    pdf.cell(0, 4, f"     Goles O/U 2.5: {side} ({p_ou:.1%})", 0, 1)
+                if p_tc is not None:
+                    side = "Over" if p_tc >= 0.5 else "Under"
+                    pdf.cell(0, 4, f"     Tarjetas O/U 3.5: {side} ({p_tc:.1%})", 0, 1)
+                if p_cn is not None:
+                    side = "Over" if p_cn >= 0.5 else "Under"
+                    pdf.cell(0, 4, f"     Corners O/U 9.5: {side} ({p_cn:.1%})", 0, 1)
+                pdf.set_font('Arial', '', 10)
+
             pdf.ln(3)
 
             if i % 3 == 0 and i < len(resultados):
@@ -973,11 +1162,33 @@ class Predictor:
         df['Cuotas'] = df.apply(lambda x: f"{x['cuota_h']:.2f}-{x['cuota_d']:.2f}-{x['cuota_a']:.2f}", axis=1)
         df['Oportunidad'] = df['diferencia_valor'].apply(lambda x: 'SI' if abs(x) > 0.08 else 'No')
 
-        df_export = df[[
+        # Mercados binarios
+        if 'prob_over25' in df.columns:
+            df['O/U 2.5'] = df['prob_over25'].apply(
+                lambda x: f"{'Over' if x >= 0.5 else 'Under'} {x:.0%}" if pd.notna(x) else 'N/A')
+        if 'prob_over35_cards' in df.columns:
+            df['Tarj 3.5'] = df['prob_over35_cards'].apply(
+                lambda x: f"{'Over' if x >= 0.5 else 'Under'} {x:.0%}" if pd.notna(x) else 'N/A')
+        if 'prob_over95_corners' in df.columns:
+            df['Corn 9.5'] = df['prob_over95_corners'].apply(
+                lambda x: f"{'Over' if x >= 0.5 else 'Under'} {x:.0%}" if pd.notna(x) else 'N/A')
+
+        cols = [
             'Partido', 'Prediccion', 'Confianza',
             'Prob Local', 'Prob Empate', 'Prob Visit',
-            'Cuotas', 'Oportunidad', 'forma_local', 'forma_visitante'
-        ]]
-        df_export.to_excel(ruta, index=False)
-        print(f"Excel generado: {ruta}\n")
-        return ruta
+            'Cuotas', 'Oportunidad', 'forma_local', 'forma_visitante',
+        ]
+        for extra in ['O/U 2.5', 'Tarj 3.5', 'Corn 9.5']:
+            if extra in df.columns:
+                cols.append(extra)
+        df_export = df[cols]
+        try:
+            df_export.to_excel(ruta, index=False)
+            print(f"Excel generado: {ruta}\n")
+            return ruta
+        except ImportError:
+            # Fallback a CSV si openpyxl no esta instalado
+            ruta_csv = ruta.replace('.xlsx', '.csv')
+            df_export.to_csv(ruta_csv, index=False)
+            print(f"Excel no disponible (instalar openpyxl). CSV generado: {ruta_csv}\n")
+            return ruta_csv

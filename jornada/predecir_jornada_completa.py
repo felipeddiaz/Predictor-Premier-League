@@ -2,6 +2,7 @@
 predecir_jornada_completa.py — Punto de entrada del predictor.
 
 Ejecuta la prediccion completa de una jornada y genera los reportes.
+Incluye: resultado 1X2, Over/Under goles, tarjetas, corners.
 
 Para configurar la jornada (partidos + cuotas), edita:
     jornada/jornada_config.py
@@ -25,7 +26,7 @@ def main():
     print("\n" + "=" * 70)
     print("   PREDICTOR DE JORNADA COMPLETA")
     print(f"   Jornada {CONFIG_JORNADA.numero}")
-    print("   CON VALUE BETTING PROFESIONAL")
+    print("   1X2 + Over/Under + Tarjetas + Corners")
     print("=" * 70 + "\n")
 
     # Inicializar y cargar el sistema
@@ -62,6 +63,16 @@ def main():
     print()
 
 
+def _fmt_prob_binaria(prob, label_over, label_under):
+    """Formatea probabilidad binaria con indicador Over/Under."""
+    if prob is None:
+        return "N/A"
+    if prob >= 0.5:
+        return f"{label_over} {prob:.0%}"
+    else:
+        return f"{label_under} {1-prob:.0%}"
+
+
 def _mostrar_resumen_consola(predicciones, predictor: Predictor):
     """Imprime el resumen de predicciones y value bets en consola."""
     from config import (
@@ -72,34 +83,75 @@ def _mostrar_resumen_consola(predicciones, predictor: Predictor):
 
     bankroll = BANKROLL_DEFAULT
 
-    # Tabla de predicciones
+    # ================================================================
+    # PREDICCIONES COMPLETAS POR PARTIDO
+    # ================================================================
     print("=" * 70)
-    print("RESUMEN DE PREDICCIONES CON ANALISIS DE VALOR")
+    print("PREDICCIONES COMPLETAS — TODOS LOS MERCADOS")
     print("=" * 70)
-    print(f"{'Partido':<40} {'Prediccion':<12} {'Confianza':<10} {'Edge':<15}")
-    print("-" * 70)
+
+    for i, p in enumerate(predicciones, 1):
+        partido_str = f"{p.partido.local} vs {p.partido.visitante}"
+        indicador = ">" if p.resultado_predicho == 'Local' else "=" if p.resultado_predicho == 'Empate' else "<"
+
+        print(f"\n{i}. [{indicador}] {partido_str}")
+        print(f"   Resultado: Local {p.prob_local:.1%} | Empate {p.prob_empate:.1%} | Visitante {p.prob_visitante:.1%}")
+        print(f"   Prediccion: {p.resultado_predicho} ({p.confianza:.1%})")
+        print(f"   Cuotas: {p.partido.cuota_h:.2f} - {p.partido.cuota_d:.2f} - {p.partido.cuota_a:.2f}")
+        print(f"   Forma: {p.partido.local} ({p.forma_local}) | {p.partido.visitante} ({p.forma_visitante})")
+
+        # Mercados binarios
+        mb = p.mercados_binarios
+        if mb:
+            ou = _fmt_prob_binaria(mb.prob_over25, "Over", "Under")
+            tc = _fmt_prob_binaria(mb.prob_over35_cards, "Over", "Under")
+            cn = _fmt_prob_binaria(mb.prob_over95_corners, "Over", "Under")
+            print(f"   Goles O/U 2.5:     {ou}" + (f"  (prob: {mb.prob_over25:.1%})" if mb.prob_over25 is not None else ""))
+            print(f"   Tarjetas O/U 3.5:  {tc}" + (f"  (prob: {mb.prob_over35_cards:.1%})" if mb.prob_over35_cards is not None else ""))
+            print(f"   Corners O/U 9.5:   {cn}" + (f"  (prob: {mb.prob_over95_corners:.1%})" if mb.prob_over95_corners is not None else ""))
+
+        # Edge
+        dif = p.diferencia_valor
+        if dif > 0.08:
+            print(f"   VALOR: +{dif:.1%} (GRAN OPORTUNIDAD)")
+        elif dif > 0.05:
+            print(f"   VALOR: +{dif:.1%} (OPORTUNIDAD)")
+        elif dif > 0.03:
+            print(f"   VALOR: +{dif:.1%}")
+        elif dif < -0.05:
+            print(f"   CUIDADO: mercado ve mas probabilidad ({dif:.1%})")
+
+    # ================================================================
+    # TABLA RESUMEN COMPACTA
+    # ================================================================
+    print(f"\n{'=' * 90}")
+    print("TABLA RESUMEN")
+    print(f"{'=' * 90}")
+    print(f"{'Partido':<35} {'1X2':<8} {'Conf':>5} {'O/U 2.5':>9} {'Tarj 3.5':>9} {'Corn 9.5':>9} {'Edge':>7}")
+    print("-" * 90)
 
     for p in predicciones:
-        partido = f"{p.partido.local} vs {p.partido.visitante}"
+        partido_str = f"{p.partido.local}-{p.partido.visitante}"
+        if len(partido_str) > 33:
+            partido_str = partido_str[:33]
+
+        pred_short = p.resultado_predicho[:3]
+        mb = p.mercados_binarios
+
+        ou_str = f"{'O' if mb and mb.prob_over25 and mb.prob_over25 >= 0.5 else 'U'}{mb.prob_over25:.0%}" if mb and mb.prob_over25 is not None else "N/A"
+        tc_str = f"{'O' if mb and mb.prob_over35_cards and mb.prob_over35_cards >= 0.5 else 'U'}{max(mb.prob_over35_cards, 1-mb.prob_over35_cards):.0%}" if mb and mb.prob_over35_cards is not None else "N/A"
+        cn_str = f"{'O' if mb and mb.prob_over95_corners and mb.prob_over95_corners >= 0.5 else 'U'}{max(mb.prob_over95_corners, 1-mb.prob_over95_corners):.0%}" if mb and mb.prob_over95_corners is not None else "N/A"
+
         dif = p.diferencia_valor
+        edge_str = f"{dif:+.1%}" if abs(dif) > 0.01 else "---"
 
-        if dif > 0.08:
-            valor_texto = f"+{dif:.1%} (GRAN OPORT.)"
-        elif dif > 0.05:
-            valor_texto = f"+{dif:.1%} (OPORT.)"
-        elif dif > 0.03:
-            valor_texto = f"+{dif:.1%} (ok)"
-        elif dif > 0:
-            valor_texto = f"+{dif:.1%}"
-        else:
-            valor_texto = f"{dif:.1%}"
+        print(f"{partido_str:<35} {pred_short:<8} {p.confianza:>4.0%} {ou_str:>9} {tc_str:>9} {cn_str:>9} {edge_str:>7}")
 
-        indicador = ">" if p.resultado_predicho == 'Local' else "=" if p.resultado_predicho == 'Empate' else "<"
-        print(f"[{indicador}] {partido:<38} {p.resultado_predicho:<12} {p.confianza:.1%}     {valor_texto}")
+    print("-" * 90)
 
-    print("-" * 70)
-
-    # Value betting — 3 capas
+    # ================================================================
+    # VALUE BETTING — 3 CAPAS
+    # ================================================================
     print(f"\nVALUE BETTING — SISTEMA DE 3 CAPAS:")
     print("-" * 70)
     print(f"CAPA 1: Factor conservador {FACTOR_CONSERVADOR} ({(1-FACTOR_CONSERVADOR)*100:.0f}% descuento)")
@@ -178,7 +230,6 @@ def _mostrar_resumen_consola(predicciones, predictor: Predictor):
             print(f"   Expected Value: {MONEDA}{vb['ev']:+.2f} (ROI: {vb['roi']:+.1%})")
             print(f"   Stake recomendado: {MONEDA}{vb['stake']:.2f} ({vb['kelly_fraction']*100:.1f}% bankroll)")
             print(f"   Probabilidades: Modelo {vb['prob_modelo']:.1%} vs Mercado {vb['prob_mercado']:.1%}")
-            print(f"   Ajuste Capa 1: {vb['prob_original']:.1%} -> {vb['prob_modelo']:.1%} ({vb['ajuste']:+.1%})")
             print()
 
         print("=" * 70)
