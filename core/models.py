@@ -16,6 +16,22 @@ from typing import Optional
 
 
 # ============================================================================
+# PREDICCION BINARIA — Mercados O/U, tarjetas, corners
+# ============================================================================
+
+@dataclass
+class PrediccionBinaria:
+    """
+    Predicciones de mercados binarios para un partido.
+
+    Cada campo es la probabilidad de 'Over' del umbral correspondiente.
+    """
+    prob_over25: Optional[float] = None       # P(Over 2.5 goles)
+    prob_over35_cards: Optional[float] = None  # P(Over 3.5 tarjetas amarillas)
+    prob_over95_corners: Optional[float] = None  # P(Over 9.5 corners)
+
+
+# ============================================================================
 # PARTIDO — Datos de entrada de un partido
 # ============================================================================
 
@@ -136,6 +152,7 @@ class Prediccion:
     prob_local_original: float = 0.0
     prob_empate_original: float = 0.0
     prob_visitante_original: float = 0.0
+    mercados_binarios: Optional[PrediccionBinaria] = None
 
     def es_alta_confianza(self) -> bool:
         """True si la confianza es >= 60%."""

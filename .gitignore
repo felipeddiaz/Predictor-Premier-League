@@ -23,3 +23,6 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Reportes generados
+reportes/
