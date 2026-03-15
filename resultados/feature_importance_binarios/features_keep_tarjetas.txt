@@ -1,0 +1,16 @@
+Ref_Aggressiveness_Interaction
+HT_YellowAvg5
+H2H_Yellow_Avg
+Rest_Diff
+AT_Form_L
+Ref_Cards_Total_Avg
+HT_YellowFor5
+AT_Days_Rest
+HT_Form_D
+HT_Form_L
+Ref_Yellow_Avg
+AT_RedRate5
+AT_YellowAvg5
+AT_Form_D
+HT_Days_Rest
+AT_Form_W

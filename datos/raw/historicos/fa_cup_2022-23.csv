@@ -1,0 +1,91 @@
+Season,Date,Team,Comp,Venue,Opponent
+2022-23,2023-01-09,Arsenal,FA Cup,Away,Oxford United
+2022-23,2023-01-27,Arsenal,FA Cup,Away,Man City
+2022-23,2023-01-08,Aston Villa,FA Cup,Home,Stevenage
+2022-23,2023-01-07,Bournemouth,FA Cup,Home,Burnley
+2022-23,2023-01-07,Brentford,FA Cup,Home,West Ham
+2022-23,2023-01-07,Brighton,FA Cup,Away,Middlesbrough
+2022-23,2023-01-29,Brighton,FA Cup,Home,Liverpool
+2022-23,2023-02-28,Brighton,FA Cup,Away,Stoke
+2022-23,2023-03-19,Brighton,FA Cup,Home,Grimsby
+2022-23,2023-04-23,Brighton,FA Cup,Home,Man United
+2022-23,2023-01-07,Burnley,FA Cup,Away,Bournemouth
+2022-23,2023-01-28,Burnley,FA Cup,Away,Ipswich
+2022-23,2023-02-07,Burnley,FA Cup,Home,Ipswich
+2022-23,2023-03-01,Burnley,FA Cup,Home,Fleetwood Town
+2022-23,2023-03-18,Burnley,FA Cup,Away,Man City
+2022-23,2023-01-08,Cardiff,FA Cup,Home,Leeds
+2022-23,2023-01-18,Cardiff,FA Cup,Away,Leeds
+2022-23,2023-01-08,Chelsea,FA Cup,Away,Man City
+2022-23,2023-01-07,Crystal Palace,FA Cup,Home,Southampton
+2022-23,2023-01-06,Everton,FA Cup,Away,Man United
+2022-23,2023-01-07,Fulham,FA Cup,Away,Hull
+2022-23,2023-01-28,Fulham,FA Cup,Home,Sunderland
+2022-23,2023-02-08,Fulham,FA Cup,Away,Sunderland
+2022-23,2023-02-28,Fulham,FA Cup,Home,Leeds
+2022-23,2023-03-19,Fulham,FA Cup,Away,Man United
+2022-23,2023-01-07,Huddersfield,FA Cup,Away,Preston
+2022-23,2023-01-07,Hull,FA Cup,Home,Fulham
+2022-23,2022-11-07,Ipswich,FA Cup,Away,Bracknell Town
+2022-23,2022-11-27,Ipswich,FA Cup,Home,Buxton
+2022-23,2023-01-07,Ipswich,FA Cup,Home,Rotherham
+2022-23,2023-01-28,Ipswich,FA Cup,Home,Burnley
+2022-23,2023-02-07,Ipswich,FA Cup,Away,Burnley
+2022-23,2023-01-08,Leeds,FA Cup,Away,Cardiff
+2022-23,2023-01-18,Leeds,FA Cup,Home,Cardiff
+2022-23,2023-01-28,Leeds,FA Cup,Away,Accrington ST
+2022-23,2023-02-28,Leeds,FA Cup,Away,Fulham
+2022-23,2023-01-07,Leicester,FA Cup,Away,Gillingham
+2022-23,2023-01-28,Leicester,FA Cup,Away,Walsall
+2022-23,2023-02-28,Leicester,FA Cup,Home,Blackburn
+2022-23,2023-01-07,Liverpool,FA Cup,Home,Wolves
+2022-23,2023-01-17,Liverpool,FA Cup,Away,Wolves
+2022-23,2023-01-29,Liverpool,FA Cup,Away,Brighton
+2022-23,2023-01-07,Luton,FA Cup,Home,Wigan
+2022-23,2023-01-17,Luton,FA Cup,Away,Wigan
+2022-23,2023-01-28,Luton,FA Cup,Home,Grimsby
+2022-23,2023-02-07,Luton,FA Cup,Away,Grimsby
+2022-23,2023-01-08,Man City,FA Cup,Home,Chelsea
+2022-23,2023-01-27,Man City,FA Cup,Home,Arsenal
+2022-23,2023-02-28,Man City,FA Cup,Away,Bristol City
+2022-23,2023-03-18,Man City,FA Cup,Home,Burnley
+2022-23,2023-04-22,Man City,FA Cup,Home,Sheffield United
+2022-23,2023-06-03,Man City,FA Cup,Home,Man United
+2022-23,2023-01-06,Man United,FA Cup,Home,Everton
+2022-23,2023-01-28,Man United,FA Cup,Home,Reading
+2022-23,2023-03-01,Man United,FA Cup,Home,West Ham
+2022-23,2023-03-19,Man United,FA Cup,Home,Fulham
+2022-23,2023-04-23,Man United,FA Cup,Away,Brighton
+2022-23,2023-06-03,Man United,FA Cup,Away,Man City
+2022-23,2023-01-07,Middlesbrough,FA Cup,Home,Brighton
+2022-23,2023-01-07,Newcastle,FA Cup,Away,Sheffield Wednesday
+2022-23,2023-01-07,Nott'm Forest,FA Cup,Away,Blackpool
+2022-23,2023-01-07,Sheffield United,FA Cup,Away,Millwall
+2022-23,2023-01-29,Sheffield United,FA Cup,Away,Wrexham
+2022-23,2023-02-07,Sheffield United,FA Cup,Home,Wrexham
+2022-23,2023-03-01,Sheffield United,FA Cup,Home,Tottenham
+2022-23,2023-03-19,Sheffield United,FA Cup,Home,Blackburn
+2022-23,2023-04-22,Sheffield United,FA Cup,Away,Man City
+2022-23,2023-01-07,Southampton,FA Cup,Away,Crystal Palace
+2022-23,2023-01-28,Southampton,FA Cup,Home,Blackpool
+2022-23,2023-03-01,Southampton,FA Cup,Home,Grimsby
+2022-23,2023-01-08,Stoke,FA Cup,Away,Hartlepool
+2022-23,2023-01-29,Stoke,FA Cup,Home,Stevenage
+2022-23,2023-02-28,Stoke,FA Cup,Home,Brighton
+2022-23,2023-01-07,Sunderland,FA Cup,Away,Shrewsbury
+2022-23,2023-01-28,Sunderland,FA Cup,Away,Fulham
+2022-23,2023-02-08,Sunderland,FA Cup,Home,Fulham
+2022-23,2023-01-08,Swansea,FA Cup,Away,Bristol City
+2022-23,2023-01-17,Swansea,FA Cup,Home,Bristol City
+2022-23,2023-01-07,Tottenham,FA Cup,Home,Portsmouth
+2022-23,2023-01-28,Tottenham,FA Cup,Away,Preston
+2022-23,2023-03-01,Tottenham,FA Cup,Away,Sheffield United
+2022-23,2023-01-07,Watford,FA Cup,Away,Reading
+2022-23,2023-01-07,West Brom,FA Cup,Away,Chesterfield
+2022-23,2023-01-17,West Brom,FA Cup,Home,Chesterfield
+2022-23,2023-01-28,West Brom,FA Cup,Away,Bristol City
+2022-23,2023-01-07,West Ham,FA Cup,Away,Brentford
+2022-23,2023-01-30,West Ham,FA Cup,Away,Derby
+2022-23,2023-03-01,West Ham,FA Cup,Away,Man United
+2022-23,2023-01-07,Wolves,FA Cup,Away,Liverpool
+2022-23,2023-01-17,Wolves,FA Cup,Home,Liverpool

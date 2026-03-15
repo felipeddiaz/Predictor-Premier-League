@@ -1,0 +1,16 @@
+{
+  "best_params": {
+    "w0": 2.0006938402773304,
+    "w1": 4.0514458238935624,
+    "w2": 1.8684762879872916,
+    "n_estimators": 400,
+    "max_depth": 15,
+    "min_samples_leaf": 3,
+    "max_features": "log2",
+    "min_samples_split": 10
+  },
+  "f1_cv": 0.5219583620411125,
+  "f1_test": 0.4814729254517499,
+  "acc_test": 0.4938650306748466,
+  "n_features": 73
+}

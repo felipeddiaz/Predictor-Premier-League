@@ -1,0 +1,272 @@
+timestamp_prediccion,fecha_partido,home,away,prob_home,prob_draw,prob_away,prediccion,B365H,B365D,B365A,value_bet,edge,resultado_real,acierto
+2026-03-07 23:14:48,2025-08-15,Liverpool,Bournemouth,0.6156,0.2206,0.1639,Home,1.3,6.0,8.5,Draw,0.0624,Home,True
+2026-03-07 23:14:48,2025-08-16,Aston Villa,Newcastle,0.2856,0.3347,0.3797,Away,2.25,3.5,2.9,Draw,0.0689,Draw,False
+2026-03-07 23:14:48,2025-08-16,Brighton,Fulham,0.4705,0.298,0.2315,Home,1.91,3.6,4.0,,,Draw,False
+2026-03-07 23:14:48,2025-08-16,Sunderland,West Ham,0.2518,0.2753,0.473,Away,3.25,3.4,2.25,,,Home,False
+2026-03-07 23:14:48,2025-08-16,Tottenham,Burnley,0.5542,0.242,0.2037,Home,1.38,4.75,8.5,Away,0.092,Home,True
+2026-03-07 23:14:48,2025-08-16,Wolves,Man City,0.1488,0.1826,0.6686,Away,6.25,4.75,1.45,,,Away,True
+2026-03-07 23:14:48,2025-08-17,Chelsea,Crystal Palace,0.4894,0.2647,0.2458,Home,1.62,4.33,4.5,,,Draw,False
+2026-03-07 23:14:48,2025-08-17,Man United,Arsenal,0.2573,0.2755,0.4672,Away,3.6,3.6,1.95,,,Away,True
+2026-03-07 23:14:48,2025-08-17,Nott'm Forest,Brentford,0.3344,0.3342,0.3313,Home,2.2,3.3,3.5,Away,0.0575,Home,True
+2026-03-07 23:14:48,2025-08-18,Leeds,Everton,0.2751,0.3702,0.3547,Draw,2.38,3.3,3.0,Draw,0.0834,Home,False
+2026-03-07 23:14:48,2025-08-22,West Ham,Chelsea,0.2007,0.2704,0.5289,Away,4.75,3.8,1.73,,,Away,True
+2026-03-07 23:14:48,2025-08-23,Man City,Tottenham,0.5535,0.2819,0.1646,Home,1.48,4.5,6.25,Draw,0.0719,Away,False
+2026-03-07 23:14:48,2025-08-23,Bournemouth,Wolves,0.4864,0.2835,0.23,Home,1.8,3.8,4.2,,,Home,True
+2026-03-07 23:14:48,2025-08-23,Arsenal,Leeds,0.5739,0.24,0.1861,Home,1.27,6.25,9.5,Draw,0.088,Home,True
+2026-03-07 23:14:48,2025-08-23,Burnley,Sunderland,0.2836,0.3853,0.331,Draw,2.2,3.2,3.5,Draw,0.0885,Home,False
+2026-03-07 23:14:48,2025-08-23,Brentford,Aston Villa,0.2161,0.3181,0.4658,Away,3.1,3.6,2.2,Draw,0.0548,Home,False
+2026-03-07 23:14:48,2025-08-24,Crystal Palace,Nott'm Forest,0.2851,0.3981,0.3168,Draw,2.35,3.3,3.1,Draw,0.1098,Draw,True
+2026-03-07 23:14:48,2025-08-24,Everton,Brighton,0.2315,0.3641,0.4044,Away,3.1,3.3,2.3,Draw,0.0784,Home,False
+2026-03-07 23:14:48,2025-08-24,Fulham,Man United,0.2402,0.2873,0.4725,Away,3.25,3.5,2.15,,,Draw,False
+2026-03-07 23:14:48,2025-08-25,Newcastle,Liverpool,0.2678,0.2524,0.4798,Away,3.25,3.8,2.05,,,Away,True
+2026-03-07 23:14:48,2025-08-30,Chelsea,Fulham,0.4853,0.2436,0.2711,Home,1.55,4.33,5.25,Away,0.0925,Home,True
+2026-03-07 23:14:48,2025-08-30,Leeds,Newcastle,0.218,0.2982,0.4837,Away,3.5,3.4,2.1,,,Draw,False
+2026-03-07 23:14:48,2025-08-30,Man United,Burnley,0.5335,0.2714,0.1951,Home,1.33,5.25,8.0,Draw,0.0929,Home,True
+2026-03-07 23:14:48,2025-08-30,Sunderland,Brentford,0.241,0.292,0.4671,Away,3.0,3.3,2.4,Away,0.0714,Home,False
+2026-03-07 23:14:48,2025-08-30,Tottenham,Bournemouth,0.394,0.2891,0.3169,Home,1.73,4.2,4.2,Away,0.0911,Away,False
+2026-03-07 23:14:48,2025-08-30,Wolves,Everton,0.2299,0.3618,0.4083,Away,2.7,3.2,2.75,Draw,0.0632,Away,True
+2026-03-07 23:14:48,2025-08-31,Aston Villa,Crystal Palace,0.3494,0.263,0.3875,Away,1.85,3.7,4.0,Away,0.1519,Away,True
+2026-03-07 23:14:48,2025-08-31,Brighton,Man City,0.2112,0.2334,0.5554,Away,3.8,3.9,1.9,Away,0.0522,Home,False
+2026-03-07 23:14:48,2025-08-31,Liverpool,Arsenal,0.3101,0.3578,0.3321,Draw,2.2,3.5,3.2,Draw,0.0864,Home,False
+2026-03-07 23:14:48,2025-08-31,Nott'm Forest,West Ham,0.513,0.2684,0.2186,Home,1.67,3.75,5.25,,,Away,False
+2026-03-07 23:14:48,2025-09-13,Crystal Palace,Sunderland,0.4471,0.3097,0.2433,Home,1.65,3.75,5.75,Away,0.0771,Draw,False
+2026-03-07 23:14:48,2025-09-13,Everton,Aston Villa,0.2804,0.3492,0.3704,Away,2.45,3.3,2.9,Draw,0.0622,Draw,False
+2026-03-07 23:14:48,2025-09-13,Fulham,Leeds,0.3719,0.2813,0.3468,Home,1.91,3.5,4.0,Away,0.1108,Home,True
+2026-03-07 23:14:48,2025-09-13,Newcastle,Wolves,0.5813,0.2541,0.1646,Home,1.42,4.75,7.0,Draw,0.0551,Home,True
+2026-03-07 23:14:48,2025-09-13,Arsenal,Nott'm Forest,0.5536,0.2895,0.1569,Home,1.38,5.0,8.0,Draw,0.099,Home,True
+2026-03-07 23:14:48,2025-09-13,Bournemouth,Brighton,0.2868,0.3542,0.3589,Away,2.35,3.5,2.9,Draw,0.0837,Home,False
+2026-03-07 23:14:48,2025-09-13,Brentford,Chelsea,0.2,0.3143,0.4857,Away,4.5,3.9,1.73,Draw,0.0716,Draw,False
+2026-03-07 23:14:48,2025-09-13,West Ham,Tottenham,0.2251,0.2927,0.4822,Away,3.4,3.6,2.1,,,Away,True
+2026-03-07 23:14:48,2025-09-14,Burnley,Liverpool,0.136,0.1906,0.6734,Away,8.0,5.5,1.33,,,Away,True
+2026-03-07 23:14:48,2025-09-14,Man City,Man United,0.562,0.2272,0.2108,Home,1.75,4.0,4.2,,,Home,True
+2026-03-07 23:14:48,2025-09-20,Brighton,Tottenham,0.3253,0.365,0.3097,Draw,2.25,3.7,3.0,Draw,0.1072,Draw,True
+2026-03-07 23:14:48,2025-09-20,Burnley,Nott'm Forest,0.2482,0.364,0.3877,Away,3.4,3.3,2.2,Draw,0.0759,Draw,False
+2026-03-07 23:14:48,2025-09-20,Fulham,Brentford,0.3327,0.3403,0.327,Draw,2.0,3.4,3.8,Away,0.0781,Home,False
+2026-03-07 23:14:48,2025-09-20,Liverpool,Everton,0.5753,0.2704,0.1543,Home,1.45,4.75,6.5,Draw,0.0706,Home,True
+2026-03-07 23:14:48,2025-09-20,Man United,Chelsea,0.2986,0.3586,0.3428,Draw,2.6,3.8,2.45,Draw,0.1094,Home,False
+2026-03-07 23:14:48,2025-09-20,West Ham,Crystal Palace,0.2402,0.3703,0.3894,Away,2.88,3.5,2.38,Draw,0.099,Away,True
+2026-03-07 23:14:48,2025-09-20,Wolves,Leeds,0.2741,0.3411,0.3848,Away,2.7,3.2,2.75,,,Away,True
+2026-03-07 23:14:48,2025-09-21,Arsenal,Man City,0.3396,0.3013,0.3592,Away,1.85,3.9,3.8,Away,0.1109,Draw,False
+2026-03-07 23:14:48,2025-09-21,Bournemouth,Newcastle,0.2891,0.3354,0.3755,Away,2.5,3.5,2.7,Draw,0.0648,Draw,False
+2026-03-07 23:14:48,2025-09-21,Sunderland,Aston Villa,0.2564,0.3321,0.4115,Away,3.4,3.5,2.1,Draw,0.0615,Draw,False
+2026-03-07 23:14:48,2025-09-27,Man City,Burnley,0.6786,0.1925,0.1288,Home,1.17,7.5,15.0,Draw,0.0661,Home,True
+2026-03-07 23:14:48,2025-09-27,Leeds,Bournemouth,0.2779,0.3545,0.3676,Away,3.1,3.25,2.38,Draw,0.0616,Draw,False
+2026-03-07 23:14:48,2025-09-27,Brentford,Man United,0.2416,0.2903,0.4681,Away,3.4,3.8,2.0,,,Home,False
+2026-03-07 23:14:48,2025-09-27,Nott'm Forest,Sunderland,0.5589,0.2305,0.2105,Home,1.75,3.75,4.5,,,Away,False
+2026-03-07 23:14:48,2025-09-27,Tottenham,Wolves,0.4673,0.2978,0.2348,Home,1.5,4.5,6.0,Draw,0.0873,Draw,False
+2026-03-07 23:14:48,2025-09-27,Crystal Palace,Liverpool,0.2767,0.2973,0.426,Away,3.8,3.8,1.9,,,Home,False
+2026-03-07 23:14:48,2025-09-27,Chelsea,Brighton,0.418,0.3101,0.2719,Home,1.85,3.8,3.8,Draw,0.0635,Away,False
+2026-03-07 23:14:48,2025-09-28,Aston Villa,Fulham,0.3169,0.3386,0.3444,Away,2.3,3.1,3.4,Away,0.0647,Home,False
+2026-03-07 23:14:48,2025-09-28,Newcastle,Arsenal,0.2494,0.3029,0.4477,Away,3.6,3.4,2.1,,,Away,True
+2026-03-07 23:14:48,2025-09-29,Everton,West Ham,0.4793,0.2908,0.2299,Home,1.7,3.75,5.0,,,Draw,False
+2026-03-07 23:14:48,2025-10-03,Bournemouth,Fulham,0.3728,0.3449,0.2823,Home,1.95,3.5,3.9,Draw,0.0741,Home,True
+2026-03-07 23:14:48,2025-10-04,Arsenal,West Ham,0.6351,0.2186,0.1463,Home,1.18,6.5,17.0,Away,0.0908,Home,True
+2026-03-07 23:14:48,2025-10-04,Chelsea,Liverpool,0.2625,0.313,0.4246,Away,2.8,3.75,2.3,Draw,0.0611,Home,False
+2026-03-07 23:14:48,2025-10-04,Leeds,Tottenham,0.3235,0.3229,0.3535,Away,2.7,3.5,2.5,Draw,0.0524,Away,True
+2026-03-07 23:14:48,2025-10-04,Man United,Sunderland,0.5478,0.2399,0.2123,Home,1.5,4.75,5.75,,,Home,True
+2026-03-07 23:14:48,2025-10-05,Wolves,Brighton,0.2334,0.272,0.4946,Away,3.6,3.7,2.0,,,Draw,False
+2026-03-07 23:14:48,2025-10-05,Brentford,Man City,0.2045,0.2254,0.57,Away,4.75,4.5,1.62,,,Away,True
+2026-03-07 23:14:48,2025-10-05,Aston Villa,Burnley,0.5017,0.2622,0.2361,Home,1.6,4.0,5.75,Away,0.0703,Home,True
+2026-03-07 23:14:48,2025-10-05,Newcastle,Nott'm Forest,0.5368,0.2559,0.2072,Home,1.57,4.2,5.5,,,Home,True
+2026-03-07 23:14:48,2025-10-05,Everton,Crystal Palace,0.3236,0.3409,0.3355,Draw,2.45,3.25,3.0,,,Home,False
+2026-03-07 23:14:48,2025-10-18,Brighton,Newcastle,0.2758,0.2957,0.4285,Away,2.63,3.4,2.6,Away,0.0653,Home,False
+2026-03-07 23:14:48,2025-10-18,Burnley,Leeds,0.2236,0.2841,0.4922,Away,3.25,3.25,2.25,Away,0.0729,Home,False
+2026-03-07 23:14:48,2025-10-18,Crystal Palace,Bournemouth,0.3786,0.344,0.2775,Home,2.2,3.4,3.25,Draw,0.0655,Draw,False
+2026-03-07 23:14:48,2025-10-18,Fulham,Arsenal,0.167,0.2446,0.5884,Away,5.75,4.1,1.55,,,Away,True
+2026-03-07 23:14:48,2025-10-18,Man City,Everton,0.5485,0.244,0.2076,Home,1.4,5.0,7.0,Away,0.0724,Home,True
+2026-03-07 23:14:48,2025-10-18,Nott'm Forest,Chelsea,0.2478,0.2617,0.4905,Away,3.7,3.8,1.95,,,Away,True
+2026-03-07 23:14:48,2025-10-18,Sunderland,Wolves,0.3188,0.3247,0.3565,Away,2.5,3.0,3.1,Away,0.051,Home,False
+2026-03-07 23:14:48,2025-10-19,Liverpool,Man United,0.5128,0.2379,0.2493,Home,1.6,4.5,5.0,Away,0.0583,Away,False
+2026-03-07 23:14:48,2025-10-19,Tottenham,Aston Villa,0.2905,0.3077,0.4018,Away,2.05,3.5,3.5,Away,0.1321,Away,True
+2026-03-07 23:14:48,2025-10-20,West Ham,Brentford,0.2753,0.3385,0.3862,Away,2.5,3.25,2.88,Away,0.057,Away,True
+2026-03-07 23:14:48,2025-10-24,Leeds,West Ham,0.4353,0.3086,0.2561,Home,1.8,3.5,4.75,Away,0.0559,Home,True
+2026-03-07 23:14:48,2025-10-25,Brentford,Liverpool,0.2707,0.2948,0.4345,Away,4.1,4.2,1.75,Draw,0.0687,Home,False
+2026-03-07 23:14:48,2025-10-25,Chelsea,Sunderland,0.5302,0.2695,0.2003,Home,1.36,4.75,9.0,Away,0.0952,Away,False
+2026-03-07 23:14:48,2025-10-25,Man United,Brighton,0.3801,0.2993,0.3206,Home,1.95,3.8,3.5,Away,0.0515,Home,True
+2026-03-07 23:14:48,2025-10-25,Newcastle,Fulham,0.5195,0.2789,0.2017,Home,1.62,3.9,5.5,,,Home,True
+2026-03-07 23:14:48,2025-10-26,Arsenal,Crystal Palace,0.5628,0.2561,0.1811,Home,1.4,4.75,7.5,Draw,0.0571,Home,True
+2026-03-07 23:14:48,2025-10-26,Aston Villa,Man City,0.2175,0.2534,0.5291,Away,4.33,3.8,1.8,,,Home,False
+2026-03-07 23:14:48,2025-10-26,Bournemouth,Nott'm Forest,0.361,0.2857,0.3533,Home,1.8,3.8,4.33,Away,0.1333,Home,True
+2026-03-07 23:14:48,2025-10-26,Everton,Tottenham,0.3692,0.3601,0.2707,Home,2.35,3.4,3.0,Draw,0.0808,Away,False
+2026-03-07 23:14:48,2025-10-26,Wolves,Burnley,0.4743,0.2898,0.2359,Home,1.95,3.3,4.2,,,Away,False
+2026-03-07 23:14:48,2025-11-01,Nott'm Forest,Man United,0.2333,0.2916,0.4751,Away,3.3,3.75,2.05,,,Draw,False
+2026-03-07 23:14:48,2025-11-01,Burnley,Arsenal,0.1469,0.2368,0.6163,Away,10.0,6.0,1.27,Draw,0.0786,Away,True
+2026-03-07 23:14:48,2025-11-01,Tottenham,Chelsea,0.2885,0.2856,0.4258,Away,2.7,3.5,2.5,,,Away,True
+2026-03-07 23:14:48,2025-11-01,Crystal Palace,Brentford,0.3866,0.3115,0.3019,Home,1.91,3.6,3.9,Away,0.0595,Home,True
+2026-03-07 23:14:48,2025-11-01,Liverpool,Aston Villa,0.5617,0.2286,0.2096,Home,1.65,4.33,4.5,,,Home,True
+2026-03-07 23:14:48,2025-11-01,Fulham,Wolves,0.4868,0.2535,0.2597,Home,1.83,3.5,4.5,,,Home,True
+2026-03-07 23:14:48,2025-11-01,Brighton,Leeds,0.3667,0.3324,0.3009,Home,1.85,3.75,4.0,Draw,0.0801,Home,True
+2026-03-07 23:14:48,2025-11-02,Man City,Bournemouth,0.5821,0.2262,0.1916,Home,1.5,4.75,5.75,,,Home,True
+2026-03-07 23:14:48,2025-11-02,West Ham,Newcastle,0.1811,0.2205,0.5984,Away,5.25,4.0,1.62,,,Home,False
+2026-03-07 23:14:48,2025-11-03,Sunderland,Everton,0.2934,0.3366,0.37,Away,2.7,3.2,2.7,,,Draw,False
+2026-03-07 23:14:48,2025-11-08,Chelsea,Wolves,0.572,0.2442,0.1838,Home,1.36,4.75,8.5,Away,0.0732,Home,True
+2026-03-07 23:14:48,2025-11-08,Everton,Fulham,0.3362,0.3424,0.3214,Draw,2.2,3.3,3.4,Draw,0.0543,Home,False
+2026-03-07 23:14:48,2025-11-08,Sunderland,Arsenal,0.1452,0.1801,0.6748,Away,7.5,5.0,1.38,,,Draw,False
+2026-03-07 23:14:48,2025-11-08,Tottenham,Man United,0.2688,0.264,0.4672,Away,2.63,3.6,2.5,Away,0.0891,Draw,False
+2026-03-07 23:14:48,2025-11-08,West Ham,Burnley,0.5038,0.2437,0.2526,Home,1.91,3.5,4.0,,,Home,True
+2026-03-07 23:14:48,2025-11-09,Crystal Palace,Brighton,0.3344,0.3069,0.3586,Away,2.25,3.5,3.1,Away,0.0522,Draw,False
+2026-03-07 23:14:48,2025-11-09,Man City,Liverpool,0.4175,0.2911,0.2913,Home,1.9,3.9,3.7,,,Home,True
+2026-03-07 23:14:48,2025-11-09,Nott'm Forest,Leeds,0.3553,0.3161,0.3287,Home,2.25,3.25,3.3,,,Home,True
+2026-03-07 23:14:48,2025-11-09,Aston Villa,Bournemouth,0.3332,0.3091,0.3578,Away,2.2,3.4,3.25,Away,0.0665,Home,False
+2026-03-07 23:14:48,2025-11-09,Brentford,Newcastle,0.3015,0.2858,0.4128,Away,2.8,3.5,2.45,,,Home,False
+2026-03-07 23:14:48,2025-11-22,Bournemouth,West Ham,0.421,0.3197,0.2594,Home,1.62,4.2,4.75,Draw,0.0963,Draw,False
+2026-03-07 23:14:48,2025-11-22,Brighton,Brentford,0.3149,0.3047,0.3804,Away,1.91,3.6,4.0,Away,0.1426,Home,False
+2026-03-07 23:14:48,2025-11-22,Burnley,Chelsea,0.1736,0.2364,0.59,Away,6.25,4.5,1.48,,,Away,True
+2026-03-07 23:14:48,2025-11-22,Fulham,Sunderland,0.3757,0.3529,0.2715,Home,2.1,3.25,3.75,Draw,0.06,Home,True
+2026-03-07 23:14:48,2025-11-22,Liverpool,Nott'm Forest,0.5658,0.2533,0.1809,Home,1.44,5.0,6.25,Draw,0.0636,Away,False
+2026-03-07 23:14:48,2025-11-22,Newcastle,Man City,0.232,0.2867,0.4814,Away,3.6,3.8,1.95,,,Home,False
+2026-03-07 23:14:48,2025-11-22,Wolves,Crystal Palace,0.2158,0.2411,0.5431,Away,3.8,3.6,1.95,Away,0.0565,Away,True
+2026-03-07 23:14:48,2025-11-23,Arsenal,Tottenham,0.5798,0.243,0.1772,Home,1.42,4.75,7.5,,,Home,True
+2026-03-07 23:14:48,2025-11-23,Leeds,Aston Villa,0.2484,0.3608,0.3908,Away,3.0,3.3,2.4,Draw,0.073,Away,True
+2026-03-07 23:14:48,2025-11-24,Man United,Everton,0.4669,0.2845,0.2486,Home,1.75,4.0,4.33,,,Away,False
+2026-03-07 23:14:48,2025-11-29,Brentford,Burnley,0.563,0.2618,0.1752,Home,1.45,4.5,7.0,Draw,0.0511,Home,True
+2026-03-07 23:14:48,2025-11-29,Everton,Newcastle,0.318,0.3177,0.3643,Away,2.8,3.25,2.63,,,Away,True
+2026-03-07 23:14:48,2025-11-29,Man City,Leeds,0.6484,0.1908,0.1608,Home,1.22,6.5,12.0,Away,0.0819,Home,True
+2026-03-07 23:14:48,2025-11-29,Sunderland,Bournemouth,0.3008,0.2912,0.4081,Away,3.2,3.3,2.3,,,Home,False
+2026-03-07 23:14:48,2025-11-29,Tottenham,Fulham,0.309,0.299,0.392,Away,2.2,3.3,3.3,Away,0.1063,Away,True
+2026-03-07 23:14:48,2025-11-30,Aston Villa,Wolves,0.4918,0.2911,0.2171,Home,1.5,4.33,6.5,Draw,0.0715,Home,True
+2026-03-07 23:14:48,2025-11-30,Chelsea,Arsenal,0.3075,0.3062,0.3863,Away,3.4,3.3,2.2,,,Draw,False
+2026-03-07 23:14:48,2025-11-30,Crystal Palace,Man United,0.3915,0.3154,0.2931,Home,2.3,3.4,3.1,,,Away,False
+2026-03-07 23:14:48,2025-11-30,Nott'm Forest,Brighton,0.2691,0.3066,0.4244,Away,2.75,3.3,2.63,Away,0.0612,Away,True
+2026-03-07 23:14:48,2025-11-30,West Ham,Liverpool,0.1857,0.2277,0.5866,Away,4.33,4.33,1.67,,,Away,True
+2026-03-07 23:14:48,2025-12-02,Bournemouth,Everton,0.3371,0.3089,0.354,Away,2.2,3.25,3.3,Away,0.0695,Away,True
+2026-03-07 23:14:48,2025-12-02,Fulham,Man City,0.2045,0.2445,0.5509,Away,4.33,4.1,1.73,,,Away,True
+2026-03-07 23:14:48,2025-12-02,Newcastle,Tottenham,0.5072,0.2549,0.2379,Home,1.83,3.8,4.1,,,Draw,False
+2026-03-07 23:14:48,2025-12-03,Arsenal,Brentford,0.5076,0.2862,0.2062,Home,1.36,5.0,8.5,Draw,0.0963,Home,True
+2026-03-07 23:14:48,2025-12-03,Brighton,Aston Villa,0.3519,0.3143,0.3338,Home,2.15,3.5,3.4,Away,0.0523,Away,False
+2026-03-07 23:14:48,2025-12-03,Burnley,Crystal Palace,0.1943,0.2789,0.5268,Away,4.5,3.8,1.75,,,Away,True
+2026-03-07 23:14:48,2025-12-03,Leeds,Chelsea,0.2324,0.3209,0.4468,Away,4.1,4.1,1.8,Draw,0.0871,Home,False
+2026-03-07 23:14:48,2025-12-03,Liverpool,Sunderland,0.5636,0.2402,0.1961,Home,1.36,5.25,7.0,Away,0.0624,Draw,False
+2026-03-07 23:14:48,2025-12-03,Wolves,Nott'm Forest,0.2758,0.2865,0.4378,Away,3.25,3.4,2.25,,,Away,True
+2026-03-07 23:14:48,2025-12-04,Man United,West Ham,0.597,0.2283,0.1747,Home,1.45,5.0,6.0,,,Draw,False
+2026-03-07 23:14:48,2025-12-06,Aston Villa,Arsenal,0.2396,0.2484,0.512,Away,4.2,3.5,1.9,,,Home,False
+2026-03-07 23:14:48,2025-12-06,Bournemouth,Chelsea,0.2424,0.2986,0.459,Away,3.1,3.75,2.15,,,Draw,False
+2026-03-07 23:14:48,2025-12-06,Everton,Nott'm Forest,0.4051,0.3215,0.2734,Home,2.2,3.2,3.5,,,Home,True
+2026-03-07 23:14:48,2025-12-06,Leeds,Liverpool,0.2243,0.2136,0.5621,Away,3.8,4.0,1.85,,,Draw,False
+2026-03-07 23:14:48,2025-12-06,Man City,Sunderland,0.6032,0.2127,0.1841,Home,1.25,6.5,10.0,Away,0.0892,Home,True
+2026-03-07 23:14:48,2025-12-06,Newcastle,Burnley,0.569,0.2536,0.1775,Home,1.27,6.0,9.5,Draw,0.0962,Home,True
+2026-03-07 23:14:48,2025-12-06,Tottenham,Brentford,0.3267,0.27,0.4033,Away,2.3,3.5,3.0,Away,0.087,Home,False
+2026-03-07 23:14:48,2025-12-07,Brighton,West Ham,0.5014,0.2938,0.2048,Home,1.55,4.33,5.75,Draw,0.0739,Draw,False
+2026-03-07 23:14:48,2025-12-07,Fulham,Crystal Palace,0.3033,0.377,0.3197,Draw,2.55,3.3,2.8,Draw,0.0891,Away,False
+2026-03-07 23:14:48,2025-12-08,Wolves,Man United,0.197,0.2819,0.5211,Away,4.2,4.0,1.75,,,Away,True
+2026-03-07 23:14:48,2025-12-13,Arsenal,Wolves,0.6875,0.1936,0.1188,Home,1.13,8.5,21.0,Draw,0.0816,Home,True
+2026-03-07 23:14:48,2025-12-13,Burnley,Fulham,0.2265,0.2501,0.5234,Away,4.0,3.5,1.91,,,Away,True
+2026-03-07 23:14:48,2025-12-13,Chelsea,Everton,0.5102,0.2825,0.2073,Home,1.67,3.8,5.25,,,Home,True
+2026-03-07 23:14:48,2025-12-13,Liverpool,Brighton,0.4553,0.2842,0.2605,Home,1.67,4.0,4.75,Away,0.0617,Home,True
+2026-03-07 23:14:48,2025-12-14,Brentford,Leeds,0.3733,0.3014,0.3253,Home,1.91,3.6,4.0,Away,0.0875,Draw,False
+2026-03-07 23:14:48,2025-12-14,Crystal Palace,Man City,0.2546,0.2521,0.4933,Away,3.9,3.9,1.85,,,Away,True
+2026-03-07 23:14:48,2025-12-14,Nott'm Forest,Tottenham,0.3112,0.3292,0.3596,Away,2.55,3.3,2.8,,,Home,False
+2026-03-07 23:14:48,2025-12-14,Sunderland,Newcastle,0.2677,0.2904,0.4419,Away,3.3,3.3,2.25,,,Home,False
+2026-03-07 23:14:48,2025-12-14,West Ham,Aston Villa,0.2503,0.2947,0.455,Away,3.75,3.5,2.0,,,Away,True
+2026-03-07 23:14:48,2025-12-15,Man United,Bournemouth,0.4386,0.3307,0.2307,Home,1.83,4.0,3.8,Draw,0.0948,Draw,False
+2026-03-07 23:14:48,2025-12-20,Brighton,Sunderland,0.4387,0.2982,0.2631,Home,1.67,4.0,5.25,Away,0.0798,Draw,False
+2026-03-07 23:14:48,2025-12-20,Leeds,Crystal Palace,0.2703,0.3756,0.3541,Draw,2.6,3.3,2.75,Draw,0.0874,Home,False
+2026-03-07 23:14:48,2025-12-20,Everton,Arsenal,0.1618,0.2974,0.5409,Away,5.75,4.1,1.57,Draw,0.0662,Away,True
+2026-03-07 23:14:48,2025-12-20,Bournemouth,Burnley,0.5371,0.2921,0.1708,Home,1.48,4.33,6.5,Draw,0.0743,Draw,False
+2026-03-07 23:14:48,2025-12-20,Man City,West Ham,0.6799,0.1745,0.1457,Home,1.22,8.0,10.0,Draw,0.0548,Home,True
+2026-03-07 23:14:48,2025-12-20,Wolves,Brentford,0.2221,0.2695,0.5084,Away,3.5,3.6,2.05,,,Away,True
+2026-03-07 23:14:48,2025-12-20,Newcastle,Chelsea,0.2753,0.3383,0.3864,Away,2.75,3.6,2.45,Draw,0.0736,Draw,False
+2026-03-07 23:14:48,2025-12-20,Tottenham,Liverpool,0.2568,0.2755,0.4677,Away,3.5,3.75,2.0,,,Away,True
+2026-03-07 23:14:48,2025-12-21,Aston Villa,Man United,0.3855,0.3259,0.2886,Home,2.1,3.6,3.3,Draw,0.0631,Home,True
+2026-03-07 23:14:48,2025-12-22,Fulham,Nott'm Forest,0.3221,0.3123,0.3656,Away,2.4,3.25,3.0,Away,0.0505,Home,False
+2026-03-07 23:14:48,2025-12-26,Man United,Newcastle,0.3703,0.2748,0.3549,Home,2.55,3.6,2.6,,,Home,True
+2026-03-07 23:14:48,2025-12-27,Chelsea,Aston Villa,0.5433,0.2753,0.1814,Home,1.83,3.9,4.0,,,Away,False
+2026-03-07 23:14:48,2025-12-27,Liverpool,Wolves,0.5449,0.3055,0.1496,Home,1.25,6.5,10.0,Draw,0.1595,Home,True
+2026-03-07 23:14:48,2025-12-27,Nott'm Forest,Man City,0.1926,0.3625,0.445,Away,5.0,4.33,1.6,Draw,0.1437,Away,True
+2026-03-07 23:14:48,2025-12-27,West Ham,Fulham,0.2695,0.329,0.4015,Away,2.63,3.4,2.6,Draw,0.0513,Away,True
+2026-03-07 23:14:48,2025-12-27,Arsenal,Brighton,0.6492,0.1999,0.151,Home,1.42,4.75,7.0,,,Home,True
+2026-03-07 23:14:48,2025-12-27,Brentford,Bournemouth,0.3935,0.3366,0.2699,Home,2.25,3.6,3.0,Draw,0.0735,Home,True
+2026-03-07 23:14:48,2025-12-27,Burnley,Everton,0.2273,0.2791,0.4936,Away,4.1,3.4,1.95,,,Draw,False
+2026-03-07 23:14:48,2025-12-28,Crystal Palace,Tottenham,0.3361,0.369,0.2949,Draw,2.25,3.25,3.2,Draw,0.08,Away,False
+2026-03-07 23:14:48,2025-12-28,Sunderland,Leeds,0.2691,0.3377,0.3933,Away,2.5,3.1,2.88,Away,0.0687,Draw,False
+2026-03-07 23:14:48,2025-12-30,Arsenal,Aston Villa,0.637,0.2343,0.1288,Home,1.42,4.75,7.0,,,Home,True
+2026-03-07 23:14:48,2025-12-30,Burnley,Newcastle,0.179,0.2443,0.5767,Away,5.25,4.2,1.6,,,Away,True
+2026-03-07 23:14:48,2025-12-30,Chelsea,Bournemouth,0.491,0.292,0.217,Home,1.5,4.75,5.75,Draw,0.0917,Draw,False
+2026-03-07 23:14:48,2025-12-30,Man United,Wolves,0.5621,0.2793,0.1586,Home,1.36,5.25,8.0,Draw,0.098,Draw,False
+2026-03-07 23:14:48,2025-12-30,Nott'm Forest,Everton,0.3855,0.3223,0.2922,Home,2.1,3.25,3.7,,,Away,False
+2026-03-07 23:14:48,2025-12-30,West Ham,Brighton,0.2416,0.2548,0.5036,Away,3.4,3.75,2.0,,,Draw,False
+2026-03-07 23:14:48,2026-01-01,Brentford,Tottenham,0.3085,0.3414,0.3501,Away,2.1,3.6,3.2,Draw,0.081,Draw,False
+2026-03-07 23:14:48,2026-01-01,Crystal Palace,Fulham,0.339,0.3233,0.3377,Home,2.15,3.3,3.4,Away,0.0608,Draw,False
+2026-03-07 23:14:48,2026-01-01,Liverpool,Leeds,0.5392,0.2624,0.1985,Home,1.55,4.5,5.5,Draw,0.0506,Draw,False
+2026-03-07 23:14:48,2026-01-01,Sunderland,Man City,0.1496,0.2146,0.6358,Away,7.5,4.75,1.38,,,Draw,False
+2026-03-07 23:14:48,2026-01-03,Aston Villa,Nott'm Forest,0.3853,0.3215,0.2932,Home,1.75,3.9,4.5,Away,0.0815,Home,True
+2026-03-07 23:14:48,2026-01-03,Bournemouth,Arsenal,0.1384,0.2248,0.6368,Away,6.5,4.75,1.44,,,Away,True
+2026-03-07 23:14:48,2026-01-03,Brighton,Burnley,0.5336,0.2984,0.168,Home,1.48,4.33,7.0,Draw,0.0783,Home,True
+2026-03-07 23:14:48,2026-01-03,Wolves,West Ham,0.3193,0.3442,0.3365,Draw,2.5,3.3,2.88,Draw,0.0557,Home,False
+2026-03-07 23:14:48,2026-01-04,Leeds,Man United,0.3494,0.3029,0.3477,Home,2.7,3.3,2.63,,,Draw,False
+2026-03-07 23:14:48,2026-01-04,Man City,Chelsea,0.5957,0.2104,0.1938,Home,1.6,4.75,4.5,,,Draw,False
+2026-03-07 23:14:48,2026-01-04,Newcastle,Crystal Palace,0.548,0.2596,0.1925,Home,1.7,3.9,4.75,,,Home,True
+2026-03-07 23:14:48,2026-01-04,Tottenham,Sunderland,0.3304,0.3408,0.3288,Draw,1.8,3.6,4.5,Away,0.1183,Draw,True
+2026-03-07 23:14:48,2026-01-04,Everton,Brentford,0.3234,0.3312,0.3454,Away,2.35,3.25,3.1,,,Away,True
+2026-03-07 23:14:48,2026-01-04,Fulham,Liverpool,0.2095,0.2421,0.5484,Away,3.8,3.75,1.91,Away,0.0513,Draw,False
+2026-03-07 23:14:48,2026-01-06,West Ham,Nott'm Forest,0.2679,0.2887,0.4433,Away,2.88,3.25,2.2,,,Away,True
+2026-03-07 23:14:48,2026-01-07,Bournemouth,Tottenham,0.3312,0.3613,0.3075,Draw,2.1,3.6,3.3,Draw,0.0985,Home,False
+2026-03-07 23:14:48,2026-01-07,Brentford,Sunderland,0.3652,0.3286,0.3063,Home,1.85,3.5,4.33,Away,0.0878,Home,True
+2026-03-07 23:14:48,2026-01-07,Burnley,Man United,0.1974,0.2537,0.5489,Away,4.75,4.0,1.7,,,Draw,False
+2026-03-07 23:14:48,2026-01-07,Crystal Palace,Aston Villa,0.2794,0.3144,0.4062,Away,3.1,3.3,2.3,,,Draw,False
+2026-03-07 23:14:48,2026-01-07,Everton,Wolves,0.4387,0.2912,0.2701,Home,1.75,3.5,5.0,Away,0.0809,Draw,False
+2026-03-07 23:14:48,2026-01-07,Fulham,Chelsea,0.2575,0.3234,0.4191,Away,3.4,3.6,2.05,Draw,0.0612,Home,False
+2026-03-07 23:14:48,2026-01-07,Man City,Brighton,0.4935,0.2901,0.2164,Home,1.4,5.25,6.5,Draw,0.1102,Draw,False
+2026-03-07 23:14:48,2026-01-07,Newcastle,Leeds,0.5147,0.2663,0.219,Home,1.67,3.8,5.0,,,Home,True
+2026-03-07 23:14:48,2026-01-08,Arsenal,Liverpool,0.5103,0.2706,0.2191,Home,1.6,4.1,5.0,,,Draw,False
+2026-03-07 23:14:48,2026-01-17,Chelsea,Brentford,0.4344,0.2963,0.2692,Home,1.73,4.0,4.75,Away,0.0665,Home,True
+2026-03-07 23:14:48,2026-01-17,Leeds,Fulham,0.3594,0.3256,0.315,Home,2.15,3.3,3.5,,,Home,True
+2026-03-07 23:14:48,2026-01-17,Liverpool,Burnley,0.4486,0.2883,0.263,Home,1.22,6.5,11.0,Away,0.1776,Draw,False
+2026-03-07 23:14:48,2026-01-17,Man United,Man City,0.31,0.2643,0.4257,Away,3.7,3.8,1.91,Home,0.0543,Home,False
+2026-03-07 23:14:48,2026-01-17,Nott'm Forest,Arsenal,0.221,0.2663,0.5128,Away,6.0,4.33,1.53,Home,0.0624,Draw,False
+2026-03-07 23:14:48,2026-01-17,Sunderland,Crystal Palace,0.3604,0.319,0.3206,Home,2.75,3.1,2.75,,,Home,True
+2026-03-07 23:14:48,2026-01-17,Tottenham,West Ham,0.3901,0.2859,0.324,Home,1.73,4.0,4.5,Away,0.1125,Away,False
+2026-03-07 23:14:48,2026-01-18,Aston Villa,Everton,0.4077,0.3212,0.2711,Home,1.67,3.9,5.25,Away,0.0889,Away,False
+2026-03-07 23:14:48,2026-01-18,Wolves,Newcastle,0.2697,0.2839,0.4464,Away,4.75,4.0,1.7,Home,0.0689,Draw,False
+2026-03-07 23:14:48,2026-01-19,Brighton,Bournemouth,0.39,0.2917,0.3183,Home,1.85,3.9,3.8,Away,0.0701,Draw,False
+2026-03-07 23:14:48,2026-01-24,Bournemouth,Liverpool,0.274,0.2699,0.4561,Away,3.75,3.8,1.9,,,Home,False
+2026-03-07 23:14:48,2026-01-24,Burnley,Tottenham,0.2772,0.2995,0.4233,Away,3.7,3.5,2.05,,,Draw,False
+2026-03-07 23:14:48,2026-01-24,Fulham,Brighton,0.3252,0.3158,0.359,Away,2.6,3.4,2.7,,,Home,False
+2026-03-07 23:14:48,2026-01-24,Man City,Wolves,0.4991,0.2724,0.2285,Home,1.2,7.0,11.0,Away,0.1433,Home,True
+2026-03-07 23:14:48,2026-01-24,West Ham,Sunderland,0.3421,0.3539,0.304,Draw,2.5,3.2,2.88,Draw,0.0591,Home,False
+2026-03-07 23:14:48,2026-01-25,Arsenal,Man United,0.4601,0.3153,0.2246,Home,1.55,4.2,6.0,Draw,0.0885,Away,False
+2026-03-07 23:14:48,2026-01-25,Brentford,Nott'm Forest,0.4233,0.3219,0.2549,Home,1.91,3.5,4.1,Draw,0.0506,Away,False
+2026-03-07 23:14:48,2026-01-25,Crystal Palace,Chelsea,0.2909,0.3177,0.3914,Away,3.5,3.8,2.0,Draw,0.0668,Away,True
+2026-03-07 23:14:48,2026-01-25,Newcastle,Aston Villa,0.3619,0.3556,0.2824,Home,1.95,3.7,3.7,Draw,0.099,Away,False
+2026-03-07 23:14:48,2026-01-26,Everton,Leeds,0.3097,0.3616,0.3287,Draw,2.5,3.25,2.9,Draw,0.0693,Draw,True
+2026-03-07 23:14:48,2026-01-31,Brighton,Everton,0.4104,0.3213,0.2683,Home,1.85,3.6,4.1,Draw,0.0598,Draw,False
+2026-03-07 23:14:48,2026-01-31,Chelsea,West Ham,0.432,0.3036,0.2645,Home,1.5,4.5,6.0,Away,0.1066,Home,True
+2026-03-07 23:14:48,2026-01-31,Leeds,Arsenal,0.2343,0.2998,0.4658,Away,5.75,4.2,1.55,Draw,0.0746,Away,True
+2026-03-07 23:14:48,2026-01-31,Liverpool,Newcastle,0.4656,0.2846,0.2498,Home,1.8,3.9,4.1,,,Home,True
+2026-03-07 23:14:48,2026-01-31,Wolves,Bournemouth,0.3038,0.321,0.3752,Away,2.9,3.5,2.3,Draw,0.0528,Away,True
+2026-03-07 23:14:48,2026-02-01,Aston Villa,Brentford,0.3325,0.3303,0.3371,Away,2.1,3.5,3.4,Draw,0.0598,Away,True
+2026-03-07 23:14:48,2026-02-01,Man United,Fulham,0.4813,0.3055,0.2132,Home,1.57,4.5,5.0,Draw,0.0957,Home,True
+2026-03-07 23:14:48,2026-02-01,Nott'm Forest,Crystal Palace,0.3518,0.322,0.3263,Home,1.95,3.5,3.9,Away,0.0832,Draw,False
+2026-03-07 23:14:48,2026-02-01,Tottenham,Man City,0.2472,0.2979,0.4549,Away,4.5,4.1,1.73,Draw,0.0643,Draw,False
+2026-03-07 23:14:48,2026-02-02,Sunderland,Burnley,0.3985,0.317,0.2845,Home,1.8,3.5,4.75,Away,0.0843,Home,True
+2026-03-07 23:14:48,2026-02-06,Leeds,Nott'm Forest,0.3702,0.3711,0.2587,Draw,2.2,3.3,3.4,Draw,0.0829,Home,False
+2026-03-07 23:14:48,2026-02-07,Newcastle,Brentford,0.3938,0.3269,0.2792,Home,2.1,3.5,3.5,Draw,0.0542,Away,False
+2026-03-07 23:14:48,2026-02-07,Bournemouth,Aston Villa,0.3197,0.3681,0.3122,Draw,2.7,3.5,2.5,Draw,0.0976,Draw,True
+2026-03-07 23:14:48,2026-02-07,Wolves,Chelsea,0.2453,0.2849,0.4698,Away,5.0,4.0,1.67,Home,0.0546,Away,True
+2026-03-07 23:14:48,2026-02-07,Burnley,West Ham,0.2882,0.2842,0.4276,Away,3.3,3.5,2.15,,,Away,True
+2026-03-07 23:14:48,2026-02-07,Man United,Tottenham,0.4372,0.2916,0.2712,Home,1.57,4.5,5.0,Away,0.0824,Home,True
+2026-03-07 23:14:48,2026-02-07,Fulham,Everton,0.3278,0.3693,0.3029,Draw,2.1,3.25,3.75,Draw,0.0764,Away,False
+2026-03-07 23:14:48,2026-02-07,Arsenal,Sunderland,0.4951,0.2949,0.2099,Home,1.22,6.25,12.0,Draw,0.1444,Home,True
+2026-03-07 23:14:48,2026-02-08,Brighton,Crystal Palace,0.3427,0.3344,0.3228,Home,1.95,3.5,3.9,Away,0.0798,Away,False
+2026-03-07 23:14:48,2026-02-08,Liverpool,Man City,0.3929,0.3557,0.2513,Home,2.38,3.7,2.75,Draw,0.0993,Away,False
+2026-03-07 23:14:48,2026-02-10,Chelsea,Leeds,0.3956,0.3714,0.233,Home,1.55,4.33,5.5,Draw,0.1531,Draw,False
+2026-03-07 23:14:48,2026-02-10,Everton,Bournemouth,0.3531,0.3597,0.2872,Draw,2.38,3.4,3.0,Draw,0.0789,Away,False
+2026-03-07 23:14:48,2026-02-10,Tottenham,Newcastle,0.2884,0.3377,0.3739,Away,3.2,3.6,2.2,Draw,0.0718,Away,True
+2026-03-07 23:14:48,2026-02-10,West Ham,Man United,0.2531,0.3845,0.3624,Draw,4.5,4.2,1.7,Draw,0.1574,Draw,True
+2026-03-07 23:14:48,2026-02-11,Aston Villa,Brighton,0.3544,0.3418,0.3039,Home,1.91,3.7,3.8,Draw,0.0861,Home,True
+2026-03-07 23:14:48,2026-02-11,Crystal Palace,Burnley,0.4357,0.2975,0.2669,Home,1.57,4.0,6.25,Away,0.114,Away,False
+2026-03-07 23:14:48,2026-02-11,Man City,Fulham,0.4425,0.33,0.2275,Home,1.36,5.5,7.0,Draw,0.1584,Home,True
+2026-03-07 23:14:48,2026-02-11,Nott'm Forest,Wolves,0.386,0.3191,0.2949,Home,1.7,3.8,5.0,Away,0.1047,Draw,False
+2026-03-07 23:14:48,2026-02-11,Sunderland,Liverpool,0.275,0.2984,0.4266,Away,4.75,3.8,1.73,Home,0.0748,Away,True
+2026-03-07 23:14:48,2026-02-12,Brentford,Arsenal,0.2879,0.3292,0.3829,Away,4.75,3.9,1.7,Home,0.0884,Draw,False
+2026-03-07 23:14:48,2026-02-18,Wolves,Arsenal,0.2116,0.2702,0.5183,Away,11.0,5.25,1.29,Home,0.1255,Draw,False
+2026-03-07 23:14:48,2026-02-21,Aston Villa,Leeds,0.3752,0.284,0.3408,Home,1.85,3.6,4.33,Away,0.1207,Draw,False
+2026-03-07 23:14:48,2026-02-21,Chelsea,Burnley,0.475,0.2634,0.2617,Home,1.22,6.5,12.0,Away,0.1828,Draw,False
+2026-03-07 23:14:48,2026-02-21,West Ham,Bournemouth,0.3275,0.3139,0.3586,Away,2.5,3.7,2.63,Draw,0.0566,Draw,False
+2026-03-07 23:14:48,2026-02-21,Man City,Newcastle,0.42,0.2699,0.3101,Home,1.45,5.0,5.5,Away,0.1404,Home,True
+2026-03-07 23:14:48,2026-02-21,Brentford,Brighton,0.331,0.3159,0.3531,Away,2.0,3.7,3.5,Away,0.0825,Away,True
+2026-03-07 23:14:48,2026-02-22,Crystal Palace,Wolves,0.4073,0.2859,0.3068,Home,1.65,4.0,5.0,Away,0.1174,Home,True
+2026-03-07 23:14:48,2026-02-22,Nott'm Forest,Liverpool,0.2793,0.3011,0.4196,Away,4.1,3.9,1.8,Draw,0.0583,Away,True
+2026-03-07 23:14:48,2026-02-22,Sunderland,Fulham,0.3264,0.3343,0.3393,Away,2.7,3.25,2.7,,,Away,True
+2026-03-07 23:14:48,2026-02-22,Tottenham,Arsenal,0.2362,0.2366,0.5272,Away,6.0,4.0,1.57,Home,0.0781,Away,True
+2026-03-07 23:14:48,2026-02-23,Everton,Man United,0.291,0.2646,0.4444,Away,3.7,3.75,1.91,,,Away,True

@@ -1,0 +1,4 @@
+core
+herramientas
+jornada
+pipeline

@@ -1,0 +1,48 @@
+======================================================================
+CLV TRACKER BATCH
+======================================================================
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+   Calculando features derivadas de cuotas (solo apertura)...
+   Features de cuotas derivadas (apertura): 3691 partidos con datos
+
+   Calculando features Asian Handicap (solo apertura)...
+   Asian Handicap (apertura): 2266 partidos con datos
+   Handicap promedio local: -0.189
+
+🔧 Calculando features multi-escala (window=10)...
+   ✅ Features multi-escala: 6 columnas agregadas
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+   Pinnacle Opening agregado: 3630 partidos con datos
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+   CLV Tracker: 3691 apuestas registradas
+   CLV tracking guardado: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\clv_tracking.csv (3691 registros)
+
+======================================================================
+CLV TRACKER — RESUMEN
+======================================================================
+
+   Total apuestas:         3691
+   CLV promedio:           -0.0001 (NEGATIVO)
+   CLV positivo:           1818/3691 (49.3%)
+
+   Edge vs apertura (avg): +0.0884
+   Edge vs cierre (avg):   +0.0885
+
+   Hit rate:               3009/3691 (81.5%)
+   P&L total:              +34575.50
+   ROI:                    +93.7%
+
+   INTERPRETACION:
+   CLV <= 0 sugiere que el modelo NO anticipa movimientos del mercado.
+   El edge aparente puede ser ruido o artefacto de las cuotas.
+======================================================================

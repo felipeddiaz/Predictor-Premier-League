@@ -1,0 +1,16 @@
+HT_AvgShotsTarget
+AT_xG_Avg
+HT_CornersTotal5
+HT_Pressure
+AT_Form_W
+HT_Elo
+AT_Form_L
+HT_CornersFor5
+AT_AvgShotsTarget
+AT_AvgGoals
+Elo_Diff
+HT_Form_L
+AT_Fouls5
+Position_Diff
+HT_Form_W
+AT_Position
