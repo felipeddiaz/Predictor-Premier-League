@@ -26,6 +26,7 @@ RUTA_PORTAFOLIO = os.path.join(_RAIZ, 'portafolio_imagenes') + os.sep
 # Archivos de datos
 ARCHIVO_LIMPIO = os.path.join(RUTA_PROCESADOS, 'premier_league_limpio.csv')
 ARCHIVO_FEATURES = os.path.join(RUTA_PROCESADOS, 'archive', 'premier_league_RESTAURADO.csv')
+ARCHIVO_FEATURES_MERCADOS = os.path.join(RUTA_PROCESADOS, 'premier_league_con_features.csv')
 ARCHIVO_XG_RAW = os.path.join(RUTA_RAW, 'final_matches_xg.csv')
 
 # Archivos de modelo
@@ -34,6 +35,12 @@ ARCHIVO_FEATURES_PKL = os.path.join(RUTA_MODELOS, 'features.pkl')
 ARCHIVO_METADATA = os.path.join(RUTA_MODELOS, 'metadata.pkl')
 ARCHIVO_MODELO_VB = os.path.join(RUTA_MODELOS, 'modelo_value_betting.pkl')
 ARCHIVO_FEATURES_VB = os.path.join(RUTA_MODELOS, 'features_value_betting.pkl')
+ARCHIVO_MODELO_OU = os.path.join(RUTA_MODELOS, 'modelo_over_under.pkl')
+ARCHIVO_FEATURES_OU = os.path.join(RUTA_MODELOS, 'features_over_under.pkl')
+ARCHIVO_MODELO_TARJETAS = os.path.join(RUTA_MODELOS, 'modelo_tarjetas.pkl')
+ARCHIVO_FEATURES_TARJETAS = os.path.join(RUTA_MODELOS, 'features_tarjetas.pkl')
+ARCHIVO_MODELO_CORNERS = os.path.join(RUTA_MODELOS, 'modelo_corners.pkl')
+ARCHIVO_FEATURES_CORNERS = os.path.join(RUTA_MODELOS, 'features_corners.pkl')
 
 # ============================================================================
 # PARÁMETROS DE FEATURE ENGINEERING
@@ -54,14 +61,14 @@ RANDOM_SEED = 42
 TEST_SIZE = 0.20            # 80/20 split temporal
 N_FEATURES_SELECCION = 35   # Seleccionar top-N features por importancia XGBoost
 
-# Pesos de clase optimizados por Optuna (100 trials RF, maximizando F1 weighted)
+# Pesos de clase optimizados por Optuna 
 PESOS_OPTIMOS = {
     0: 2.5498,  # Local
     1: 6.0558,  # Empate
     2: 3.8179,  # Visitante
 }
 
-# Pesos optimizados para XGBoost (busqueda en grilla, F1=0.5726 en test 15%)
+# Pesos optimizados para XGBoost
 PESOS_XGB = {
     0: 0.9469,  # Local
     1: 1.5348,  # Empate
@@ -146,19 +153,23 @@ PARAMS_XGB = {
 # probs_adj = alpha * probs_modelo + (1-alpha) * [1/3, 1/3, 1/3]
 # Valor por defecto. Se re-calibra empíricamente por calibrar_shrinkage()
 # en 02/03_entrenar*.py buscando el alpha que minimiza Brier Score.
-FACTOR_CONSERVADOR = 0.60       # Valor inicial; se sobreescribe en metadata
+FACTOR_CONSERVADOR = 1.00       # Valor actualizado por grid search (Fase 3)
 
 # Capa 2: Filtros de calidad
-UMBRAL_EDGE_MINIMO = 0.05       # Edge mínimo requerido (5%) — post vig-removal, 2-5% es significativo
-CUOTA_MAXIMA = 5.0              # No apostar en underdogs extremos
-PROBABILIDAD_MINIMA = 0.35      # Probabilidad mínima del modelo
+UMBRAL_EDGE_MINIMO = 0.10       # Edge minimo recomendado por sensibilidad (max Sharpe)
+UMBRAL_EDGE_DC = 0.12           # Umbral minimo para doble oportunidad (fallback)
+MARGEN_DC_SINTETICO = 0.95      # Margen aplicado a cuotas DC sinteticas
+UMBRAL_EDGE_BINARIO = 0.05      # Edge minimo para mercados binarios
+MARGEN_SINTETICO_BINARIO = 0.95 # Margen sintetico para odds binarias
+CUOTA_MAXIMA = 4.0              # No apostar en underdogs extremos
+PROBABILIDAD_MINIMA = 0.45      # Probabilidad mínima del modelo
 
 # Capa 3: Kelly Criterion
 KELLY_FRACTION = 0.25           # Kelly fraccionario (25% del Kelly completo)
 STAKE_MAXIMO_PCT = 0.025        # Máximo 2.5% del bankroll por apuesta
 
 # General
-BANKROLL_DEFAULT = 2000
+BANKROLL_DEFAULT = 5000
 MONEDA = "$"
 
 # ROI anualizado: asumiendo ~50 apuestas por año
@@ -209,9 +220,24 @@ FEATURES_XG_GLOBAL = [
 
 # Multi-escala: rolling window=10 para tendencias de medio plazo
 FEATURES_MULTI_ESCALA = [
+    'HT_Pts3', 'AT_Pts3',
+    'HT_GoalsFor3', 'AT_GoalsFor3',
+    'HT_xG_Avg_3', 'AT_xG_Avg_3',
     'HT_Pts10', 'AT_Pts10',
     'HT_GoalsFor10', 'AT_GoalsFor10',
     'HT_xG_Avg_10', 'AT_xG_Avg_10',
+    'HT_Form_Momentum', 'AT_Form_Momentum',
+    'Form_Momentum_Diff',
+]
+
+# Features EWM (decay exponencial)
+FEATURES_EWM = [
+    'HT_Pts_EWM5', 'AT_Pts_EWM5',
+    'HT_GoalsFor_EWM5', 'AT_GoalsFor_EWM5',
+    'HT_GoalsAgainst_EWM5', 'AT_GoalsAgainst_EWM5',
+    'HT_ShotsTarget_EWM5', 'AT_ShotsTarget_EWM5',
+    'HT_xG_EWM5', 'AT_xG_EWM5',
+    'HT_xGA_EWM5', 'AT_xGA_EWM5',
 ]
 
 FEATURES_H2H = [
@@ -312,6 +338,12 @@ FEATURES_DESCANSO = [
     'AT_Had_Europa',  # 1 si el visitante jugó UCL/UEL en los últimos 4 días
     'HT_Games_15d',   # Partidos del local en los últimos 15 días
     'AT_Games_15d',   # Partidos del visitante en los últimos 15 días
+    'Calendar_Congestion_Diff',  # Diferencia de congestión de calendario
+]
+
+# Strength of Recent Schedule (SoR)
+FEATURES_SOR = [
+    'HT_SoR5', 'AT_SoR5'
 ]
 
 # P1-Audit: Features con cuotas de apertura (sin closing lines)
@@ -323,6 +355,7 @@ FEATURES_CON_CUOTAS_APERTURA = (
     + FEATURES_XG
     + FEATURES_XG_GLOBAL
     + FEATURES_MULTI_ESCALA
+    + FEATURES_EWM
     + FEATURES_H2H
     + FEATURES_H2H_DERIVADAS
     + FEATURES_TABLA
@@ -333,6 +366,7 @@ FEATURES_CON_CUOTAS_APERTURA = (
     + FEATURES_FORMA_MOMENTUM
     + FEATURES_DESCANSO
     + FEATURES_ELO
+    + FEATURES_SOR
 )
 
 # Modelo estructural (sin cuotas) — usado por 03_entrenar_sin_cuotas.py
@@ -341,6 +375,7 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_XG             #  6: xG rolling (venue-específico)
     + FEATURES_XG_GLOBAL      #  5: xG rolling global (todas las venues)
     + FEATURES_MULTI_ESCALA   #  6: rolling window=10 (medio plazo)
+    + FEATURES_EWM            # 12: decay exponencial (forma reciente)
     + FEATURES_H2H            #  5: historial directo
     + FEATURES_H2H_DERIVADAS  #  4: derivadas H2H
     + FEATURES_TABLA          # 11: posición, puntos, presión
@@ -348,7 +383,8 @@ FEATURES_ESTRUCTURALES = (
     + FEATURES_REFEREE        #  5: árbitro
     + FEATURES_DESCANSO       #  7: días de descanso, fatiga, congestión
     + FEATURES_ELO            #  4: Elo ratings
-    # Total: 78 features — cero cuotas, cero señales de mercado
+    + FEATURES_SOR            #  2: strength of schedule
+    # Total: 102 features — cero cuotas, cero señales de mercado
 )
 
 # P3-Audit: ALL_FEATURES ahora apunta a la versión limpia (solo apertura).

@@ -1,0 +1,45 @@
+======================================================================
+ENTRENAMIENTO MERCADO: OVER_UNDER
+======================================================================
+
+🔧 Calculando xG rolling...
+   ✅ xG rolling agregado: 3657 partidos con datos históricos
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+ Calculando features de descanso / fatiga...
+   Descanso: 3529/3691 partidos con datos reales (95.6%)
+   Partidos con contexto europeo: 478 (13.0%)
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+   SoR: features agregadas (HT_SoR5 / AT_SoR5)
+
+Modelo           LogLoss    Brier       F1      Acc      ROI
+--------------------------------------------------------------
+RF_Basico         0.6833   0.2449   0.6796  57.51%   -1.59%
+RF_Balanceado     0.6815   0.2441   0.6674  57.24%   +2.13%
+XGBoost           0.6835   0.2452   0.6302  56.97%   -3.11%
+
+GANADOR: RF_Balanceado | LogLoss=0.6815 Brier=0.2441 ROI=0.02132947976878613
+
+Walk-forward:
+Season      LogLoss    Brier       F1      Acc      ROI
+----------------------------------------------------------
+2020-21      0.6902   0.2485   0.5598  54.47%   +8.54%
+2021-22      0.7183   0.2620   0.5253  48.16%  -22.48%
+2022-23      0.6926   0.2494   0.5912  53.42%   -9.85%
+2023-24      0.6852   0.2457   0.6971  58.16%  -19.31%
+2024-25      0.6782   0.2426   0.6775  58.16%   -4.23%
+2025-26      0.6895   0.2480   0.6414  54.61%   +6.48%
+----------------------------------------------------------
+PROMEDIO     0.6924   0.2494   0.6154  54.50%   -6.81%
+
+Modelo guardado: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\modelo_over_under.pkl
+Features guardadas: C:\Users\LAP\Desktop\mi_predictor_pl\modelos\features_over_under.pkl (21)

@@ -80,7 +80,7 @@ def calcular_ev(prob_modelo, cuota, stake=1.0, prob_fair=None):
     }
 
 
-def kelly_criterion(prob_modelo, cuota, kelly_fraction=0.25):
+def kelly_criterion(prob_modelo, cuota, kelly_fraction=0.25, max_kelly=0.10):
     """
     Calcula el porcentaje óptimo del bankroll a apostar usando Kelly Criterion.
     
@@ -109,8 +109,8 @@ def kelly_criterion(prob_modelo, cuota, kelly_fraction=0.25):
     # Aplicar fracción de Kelly (más conservador)
     kelly_fraction_result = max(0, kelly_full * kelly_fraction)
     
-    # Limitar a 10% máximo (seguridad)
-    kelly_safe = min(kelly_fraction_result, 0.10)
+    # Limitar a máximo configurable (seguridad)
+    kelly_safe = min(kelly_fraction_result, max_kelly)
     
     return {
         'kelly_full': max(0, kelly_full),
@@ -149,15 +149,27 @@ def kelly_simultaneo(apuestas: list, kelly_fraction: float = 0.25) -> list:
     for apuesta in apuestas:
         apuesta['kelly_safe_original'] = apuesta.get('kelly_safe', 0)
         apuesta['kelly_safe'] = apuesta['kelly_safe_original'] * factor
-        if 'stake' in apuesta and 'kelly_safe_original' in apuesta:
-            # Recalcular stake con el factor ajustado
-            if apuesta['kelly_safe_original'] > 0:
+        # Recalcular stake con el factor ajustado
+        if apuesta.get('kelly_safe_original', 0) > 0:
+            if 'stake' in apuesta:
                 apuesta['stake'] = apuesta['stake'] * factor
+            if 'stake_recomendado' in apuesta:
+                apuesta['stake_recomendado'] = apuesta['stake_recomendado'] * factor
 
     return apuestas
 
 
-def analizar_apuesta(prediccion, cuota, stake=10, bankroll=1000, prob_fair=None):
+def analizar_apuesta(
+    prediccion,
+    cuota,
+    stake=10,
+    bankroll=1000,
+    prob_fair=None,
+    prob_modelo_raw=None,
+    usar_raw_para_kelly=True,
+    kelly_fraction=0.25,
+    max_kelly=0.10,
+):
     """
     Análisis completo de una apuesta con EV y Kelly.
 
@@ -172,12 +184,13 @@ def analizar_apuesta(prediccion, cuota, stake=10, bankroll=1000, prob_fair=None)
         dict: Análisis completo con recomendación
     """
     prob = prediccion['confianza']
+    prob_kelly = prob_modelo_raw if (usar_raw_para_kelly and prob_modelo_raw is not None) else prob
 
     # Calcular EV (con prob_fair para edge sin vig)
     ev_result = calcular_ev(prob, cuota, stake, prob_fair=prob_fair)
 
     # Calcular Kelly
-    kelly_result = kelly_criterion(prob, cuota)
+    kelly_result = kelly_criterion(prob_kelly, cuota, kelly_fraction=kelly_fraction, max_kelly=max_kelly)
     
     # Recomendación de stake
     stake_recomendado = bankroll * kelly_result['kelly_safe']
@@ -378,15 +391,18 @@ def analizar_jornada_con_ev(partidos, modelo, features, df, bankroll=1000, fn_pr
         analisis_opciones = [
             ('Local', pred['local'], analizar_apuesta(
                 {'confianza': pred['prob_local']}, partido['cuota_h'],
-                stake=10, bankroll=bankroll, prob_fair=fair_h
+                stake=10, bankroll=bankroll, prob_fair=fair_h,
+                prob_modelo_raw=pred.get('prob_local_original')
             )),
             ('Empate', 'Empate', analizar_apuesta(
                 {'confianza': pred['prob_empate']}, partido['cuota_d'],
-                stake=10, bankroll=bankroll, prob_fair=fair_d
+                stake=10, bankroll=bankroll, prob_fair=fair_d,
+                prob_modelo_raw=pred.get('prob_empate_original')
             )),
             ('Visitante', pred['visitante'], analizar_apuesta(
                 {'confianza': pred['prob_visitante']}, partido['cuota_a'],
-                stake=10, bankroll=bankroll, prob_fair=fair_a
+                stake=10, bankroll=bankroll, prob_fair=fair_a,
+                prob_modelo_raw=pred.get('prob_visitante_original')
             )),
         ]
 

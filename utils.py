@@ -731,26 +731,30 @@ def agregar_features_rolling_extra(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================================
 
 ROLLING_WINDOW_LONG = 10
+ROLLING_WINDOW_SHORT = 3
 
 def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Agrega features rolling con ventana larga (10 partidos) para capturar
-    tendencias de medio plazo complementarias a la ventana corta (5).
+    Agrega features rolling con ventana corta (3) y larga (10)
+    para capturar tendencias inmediatas y de medio plazo.
 
     Features calculadas:
-      - HT_Pts10       : puntos local en últimos 10 partidos (cualquier venue)
-      - AT_Pts10       : puntos visitante en últimos 10 partidos
-      - HT_GoalsFor10  : goles marcados local en últimos 10 partidos
-      - AT_GoalsFor10  : goles marcados visitante en últimos 10 partidos
-      - HT_xG_Avg_10   : xG promedio local en últimos 10 partidos (global)
-      - AT_xG_Avg_10   : xG promedio visitante en últimos 10 partidos (global)
+      - HT_Pts3 / AT_Pts3       : puntos últimos 3 partidos
+      - HT_GoalsFor3 / AT_GoalsFor3
+      - HT_xG_Avg_3 / AT_xG_Avg_3
+      - HT_Pts10 / AT_Pts10     : puntos últimos 10 partidos
+      - HT_GoalsFor10 / AT_GoalsFor10
+      - HT_xG_Avg_10 / AT_xG_Avg_10
+      - HT_Form_Momentum / AT_Form_Momentum (ratio corto/largo)
+      - Form_Momentum_Diff
 
     Usa formato long (home+away) y shift(1) para evitar leakage.
     """
-    w = ROLLING_WINDOW_LONG
+    w_long = ROLLING_WINDOW_LONG
+    w_short = ROLLING_WINDOW_SHORT
     df = df.sort_values('Date').reset_index(drop=True)
 
-    print(f"\n🔧 Calculando features multi-escala (window={w})...")
+    print(f"\n🔧 Calculando features multi-escala (window={w_short}/{w_long})...")
 
     # ── Formato long: una fila por equipo por partido ─────────────────────
     home = df[['Date', 'HomeTeam', 'FTHG', 'FTAG']].copy()
@@ -769,16 +773,22 @@ def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
     long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
 
     grp = long_df.groupby('Team')
-    long_df['Pts_10']     = grp['Pts'].transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
-    long_df['GoalsFor_10'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
+    long_df['Pts_3']      = grp['Pts'].transform(lambda x: x.shift(1).rolling(w_short, min_periods=1).sum())
+    long_df['GoalsFor_3'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w_short, min_periods=1).sum())
+    long_df['Pts_10']     = grp['Pts'].transform(lambda x: x.shift(1).rolling(w_long, min_periods=1).sum())
+    long_df['GoalsFor_10'] = grp['GF'].transform(lambda x: x.shift(1).rolling(w_long, min_periods=1).sum())
 
     # Separar home/away
     n = len(df)
-    home_stats = long_df.iloc[:n][['Pts_10', 'GoalsFor_10']].copy()
+    home_stats = long_df.iloc[:n][['Pts_3', 'GoalsFor_3', 'Pts_10', 'GoalsFor_10']].copy()
     home_stats.index = df.index
-    away_stats = long_df.iloc[n:][['Pts_10', 'GoalsFor_10']].copy()
+    away_stats = long_df.iloc[n:][['Pts_3', 'GoalsFor_3', 'Pts_10', 'GoalsFor_10']].copy()
     away_stats.index = df.index
 
+    df['HT_Pts3']        = home_stats['Pts_3'].fillna(0)
+    df['AT_Pts3']        = away_stats['Pts_3'].fillna(0)
+    df['HT_GoalsFor3']   = home_stats['GoalsFor_3'].fillna(0)
+    df['AT_GoalsFor3']   = away_stats['GoalsFor_3'].fillna(0)
     df['HT_Pts10']       = home_stats['Pts_10'].fillna(0)
     df['AT_Pts10']       = away_stats['Pts_10'].fillna(0)
     df['HT_GoalsFor10']  = home_stats['GoalsFor_10'].fillna(0)
@@ -794,22 +804,127 @@ def agregar_features_multi_escala(df: pd.DataFrame) -> pd.DataFrame:
         long_xg = pd.concat([home_xg, away_xg], ignore_index=True)
         long_xg = long_xg.sort_values(['Team', 'Date']).reset_index(drop=True)
 
+        long_xg['xGF_3'] = long_xg.groupby('Team')['xGF'].transform(
+            lambda x: x.shift(1).rolling(w_short, min_periods=1).mean()
+        )
         long_xg['xGF_10'] = long_xg.groupby('Team')['xGF'].transform(
-            lambda x: x.shift(1).rolling(w, min_periods=1).mean()
+            lambda x: x.shift(1).rolling(w_long, min_periods=1).mean()
         )
 
+        df['HT_xG_Avg_3'] = long_xg.iloc[:n]['xGF_3'].values
+        df['AT_xG_Avg_3'] = long_xg.iloc[n:]['xGF_3'].values
         df['HT_xG_Avg_10'] = long_xg.iloc[:n]['xGF_10'].values
         df['AT_xG_Avg_10'] = long_xg.iloc[n:]['xGF_10'].values
     else:
+        df['HT_xG_Avg_3'] = 0.0
+        df['AT_xG_Avg_3'] = 0.0
         df['HT_xG_Avg_10'] = 0.0
         df['AT_xG_Avg_10'] = 0.0
 
-    multi_cols = ['HT_Pts10', 'AT_Pts10', 'HT_GoalsFor10', 'AT_GoalsFor10',
-                  'HT_xG_Avg_10', 'AT_xG_Avg_10']
+    # Momentum ratio: forma corta vs larga
+    eps = 1e-6
+    df['HT_Form_Momentum'] = (df['HT_Pts3'] / max(w_short, 1)) / ((df['HT_Pts10'] / max(w_long, 1)) + eps)
+    df['AT_Form_Momentum'] = (df['AT_Pts3'] / max(w_short, 1)) / ((df['AT_Pts10'] / max(w_long, 1)) + eps)
+    df['Form_Momentum_Diff'] = df['HT_Form_Momentum'] - df['AT_Form_Momentum']
+
+    multi_cols = [
+        'HT_Pts3', 'AT_Pts3', 'HT_GoalsFor3', 'AT_GoalsFor3',
+        'HT_Pts10', 'AT_Pts10', 'HT_GoalsFor10', 'AT_GoalsFor10',
+        'HT_xG_Avg_3', 'AT_xG_Avg_3', 'HT_xG_Avg_10', 'AT_xG_Avg_10',
+        'HT_Form_Momentum', 'AT_Form_Momentum', 'Form_Momentum_Diff',
+    ]
     for col in multi_cols:
         df[col] = df[col].fillna(0)
 
     print(f"   ✅ Features multi-escala: {len(multi_cols)} columnas agregadas")
+    return df
+
+
+# ============================================================================
+# FEATURES EWM (DECAY EXPONENCIAL)
+# ============================================================================
+
+def agregar_features_ewm(df: pd.DataFrame, span: int = 5) -> pd.DataFrame:
+    """
+    Agrega features con decay exponencial (EWM) para forma reciente.
+
+    Calcula EWM para:
+      - Pts, Goals For/Against, Shots Target, xG y xGA (si disponibles)
+    """
+    print(f"\n🔧 Calculando features EWM (span={span})...")
+
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    # Formato long
+    home = df[['Date', 'HomeTeam', 'FTHG', 'FTAG', 'HST']].copy()
+    home.columns = ['Date', 'Team', 'GF', 'GA', 'ST']
+    away = df[['Date', 'AwayTeam', 'FTAG', 'FTHG', 'AST']].copy()
+    away.columns = ['Date', 'Team', 'GF', 'GA', 'ST']
+
+    for sub in (home, away):
+        sub['GF'] = pd.to_numeric(sub['GF'], errors='coerce').fillna(0)
+        sub['GA'] = pd.to_numeric(sub['GA'], errors='coerce').fillna(0)
+        sub['ST'] = pd.to_numeric(sub['ST'], errors='coerce').fillna(0)
+        sub['Pts'] = np.where(sub['GF'] > sub['GA'], 3,
+                     np.where(sub['GF'] == sub['GA'], 1, 0))
+
+    long_df = pd.concat([home, away], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    grp = long_df.groupby('Team')
+    long_df['Pts_EWM'] = grp['Pts'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+    long_df['GF_EWM'] = grp['GF'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+    long_df['GA_EWM'] = grp['GA'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+    long_df['ST_EWM'] = grp['ST'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+
+    n = len(df)
+    home_stats = long_df.iloc[:n][['Pts_EWM', 'GF_EWM', 'GA_EWM', 'ST_EWM']].copy()
+    away_stats = long_df.iloc[n:][['Pts_EWM', 'GF_EWM', 'GA_EWM', 'ST_EWM']].copy()
+    home_stats.index = df.index
+    away_stats.index = df.index
+
+    df['HT_Pts_EWM5'] = home_stats['Pts_EWM'].fillna(0)
+    df['AT_Pts_EWM5'] = away_stats['Pts_EWM'].fillna(0)
+    df['HT_GoalsFor_EWM5'] = home_stats['GF_EWM'].fillna(0)
+    df['AT_GoalsFor_EWM5'] = away_stats['GF_EWM'].fillna(0)
+    df['HT_GoalsAgainst_EWM5'] = home_stats['GA_EWM'].fillna(0)
+    df['AT_GoalsAgainst_EWM5'] = away_stats['GA_EWM'].fillna(0)
+    df['HT_ShotsTarget_EWM5'] = home_stats['ST_EWM'].fillna(0)
+    df['AT_ShotsTarget_EWM5'] = away_stats['ST_EWM'].fillna(0)
+
+    # xG EWM si hay datos
+    if 'Home_xG' in df.columns and 'Away_xG' in df.columns:
+        home_xg = df[['Date', 'HomeTeam', 'Home_xG', 'Away_xG']].copy()
+        home_xg.columns = ['Date', 'Team', 'xGF', 'xGA']
+        away_xg = df[['Date', 'AwayTeam', 'Away_xG', 'Home_xG']].copy()
+        away_xg.columns = ['Date', 'Team', 'xGF', 'xGA']
+
+        long_xg = pd.concat([home_xg, away_xg], ignore_index=True)
+        long_xg = long_xg.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+        grp_xg = long_xg.groupby('Team')
+        long_xg['xGF_EWM'] = grp_xg['xGF'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+        long_xg['xGA_EWM'] = grp_xg['xGA'].transform(lambda x: x.shift(1).ewm(span=span, adjust=False).mean())
+
+        df['HT_xG_EWM5'] = long_xg.iloc[:n]['xGF_EWM'].values
+        df['AT_xG_EWM5'] = long_xg.iloc[n:]['xGF_EWM'].values
+        df['HT_xGA_EWM5'] = long_xg.iloc[:n]['xGA_EWM'].values
+        df['AT_xGA_EWM5'] = long_xg.iloc[n:]['xGA_EWM'].values
+    else:
+        df['HT_xG_EWM5'] = 0.0
+        df['AT_xG_EWM5'] = 0.0
+        df['HT_xGA_EWM5'] = 0.0
+        df['AT_xGA_EWM5'] = 0.0
+
+    ewm_cols = [
+        'HT_Pts_EWM5', 'AT_Pts_EWM5',
+        'HT_GoalsFor_EWM5', 'AT_GoalsFor_EWM5',
+        'HT_GoalsAgainst_EWM5', 'AT_GoalsAgainst_EWM5',
+        'HT_ShotsTarget_EWM5', 'AT_ShotsTarget_EWM5',
+        'HT_xG_EWM5', 'AT_xG_EWM5', 'HT_xGA_EWM5', 'AT_xGA_EWM5',
+    ]
+    df[ewm_cols] = df[ewm_cols].fillna(0)
+    print(f"   ✅ Features EWM: {len(ewm_cols)} columnas agregadas")
     return df
 
 
@@ -941,6 +1056,48 @@ def agregar_features_elo(df: pd.DataFrame) -> pd.DataFrame:
     print(f"   ELO: {con_elo}/{len(df)} partidos con datos ({con_elo/len(df)*100:.1f}%)")
     print(f"   ELO local promedio: {df['HT_ELO'].mean():.1f} | visitante: {df['AT_ELO'].mean():.1f}")
 
+    return df
+
+
+# ==========================================================================
+# FEATURES DE STRENGTH OF RECENT SCHEDULE (SoR)
+# ==========================================================================
+
+def agregar_features_sor(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """
+    Strength of Recent Schedule (SoR): promedio de Elo de rivales en los
+    ultimos `window` partidos, usando solo partidos anteriores.
+    """
+    if 'HT_Elo' not in df.columns or 'AT_Elo' not in df.columns:
+        print("   SoR: faltan features de Elo, saltando.")
+        df['HT_SoR5'] = 0.0
+        df['AT_SoR5'] = 0.0
+        return df
+
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    home_rows = df[['Date', 'HomeTeam', 'AT_Elo']].copy()
+    home_rows.columns = ['Date', 'Team', 'Opp_Elo']
+
+    away_rows = df[['Date', 'AwayTeam', 'HT_Elo']].copy()
+    away_rows.columns = ['Date', 'Team', 'Opp_Elo']
+
+    long_df = pd.concat([home_rows, away_rows], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date']).reset_index(drop=True)
+
+    grp = long_df.groupby('Team')
+    long_df['SoR'] = grp['Opp_Elo'].transform(
+        lambda x: x.shift(1).rolling(window, min_periods=1).mean()
+    )
+
+    n = len(df)
+    df['HT_SoR5'] = long_df.iloc[:n]['SoR'].values
+    df['AT_SoR5'] = long_df.iloc[n:]['SoR'].values
+
+    df['HT_SoR5'] = df['HT_SoR5'].fillna(df['HT_SoR5'].median() if pd.notna(df['HT_SoR5'].median()) else 0.0)
+    df['AT_SoR5'] = df['AT_SoR5'].fillna(df['AT_SoR5'].median() if pd.notna(df['AT_SoR5'].median()) else 0.0)
+
+    print("   SoR: features agregadas (HT_SoR5 / AT_SoR5)")
     return df
 
 
@@ -1359,6 +1516,7 @@ def agregar_features_descanso(df: pd.DataFrame,
     df['AT_Had_Europa'] = at_europa
     df['HT_Games_15d']  = ht_games
     df['AT_Games_15d']  = at_games
+    df['Calendar_Congestion_Diff'] = df['HT_Games_15d'] - df['AT_Games_15d']
 
     # Estadísticas de cobertura
     con_datos = (df['HT_Days_Rest'] != DEFAULTS['HT_Days_Rest']).sum()
@@ -1459,4 +1617,219 @@ def agregar_features_elo(df: pd.DataFrame,
     print(f"   Elo: {len(elos)} equipos rastreados, "
           f"rango [{min(elos.values()):.0f} - {max(elos.values()):.0f}]")
 
+    return df
+
+
+# ============================================================================
+# FEATURES MERCADOS BINARIOS (O/U, TARJETAS, CORNERS)
+# ============================================================================
+
+def _rolling_team_feature(df: pd.DataFrame, home_col: str, away_col: str, out_home: str, out_away: str, window: int = 5):
+    """Helper: rolling mean por equipo usando solo partidos previos."""
+    tmp_home = df[['Date', 'HomeTeam', home_col]].copy()
+    tmp_home.columns = ['Date', 'Team', 'Value']
+    tmp_home['MatchIdx'] = df.index.values
+    tmp_home['Side'] = 'home'
+
+    tmp_away = df[['Date', 'AwayTeam', away_col]].copy()
+    tmp_away.columns = ['Date', 'Team', 'Value']
+    tmp_away['MatchIdx'] = df.index.values
+    tmp_away['Side'] = 'away'
+
+    long_df = pd.concat([tmp_home, tmp_away], ignore_index=True)
+    long_df = long_df.sort_values(['Team', 'Date', 'MatchIdx', 'Side']).reset_index(drop=True)
+    long_df['Rolling'] = long_df.groupby('Team')['Value'].transform(
+        lambda x: x.shift(1).rolling(window, min_periods=1).mean()
+    )
+
+    home_roll = long_df[long_df['Side'] == 'home'].set_index('MatchIdx')['Rolling']
+    away_roll = long_df[long_df['Side'] == 'away'].set_index('MatchIdx')['Rolling']
+
+    df[out_home] = home_roll.reindex(df.index).values
+    df[out_away] = away_roll.reindex(df.index).values
+    df[out_home] = df[out_home].fillna(0)
+    df[out_away] = df[out_away].fillna(0)
+    return df
+
+
+def _h2h_rolling_rate(df: pd.DataFrame, condition_fn, out_col: str, window: int = 5):
+    """Rate rolling H2H usando últimos N enfrentamientos directos."""
+    df = df.sort_values('Date').copy()
+    historial = {}
+    valores = []
+
+    for _, row in df.iterrows():
+        h = row['HomeTeam']
+        a = row['AwayTeam']
+        clave = tuple(sorted([h, a]))
+
+        prev = historial.get(clave, [])
+        valores.append(float(np.mean(prev[-window:])) if prev else 0.0)
+
+        ok = condition_fn(row)
+        prev.append(1.0 if ok else 0.0)
+        historial[clave] = prev
+
+    df[out_col] = valores
+    return df
+
+
+def agregar_features_goles_binarias(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """Features para mercado O/U goles."""
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    df['Match_TotalGoals'] = pd.to_numeric(df['FTHG'], errors='coerce').fillna(0) + pd.to_numeric(df['FTAG'], errors='coerce').fillna(0)
+    df['Match_Over25'] = (df['Match_TotalGoals'] > 2.5).astype(float)
+    df['Match_BTTS'] = ((pd.to_numeric(df['FTHG'], errors='coerce') > 0) & (pd.to_numeric(df['FTAG'], errors='coerce') > 0)).astype(float)
+
+    # Volumen de tiros (predictor fuerte para O/U)
+    df['Match_HomeShots'] = pd.to_numeric(df.get('HS', 0), errors='coerce').fillna(0)
+    df['Match_AwayShots'] = pd.to_numeric(df.get('AS', 0), errors='coerce').fillna(0)
+    df['Match_HomeShotsTarget'] = pd.to_numeric(df.get('HST', 0), errors='coerce').fillna(0)
+    df['Match_AwayShotsTarget'] = pd.to_numeric(df.get('AST', 0), errors='coerce').fillna(0)
+
+    # xG residual (goles - xG): proxy de sobre/sub-rendimiento
+    home_goals = pd.to_numeric(df.get('FTHG', 0), errors='coerce').fillna(0)
+    away_goals = pd.to_numeric(df.get('FTAG', 0), errors='coerce').fillna(0)
+    home_xg = pd.to_numeric(df.get('Home_xG', 0), errors='coerce').fillna(0)
+    away_xg = pd.to_numeric(df.get('Away_xG', 0), errors='coerce').fillna(0)
+    df['Match_Home_xG_Residual'] = home_goals - home_xg
+    df['Match_Away_xG_Residual'] = away_goals - away_xg
+
+    df = _rolling_team_feature(df, 'Match_TotalGoals', 'Match_TotalGoals', 'HT_TotalGoals5', 'AT_TotalGoals5', window=window)
+    df = _rolling_team_feature(df, 'Match_Over25', 'Match_Over25', 'HT_Over25_Rate5', 'AT_Over25_Rate5', window=window)
+    df = _rolling_team_feature(df, 'Match_BTTS', 'Match_BTTS', 'HT_BTTS_Rate5', 'AT_BTTS_Rate5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShots', 'Match_AwayShots', 'HT_Shots5', 'AT_Shots5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShotsTarget', 'Match_AwayShotsTarget', 'HT_ShotsTarget5', 'AT_ShotsTarget5', window=window)
+    df = _rolling_team_feature(df, 'Match_Home_xG_Residual', 'Match_Away_xG_Residual', 'HT_xG_Residual5', 'AT_xG_Residual5', window=window)
+
+    df = _h2h_rolling_rate(
+        df,
+        condition_fn=lambda r: (float(r.get('FTHG', 0)) + float(r.get('FTAG', 0))) > 2.5,
+        out_col='H2H_Over25_Rate',
+        window=window,
+    )
+
+    return df
+
+
+def agregar_features_tarjetas_binarias(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """Features para mercado de tarjetas (O/U total)."""
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    hy = pd.to_numeric(df.get('HY', 0), errors='coerce').fillna(0)
+    ay = pd.to_numeric(df.get('AY', 0), errors='coerce').fillna(0)
+    hr = pd.to_numeric(df.get('HR', 0), errors='coerce').fillna(0)
+    ar = pd.to_numeric(df.get('AR', 0), errors='coerce').fillna(0)
+
+    df['Match_TotalYellow'] = hy + ay
+    df['Match_HomeYellow'] = hy
+    df['Match_AwayYellow'] = ay
+    df['Match_HomeRed'] = (hr > 0).astype(float)
+    df['Match_AwayRed'] = (ar > 0).astype(float)
+
+    df = _rolling_team_feature(df, 'Match_HomeYellow', 'Match_AwayYellow', 'HT_YellowAvg5', 'AT_YellowAvg5', window=window)
+    df = _rolling_team_feature(df, 'Match_AwayYellow', 'Match_HomeYellow', 'HT_YellowFor5', 'AT_YellowFor5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeRed', 'Match_AwayRed', 'HT_RedRate5', 'AT_RedRate5', window=window)
+
+    # Referee total cards rolling
+    if 'Referee' in df.columns:
+        ref_tmp = df[['Date', 'Referee', 'Match_TotalYellow']].copy()
+        ref_tmp = ref_tmp.sort_values(['Referee', 'Date']).reset_index(drop=True)
+        ref_tmp['Ref_Cards_Total_Avg'] = ref_tmp.groupby('Referee')['Match_TotalYellow'].transform(
+            lambda x: x.shift(1).rolling(window, min_periods=1).mean()
+        )
+        df['Ref_Cards_Total_Avg'] = ref_tmp['Ref_Cards_Total_Avg'].values
+    else:
+        df['Ref_Cards_Total_Avg'] = 0.0
+
+    # H2H yellow avg
+    df = _h2h_rolling_rate(
+        df,
+        condition_fn=lambda r: float(r.get('HY', 0)) + float(r.get('AY', 0)),
+        out_col='H2H_Yellow_Avg',
+        window=window,
+    )
+    # _h2h_rolling_rate devuelve rate binario; para promedio continuo recalculamos simple
+    historial = {}
+    y_vals = []
+    for _, row in df.iterrows():
+        clave = tuple(sorted([row['HomeTeam'], row['AwayTeam']]))
+        prev = historial.get(clave, [])
+        y_vals.append(float(np.mean(prev[-window:])) if prev else 0.0)
+        prev.append(float(row.get('HY', 0)) + float(row.get('AY', 0)))
+        historial[clave] = prev
+    df['H2H_Yellow_Avg'] = y_vals
+
+    base_ref = df.get('Ref_Yellow_Avg', pd.Series(np.zeros(len(df)), index=df.index)).fillna(0)
+    df['Ref_Aggressiveness_Interaction'] = base_ref * (df['HT_YellowAvg5'] + df['AT_YellowAvg5'])
+
+    fill_cols = [
+        'HT_YellowAvg5', 'AT_YellowAvg5', 'HT_YellowFor5', 'AT_YellowFor5',
+        'HT_RedRate5', 'AT_RedRate5', 'Ref_Cards_Total_Avg', 'H2H_Yellow_Avg',
+        'Ref_Aggressiveness_Interaction',
+    ]
+    df[fill_cols] = df[fill_cols].fillna(0)
+    return df
+
+
+def agregar_features_corners_binarias(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+    """Features para mercado de corners (O/U total)."""
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
+    df = df.sort_values('Date').reset_index(drop=True)
+
+    hc = pd.to_numeric(df.get('HC', 0), errors='coerce').fillna(0)
+    ac = pd.to_numeric(df.get('AC', 0), errors='coerce').fillna(0)
+    hs = pd.to_numeric(df.get('HS', 0), errors='coerce').fillna(0)
+    ass = pd.to_numeric(df.get('AS', 0), errors='coerce').fillna(0)
+    hst = pd.to_numeric(df.get('HST', 0), errors='coerce').fillna(0)
+    ast = pd.to_numeric(df.get('AST', 0), errors='coerce').fillna(0)
+    hf = pd.to_numeric(df.get('HF', 0), errors='coerce').fillna(0)
+    af = pd.to_numeric(df.get('AF', 0), errors='coerce').fillna(0)
+
+    df['Match_HomeCorners'] = hc
+    df['Match_AwayCorners'] = ac
+    df['Match_TotalCorners'] = hc + ac
+    df['Match_HomeShots'] = hs
+    df['Match_AwayShots'] = ass
+    df['Match_HomeShotsTarget'] = hst
+    df['Match_AwayShotsTarget'] = ast
+    df['Match_HomeFouls'] = hf
+    df['Match_AwayFouls'] = af
+
+    df = _rolling_team_feature(df, 'Match_HomeCorners', 'Match_AwayCorners', 'HT_CornersFor5', 'AT_CornersFor5', window=window)
+    df = _rolling_team_feature(df, 'Match_AwayCorners', 'Match_HomeCorners', 'HT_CornersAgainst5', 'AT_CornersAgainst5', window=window)
+    df = _rolling_team_feature(df, 'Match_TotalCorners', 'Match_TotalCorners', 'HT_CornersTotal5', 'AT_CornersTotal5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShots', 'Match_AwayShots', 'HT_Shots5', 'AT_Shots5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeShotsTarget', 'Match_AwayShotsTarget', 'HT_ShotsTarget5', 'AT_ShotsTarget5', window=window)
+    df = _rolling_team_feature(df, 'Match_HomeFouls', 'Match_AwayFouls', 'HT_Fouls5', 'AT_Fouls5', window=window)
+
+    # Proxy de posesion/dominio por corners
+    df['HT_Corner_Dominance5'] = df['HT_CornersFor5'] - df['HT_CornersAgainst5']
+    df['AT_Corner_Dominance5'] = df['AT_CornersFor5'] - df['AT_CornersAgainst5']
+    df['Corner_Dominance_Diff'] = df['HT_Corner_Dominance5'] - df['AT_Corner_Dominance5']
+
+    historial = {}
+    vals = []
+    for _, row in df.iterrows():
+        clave = tuple(sorted([row['HomeTeam'], row['AwayTeam']]))
+        prev = historial.get(clave, [])
+        vals.append(float(np.mean(prev[-window:])) if prev else 0.0)
+        prev.append(float(row.get('HC', 0)) + float(row.get('AC', 0)))
+        historial[clave] = prev
+    df['H2H_Corners_Avg'] = vals
+
+    fill_cols = [
+        'HT_CornersFor5', 'AT_CornersFor5', 'HT_CornersAgainst5', 'AT_CornersAgainst5',
+        'HT_CornersTotal5', 'AT_CornersTotal5', 'H2H_Corners_Avg',
+        'HT_Shots5', 'AT_Shots5', 'HT_ShotsTarget5', 'AT_ShotsTarget5',
+        'HT_Fouls5', 'AT_Fouls5', 'HT_Corner_Dominance5', 'AT_Corner_Dominance5',
+        'Corner_Dominance_Diff',
+    ]
+    df[fill_cols] = df[fill_cols].fillna(0)
     return df

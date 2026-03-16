@@ -1,0 +1,198 @@
+
+======================================================================
+   PREDICTOR DE JORNADA COMPLETA
+   Jornada 15
+   CON VALUE BETTING PROFESIONAL
+======================================================================
+
+======================================================================
+CARGANDO SISTEMA DE PREDICCION
+======================================================================
+
+🔧 Calculando xG rolling...
+   ✅ xG rolling agregado: 3657 partidos con datos históricos
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+   Calculando features derivadas de cuotas (solo apertura)...
+   Features de cuotas derivadas (apertura): 3691 partidos con datos
+
+   Calculando features Asian Handicap (solo apertura)...
+   Asian Handicap (apertura): 2266 partidos con datos
+   Handicap promedio local: -0.189
+
+🔧 Calculando features multi-escala (window=10)...
+   ✅ Features multi-escala: 6 columnas agregadas
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+ Calculando features de descanso / fatiga...
+   Descanso: 3541/3691 partidos con datos reales (95.9%)
+   Partidos con contexto europeo: 424 (11.5%)
+Modelo cargado  : modelo_final_optimizado.pkl
+Features        : 35
+Historico       : 3691 partidos
+
+======================================================================
+PREDICIENDO 10 PARTIDOS — JORNADA 15
+======================================================================
+
+[1/10] Bournemouth vs Everton... Empate (40.7%)
+[2/10] Fulham vs Man City... Visitante (39.6%)
+[3/10] Newcastle vs Tottenham... Visitante (41.2%)
+[4/10] Arsenal vs Brentford... Local (43.8%)
+[5/10] Brighton vs Aston Villa... Empate (37.1%)
+[6/10] Burnley vs Crystal Palace... Empate (43.1%)
+[7/10] Wolves vs Nott'm Forest... Local (36.1%)
+[8/10] Leeds vs Chelsea... Visitante (39.1%)
+[9/10] Liverpool vs Sunderland... Local (49.2%)
+[10/10] Man United vs West Ham... Local (45.8%)
+
+Predicciones completadas: 10/10
+
+======================================================================
+RESUMEN DE PREDICCIONES CON ANALISIS DE VALOR
+======================================================================
+Partido                                  Prediccion   Confianza  Edge           
+----------------------------------------------------------------------
+[=] Bournemouth vs Everton                 Empate       40.7%     +11.3% (GRAN OPORT.)
+[<] Fulham vs Man City                     Visitante    39.6%     -20.3%
+[<] Newcastle vs Tottenham                 Visitante    41.2%     +4.2% (ok)
+[>] Arsenal vs Brentford                   Local        43.8%     -33.2%
+[=] Brighton vs Aston Villa                Empate       37.1%     +8.6% (GRAN OPORT.)
+[=] Burnley vs Crystal Palace              Empate       43.1%     +12.8% (GRAN OPORT.)
+[>] Wolves vs Nott'm Forest                Local        36.1%     -6.5%
+[<] Leeds vs Chelsea                       Visitante    39.1%     -18.1%
+[>] Liverpool vs Sunderland                Local        49.2%     -30.8%
+[>] Man United vs West Ham                 Local        45.8%     -14.9%
+----------------------------------------------------------------------
+
+VALUE BETTING — SISTEMA DE 3 CAPAS:
+----------------------------------------------------------------------
+CAPA 1: Factor conservador 1.0 (0% descuento)
+CAPA 2: Edge min 10%, Cuota max 5.0, Prob min 35%
+CAPA 3: Kelly 25%, Stake max 2.5%
+
+SE DETECTARON 4 VALUE BETS:
+
+1. Burnley vs Crystal Palace
+   Apostar: Empate (Empate) | Cuota: 3.30
+   Edge: +50.3%
+   Expected Value: $+21.18 (ROI: +42.4%)
+   Stake recomendado: $50.00 (2.5% bankroll)
+   Probabilidades: Modelo 43.1% vs Mercado 28.7%
+   Ajuste Capa 1: 43.1% -> 43.1% (-0.0%)
+
+2. Bournemouth vs Everton
+   Apostar: Empate (Empate) | Cuota: 3.40
+   Edge: +45.5%
+   Expected Value: $+19.18 (ROI: +38.4%)
+   Stake recomendado: $50.00 (2.5% bankroll)
+   Probabilidades: Modelo 40.7% vs Mercado 28.0%
+   Ajuste Capa 1: 40.7% -> 40.7% (+0.0%)
+
+3. Brighton vs Aston Villa
+   Apostar: Empate (Empate) | Cuota: 3.50
+   Edge: +37.1%
+   Expected Value: $+14.98 (ROI: +30.0%)
+   Stake recomendado: $50.00 (2.5% bankroll)
+   Probabilidades: Modelo 37.1% vs Mercado 27.1%
+   Ajuste Capa 1: 37.1% -> 37.1% (+0.0%)
+
+4. Newcastle vs Tottenham
+   Apostar: Visitante (Tottenham) | Cuota: 2.70
+   Edge: +16.6%
+   Expected Value: $+3.73 (ROI: +11.3%)
+   Stake recomendado: $33.11 (1.7% bankroll)
+   Probabilidades: Modelo 41.2% vs Mercado 35.3%
+   Ajuste Capa 1: 41.2% -> 41.2% (+0.0%)
+
+======================================================================
+RESUMEN DE VALUE BETS:
+Total a invertir: $183.11 (9.2% del bankroll)
+Ganancia esperada: +59.06$
+ROI esperado: +32.3%
+
+PARTIDOS RECHAZADOS (6):
+  Fulham vs Man City: Visitante
+  Cuota: 1.67 | Prob: 39.6% | Edge: -31.6%
+  Razon: Edge -31.6% < 10%
+  Arsenal vs Brentford: Local
+  Cuota: 1.30 | Prob: 43.8% | Edge: -40.2%
+  Razon: Edge -40.2% < 10%
+  Wolves vs Nott'm Forest: Local
+  Cuota: 2.35 | Prob: 36.1% | Edge: -10.8%
+  Razon: Edge -10.8% < 10%
+  Leeds vs Chelsea: Visitante
+  Cuota: 1.75 | Prob: 39.1% | Edge: -28.6%
+  Razon: Edge -28.6% < 10%
+  Liverpool vs Sunderland: Local
+  Cuota: 1.25 | Prob: 49.2% | Edge: -35.8%
+  Razon: Edge -35.8% < 10%
+  Man United vs West Ham: Local
+  Cuota: 1.65 | Prob: 45.8% | Edge: -21.2%
+  Razon: Edge -21.2% < 10%
+
+ANALISIS POR NIVEL DE CONFIANZA:
+----------------------------------------------------------------------
+
+BAJA CONFIANZA (<50%) — 10 partidos — EVITAR:
+   Bournemouth vs Everton: Empate (40.7%)
+   Fulham vs Man City: Visitante (39.6%)
+   Newcastle vs Tottenham: Visitante (41.2%)
+   Arsenal vs Brentford: Local (43.8%)
+   Brighton vs Aston Villa: Empate (37.1%)
+   Burnley vs Crystal Palace: Empate (43.1%)
+   Wolves vs Nott'm Forest: Local (36.1%)
+   Leeds vs Chelsea: Visitante (39.1%)
+   Liverpool vs Sunderland: Local (49.2%)
+   Man United vs West Ham: Local (45.8%)
+
+ESTADISTICAS DE LA JORNADA:
+   Partidos analizados      : 10
+   Con edge positivo        : 4
+   VALUE BETS (edge > 10.0%) : 2
+   Bankroll configurado     : 2000$
+
+
+======================================================================
+GENERANDO REPORTES
+======================================================================
+No se puede generar PDF. Instala: pip install fpdf2
+
+Generando reporte Excel...
+Traceback (most recent call last):
+  File "C:\Users\LAP\Desktop\mi_predictor_pl\jornada\predecir_jornada_completa.py", line 237, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\LAP\Desktop\mi_predictor_pl\jornada\predecir_jornada_completa.py", line 53, in main
+    excel_path = predictor.generar_reporte(predicciones, CONFIG_JORNADA.numero, formato='excel')
+  File "C:\Users\LAP\Desktop\mi_predictor_pl\core\predictor.py", line 426, in generar_reporte
+    return self._generar_excel(resultados, ruta)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LAP\Desktop\mi_predictor_pl\core\predictor.py", line 924, in _generar_excel
+    df_export.to_excel(ruta, index=False)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\generic.py", line 2417, in to_excel
+    formatter.write(
+    ~~~~~~~~~~~~~~~^
+        excel_writer,
+        ^^^^^^^^^^^^^
+    ...<6 lines>...
+        engine_kwargs=engine_kwargs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\io\formats\excel.py", line 943, in write
+    writer = ExcelWriter(
+        writer,
+    ...<2 lines>...
+        engine_kwargs=engine_kwargs,
+    )
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 57, in __init__
+    from openpyxl.workbook import Workbook
+ModuleNotFoundError: No module named 'openpyxl'

@@ -1,0 +1,26 @@
+
+🔧 Calculando features de posición en tabla...
+   Procesando 10 temporadas...
+   ✅ Features de tabla calculadas: 3410 partidos con posición real
+
+   Calculando features derivadas de cuotas (solo apertura)...
+   Features de cuotas derivadas (apertura): 3691 partidos con datos
+
+   Calculando features Asian Handicap (solo apertura)...
+   Asian Handicap (apertura): 2266 partidos con datos
+   Handicap promedio local: -0.189
+
+🔧 Calculando features multi-escala (window=10)...
+   ✅ Features multi-escala: 6 columnas agregadas
+
+🔧 Features de forma/momentum agregadas: 15 columnas
+
+   Pinnacle Opening agregado: 3630 partidos con datos
+
+🔧 Calculando features de arbitro...
+   Arbitro: 50 arbitros distintos, 5 features calculadas
+   Calculando Elo ratings...
+   Elo: 34 equipos rastreados, rango [1378 - 1664]
+Grid search completado
+Mejor alpha: 1.00 (Brier mean season 0.3768)
+Resultados: resultados\shrinkage_grid.md

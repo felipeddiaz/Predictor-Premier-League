@@ -1,0 +1,11 @@
+
+Plan de descarga:
+  Competiciones : ['Champions Lg', 'Europa Lg', 'FA Cup', 'EFL Cup']
+  Temporadas    : ['2025-26']
+  Total requests: 4 (free tier: 100/día)
+  [ 1/4] Champions Lg 2025-26 ... ERROR: API error: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}
+  [ 2/4] Europa Lg 2025-26 ... ERROR: API error: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}
+  [ 3/4] FA Cup 2025-26 ... ERROR: API error: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}
+  [ 4/4] EFL Cup 2025-26 ... ERROR: API error: {'plan': 'Free plans do not have access to this season, try from 2022 to 2024.'}
+
+No se descargó ningún fixture.

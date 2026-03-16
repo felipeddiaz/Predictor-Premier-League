@@ -27,8 +27,10 @@ from config import (
     ARCHIVO_FEATURES,
     RUTA_MODELOS,
     PARAMS_XGB,
+    PARAMS_XGB_VB,
     PESOS_XGB,
     ALL_FEATURES,
+    FEATURES_ESTRUCTURALES,
     FEATURES_BASE,
     FEATURES_CUOTAS,
     FEATURES_CUOTAS_DERIVADAS,
@@ -61,6 +63,11 @@ from utils import (
     agregar_features_forma_momentum,
     agregar_features_pinnacle_move,
     agregar_features_arbitro,
+    agregar_xg_rolling,
+    agregar_features_ewm,
+    agregar_features_descanso,
+    agregar_features_elo,
+    agregar_features_sor,
 )
 from core.sistema_expected_value import eliminar_vig, kelly_criterion
 
@@ -90,23 +97,32 @@ def _brier_multiclase(y_true, probs):
 
 
 def cargar_y_preparar():
-    """Carga el dataset y aplica feature engineering."""
+    """Carga el dataset y aplica feature engineering completo."""
     df = pd.read_csv(ARCHIVO_FEATURES)
     df['Date'] = pd.to_datetime(df['Date'])
 
+    # FE compartido (con y sin cuotas)
+    df = agregar_xg_rolling(df)
     df = agregar_features_tabla(df)
+    df = agregar_features_multi_escala(df)
+    df = agregar_features_ewm(df)
+    df = agregar_features_forma_momentum(df)
+    df = agregar_features_descanso(df)
+    df = agregar_features_arbitro(df)
+    df = agregar_features_elo(df)
+    df = agregar_features_sor(df)
+
+    # FE solo para modelo con cuotas
     df = agregar_features_cuotas_derivadas(df)
     df = agregar_features_asian_handicap(df)
     df = agregar_features_rolling_extra(df)
-    df = agregar_features_multi_escala(df)
-    df = agregar_features_forma_momentum(df)
     df = agregar_features_pinnacle_move(df)
-    df = agregar_features_arbitro(df)
 
     df['_Season'] = _asignar_temporada(df['Date'])
 
-    features = [f for f in ALL_FEATURES if f in df.columns]
-    return df, features
+    features_con = [f for f in ALL_FEATURES if f in df.columns]
+    features_sin = [f for f in FEATURES_ESTRUCTURALES if f in df.columns]
+    return df, features_con, features_sin
 
 
 # ============================================================================
@@ -114,7 +130,8 @@ def cargar_y_preparar():
 # ============================================================================
 
 def backtest_walkforward(df, features, bankroll_inicial=None,
-                         edge_minimo=None, verbose=True):
+                         edge_minimo=None, verbose=True,
+                         params_xgb=None, pesos_xgb=None):
     """
     Walk-forward season-by-season backtest con value betting real.
 
@@ -133,6 +150,14 @@ def backtest_walkforward(df, features, bankroll_inicial=None,
         bankroll_inicial = BANKROLL_DEFAULT
     if edge_minimo is None:
         edge_minimo = UMBRAL_EDGE_MINIMO
+    if params_xgb is None:
+        params_xgb = PARAMS_XGB
+    if pesos_xgb is None:
+        pesos_xgb = PESOS_XGB
+
+    # Remove early_stopping_rounds if present (no eval_set in walk-forward)
+    params_fit = {k: v for k, v in params_xgb.items()
+                  if k != 'early_stopping_rounds'}
 
     temporadas = sorted(df['_Season'].unique())
     test_seasons = [s for s in temporadas if s >= '2020-21' and s <= '2024-25']
@@ -165,8 +190,8 @@ def backtest_walkforward(df, features, bankroll_inicial=None,
         y_test = df_test['FTR_numeric']
 
         # Entrenar XGBoost
-        sample_weights = compute_sample_weight(class_weight=PESOS_XGB, y=y_train)
-        modelo = XGBClassifier(**PARAMS_XGB)
+        sample_weights = compute_sample_weight(class_weight=pesos_xgb, y=y_train)
+        modelo = XGBClassifier(**params_fit)
         modelo.fit(X_train, y_train, sample_weight=sample_weights)
 
         probs = modelo.predict_proba(X_test)
@@ -832,25 +857,37 @@ def main():
     print("   FASE 5 — SIMULACION Y VALIDACION FINAL")
     print("=" * 80)
 
-    df, features = cargar_y_preparar()
-    print(f"   Dataset: {len(df)} partidos, {len(features)} features")
+    df, features_con, features_sin = cargar_y_preparar()
+    print(f"   Dataset: {len(df)} partidos")
+    print(f"   Features CON cuotas: {len(features_con)}")
+    print(f"   Features SIN cuotas: {len(features_sin)}")
     print(f"   Temporadas: {', '.join(sorted(df['_Season'].unique()))}")
 
-    # 5.1 — Backtest walk-forward
-    resultado_bt = backtest_walkforward(df, features)
+    # --- Modelo CON cuotas (original) ---
+    print("\n" + "#" * 80)
+    print("   MODELO CON CUOTAS")
+    print("#" * 80)
 
-    # 5.2 — Monte Carlo
-    mc_result = monte_carlo_bankroll(resultado_bt['apuestas'],
-                                      resultado_bt['bankroll_inicial'])
+    resultado_bt_con = backtest_walkforward(df, features_con)
+    mc_con = monte_carlo_bankroll(resultado_bt_con['apuestas'],
+                                  resultado_bt_con['bankroll_inicial'])
+    resultado_fav = benchmark_favorito(df, features_con)
+    comparar_modelo_vs_favorito(resultado_bt_con, resultado_fav)
 
-    # 5.3 — Benchmark vs favorito
-    resultado_fav = benchmark_favorito(df, features)
+    # --- Modelo SIN cuotas (value betting) ---
+    print("\n" + "#" * 80)
+    print("   MODELO SIN CUOTAS (VALUE BETTING)")
+    print("#" * 80)
 
-    # Comparacion
-    comparar_modelo_vs_favorito(resultado_bt, resultado_fav)
+    resultado_bt_sin = backtest_walkforward(
+        df, features_sin,
+        params_xgb=PARAMS_XGB_VB, pesos_xgb=PESOS_XGB,
+    )
+    mc_sin = monte_carlo_bankroll(resultado_bt_sin['apuestas'],
+                                  resultado_bt_sin['bankroll_inicial'])
 
-    # 5.4 — Registro prospectivo
-    registro_prospectivo(df, features)
+    # 5.4 — Registro prospectivo (con modelo con cuotas, por compatibilidad)
+    registro_prospectivo(df, features_con)
 
     print("\n" + "=" * 80)
     print("   FASE 5 COMPLETADA")

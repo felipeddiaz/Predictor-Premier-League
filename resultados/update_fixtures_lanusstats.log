@@ -1,0 +1,131 @@
+C:\Users\LAP\Desktop\mi_predictor_pl\herramientas\scrapear_fixtures_lanusstats.py:122: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  d = datetime.utcfromtimestamp(ts).date()
+Rango scraping: 2025-05-22 -> 2026-03-15
+[001/298] 2025-05-22: events=123 rows=2
+[007/298] 2025-05-28: events=114 rows=0
+[014/298] 2025-06-04: events=76 rows=0
+[021/298] 2025-06-11: events=120 rows=0
+[028/298] 2025-06-18: events=95 rows=0
+[035/298] 2025-06-25: events=92 rows=0
+[042/298] 2025-07-02: events=87 rows=0
+[049/298] 2025-07-09: events=115 rows=0
+[056/298] 2025-07-16: events=179 rows=0
+[063/298] 2025-07-23: events=171 rows=0
+[070/298] 2025-07-30: events=167 rows=0
+[077/298] 2025-08-06: events=112 rows=0
+[083/298] 2025-08-12: events=168 rows=6
+[084/298] 2025-08-13: events=160 rows=8
+[085/298] 2025-08-14: events=137 rows=2
+[091/298] 2025-08-20: events=170 rows=0
+[097/298] 2025-08-26: events=197 rows=7
+[098/298] 2025-08-27: events=199 rows=11
+[099/298] 2025-08-28: events=175 rows=4
+[105/298] 2025-09-03: events=114 rows=0
+[112/298] 2025-09-10: events=89 rows=0
+[118/298] 2025-09-16: events=180 rows=5
+[119/298] 2025-09-17: events=252 rows=8
+[120/298] 2025-09-18: events=203 rows=5
+[121/298] 2025-09-19: events=343 rows=2
+[125/298] 2025-09-23: events=203 rows=7
+[126/298] 2025-09-24: events=284 rows=12
+[127/298] 2025-09-25: events=226 rows=6
+[128/298] 2025-09-26: events=329 rows=1
+[132/298] 2025-09-30: events=213 rows=3
+[133/298] 2025-10-01: events=222 rows=6
+[134/298] 2025-10-02: events=184 rows=5
+[135/298] 2025-10-03: events=344 rows=2
+[140/298] 2025-10-08: events=91 rows=0
+[147/298] 2025-10-15: events=106 rows=0
+[153/298] 2025-10-21: events=179 rows=3
+[154/298] 2025-10-22: events=220 rows=6
+[155/298] 2025-10-23: events=188 rows=5
+[156/298] 2025-10-24: events=340 rows=2
+[160/298] 2025-10-28: events=247 rows=2
+[161/298] 2025-10-29: events=345 rows=10
+[162/298] 2025-10-30: events=272 rows=8
+[163/298] 2025-10-31: events=293 rows=1
+[164/298] 2025-11-01: events=679 rows=1
+[167/298] 2025-11-04: events=199 rows=3
+[168/298] 2025-11-05: events=214 rows=6
+[169/298] 2025-11-06: events=210 rows=5
+[170/298] 2025-11-07: events=316 rows=2
+[175/298] 2025-11-12: events=86 rows=0
+[182/298] 2025-11-19: events=126 rows=0
+[188/298] 2025-11-25: events=126 rows=3
+[189/298] 2025-11-26: events=164 rows=6
+[190/298] 2025-11-27: events=157 rows=5
+[191/298] 2025-11-28: events=230 rows=2
+[196/298] 2025-12-03: events=207 rows=0
+[199/298] 2025-12-06: events=445 rows=1
+[200/298] 2025-12-07: events=549 rows=1
+[202/298] 2025-12-09: events=166 rows=3
+[203/298] 2025-12-10: events=155 rows=6
+[204/298] 2025-12-11: events=132 rows=5
+[205/298] 2025-12-12: events=173 rows=2
+[209/298] 2025-12-16: events=85 rows=1
+[210/298] 2025-12-17: events=96 rows=5
+[211/298] 2025-12-18: events=111 rows=4
+[216/298] 2025-12-23: events=81 rows=2
+[217/298] 2025-12-24: events=45 rows=2
+[224/298] 2025-12-31: events=68 rows=0
+[231/298] 2026-01-07: events=74 rows=0
+[233/298] 2026-01-09: events=114 rows=1
+[234/298] 2026-01-10: events=330 rows=18
+[235/298] 2026-01-11: events=399 rows=24
+[236/298] 2026-01-12: events=181 rows=8
+[237/298] 2026-01-13: events=119 rows=3
+[238/298] 2026-01-14: events=181 rows=4
+[239/298] 2026-01-15: events=150 rows=2
+[244/298] 2026-01-20: events=108 rows=3
+[245/298] 2026-01-21: events=150 rows=6
+[246/298] 2026-01-22: events=159 rows=5
+[247/298] 2026-01-23: events=197 rows=2
+[252/298] 2026-01-28: events=166 rows=6
+[253/298] 2026-01-29: events=150 rows=8
+[254/298] 2026-01-30: events=210 rows=2
+[258/298] 2026-02-03: events=134 rows=2
+[259/298] 2026-02-04: events=179 rows=4
+[260/298] 2026-02-05: events=158 rows=2
+[266/298] 2026-02-11: events=194 rows=0
+[268/298] 2026-02-13: events=255 rows=2
+[269/298] 2026-02-14: events=596 rows=12
+[270/298] 2026-02-15: events=670 rows=14
+[271/298] 2026-02-16: events=336 rows=5
+[272/298] 2026-02-17: events=147 rows=1
+[273/298] 2026-02-18: events=143 rows=1
+[274/298] 2026-02-19: events=120 rows=2
+[275/298] 2026-02-20: events=266 rows=1
+[279/298] 2026-02-24: events=156 rows=1
+[280/298] 2026-02-25: events=197 rows=1
+[281/298] 2026-02-26: events=169 rows=1
+[282/298] 2026-02-27: events=286 rows=1
+[287/298] 2026-03-04: events=298 rows=0
+[289/298] 2026-03-06: events=291 rows=1
+[290/298] 2026-03-07: events=698 rows=7
+[291/298] 2026-03-08: events=797 rows=10
+[292/298] 2026-03-09: events=390 rows=6
+[293/298] 2026-03-10: events=172 rows=5
+[294/298] 2026-03-11: events=184 rows=6
+[295/298] 2026-03-12: events=171 rows=5
+[296/298] 2026-03-13: events=322 rows=2
+
+Resumen nuevas filas:
+Season   Comp        
+2024-25  Europa Lg         2
+2025-26  Champions Lg    112
+         EFL Cup         118
+         Europa Lg        40
+         FA Cup          116
+
+Nuevas filas (sin dedupe): 388
+Total combinado: 1917
+Max fecha final: 2026-03-12
+Backup: C:\Users\LAP\Desktop\mi_predictor_pl\datos\raw\fbref_fixtures.csv.backup_lanusstats
+Escrito: C:\Users\LAP\Desktop\mi_predictor_pl\datos\raw\fbref_fixtures.csv
+Exception ignored in: <function Chrome.__del__ at 0x00000207B90BECA0>
+Traceback (most recent call last):
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\undetected_chromedriver\__init__.py", line 843, in __del__
+    self.quit()
+  File "C:\Users\LAP\AppData\Local\Programs\Python\Python313\Lib\site-packages\undetected_chromedriver\__init__.py", line 798, in quit
+    time.sleep(0.1)
+OSError: [WinError 6] Controlador no válido
