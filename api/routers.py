@@ -3,7 +3,7 @@ Additional routers for the PL Predictor API.
 """
 
 from fastapi import APIRouter, HTTPException
-from typing import Optional, list
+from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
