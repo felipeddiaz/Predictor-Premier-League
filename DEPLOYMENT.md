@@ -1,5 +1,23 @@
 # Deployment Guide - PL Predictor
 
+## 🚀 Estrategia de Deployment
+
+### 📌 Arquitectura Actual: Hugging Face Spaces (Recomendado)
+
+**Stack integrado:** Frontend (React) + Backend (FastAPI) en un solo contenedor
+- ✅ Gratis, sin limitaciones de tiempo
+- ✅ Sin "cold starts" (no se duerme)
+- ✅ URL pública automática
+- ✅ Ideal para MVP y prototipado
+
+**Para escalar en el futuro:**
+Este proyecto está diseñado para separarse en microservicios sin cambios de código mayores:
+- **Frontend → Netlify** (deploy gratuito)
+- **Backend → Render.com / Railway / Google Cloud Run** (servicios independientes)
+- **Cambios necesarios:** Variable de entorno con URL del backend + CORS configurado
+
+---
+
 ## 🚀 Opciones de Deployment
 
 ### 1. Docker Compose (Recomendado - Local & Dev)
