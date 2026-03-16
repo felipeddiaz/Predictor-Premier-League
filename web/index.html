@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PL Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:       #0f1117;
+  --bg1:      #161920;
+  --bg2:      #1c2028;
+  --bg3:      #242830;
+  --bg4:      #2c3038;
+  --line:     rgba(255,255,255,.06);
+  --line2:    rgba(255,255,255,.1);
+
+  --txt:      #ecedf0;
+  --txt2:     #9b9faa;
+  --txt3:     #5c6070;
+  --txt4:     #3a3e4a;
+
+  --acc:      #3d7bff;   /* SofaScore blue */
+  --acc-dim:  rgba(61,123,255,.12);
+  --acc-bdr:  rgba(61,123,255,.3);
+
+  --grn:      #2dc66b;
+  --grn-dim:  rgba(45,198,107,.1);
+  --grn-bdr:  rgba(45,198,107,.28);
+
+  --red:      #f04040;
+  --red-dim:  rgba(240,64,64,.1);
+  --red-bdr:  rgba(240,64,64,.28);
+
+  --amb:      #f5a623;
+  --amb-dim:  rgba(245,166,35,.1);
+  --amb-bdr:  rgba(245,166,35,.28);
+
+  --pur:      #a855f7;
+  --pur-dim:  rgba(168,85,247,.1);
+  --pur-bdr:  rgba(168,85,247,.28);
+
+  --nav:  52px;
+  --side: 320px;
+  --r:    10px;
+  --r2:   14px;
+  --sh:   0 2px 8px rgba(0,0,0,.3);
+  --sh2:  0 8px 24px rgba(0,0,0,.4);
+
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden;height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* ═══════════ NAV ═══════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:var(--nav);background:var(--bg1);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:0 16px;gap:0;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  padding-right:16px;border-right:1px solid var(--line);margin-right:4px;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--acc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#fff;letter-spacing:-1px;
+  flex-shrink:0;
+}
+.logo-text{font-size:14px;font-weight:700;color:var(--txt);letter-spacing:-.3px}
+.logo-text span{color:var(--txt3)}
+
+.nav-links{display:flex;align-items:stretch;height:var(--nav)}
+.nl{
+  display:flex;align-items:center;padding:0 14px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:600;color:var(--txt3);
+  position:relative;transition:color .15s;
+  border-bottom:2px solid transparent;
+}
+.nl:hover{color:var(--txt)}
+.nl.on{color:var(--acc);border-bottom-color:var(--acc)}
+
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-stat{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;
+  background:var(--bg2);border:1px solid var(--line);
+  font-size:11px;font-weight:600;color:var(--txt2);
+}
+.nav-stat b{color:var(--txt)}
+.nav-model-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;
+  background:var(--acc-dim);border:1px solid var(--acc-bdr);
+  font-size:11px;font-weight:700;color:var(--acc);
+}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ═══════════ SHELL ═══════════ */
+.shell{
+  display:flex;height:calc(100vh - var(--nav));
+  margin-top:var(--nav);overflow:hidden;
+}
+
+/* ═══════════ PAGE SWITCHING ═══════════ */
+.app-page{display:none;width:100%;height:100%}
+.app-page.on{display:flex}
+
+/* ═══════════ PREDICTOR LAYOUT ═══════════ */
+#pg-pred{flex-direction:row}
+
+/* LEFT: match list */
+.match-sidebar{
+  width:var(--side);flex-shrink:0;
+  background:var(--bg1);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sb-hdr{
+  padding:14px 16px 10px;border-bottom:1px solid var(--line);flex-shrink:0;
+}
+.sb-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sb-title{font-size:15px;font-weight:700}
+.jornada-badge{
+  display:flex;align-items:center;gap:4px;
+  background:var(--bg2);border:1px solid var(--line2);border-radius:6px;
+  padding:4px 8px;font-size:12px;font-weight:600;color:var(--txt2);
+}
+.jornada-badge input{
+  background:none;border:none;color:var(--acc);font-family:var(--sans);
+  font-size:12px;font-weight:700;width:26px;text-align:center;padding:0;
+}
+.jornada-badge input:focus{outline:none}
+.btn-add-match{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px;border-radius:8px;
+  background:var(--acc-dim);border:1px dashed var(--acc-bdr);
+  color:var(--acc);font-family:var(--sans);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.btn-add-match:hover{background:rgba(61,123,255,.2);border-style:solid}
+
+.match-list{flex:1;overflow-y:auto;padding:8px}
+
+/* match item in sidebar */
+.mi{
+  border-radius:10px;padding:10px 12px;
+  margin-bottom:4px;cursor:pointer;
+  border:1px solid transparent;
+  transition:all .15s;position:relative;
+  background:transparent;
+}
+.mi:hover{background:var(--bg2)}
+.mi.active{background:var(--bg2);border-color:var(--acc-bdr)}
+.mi.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;border-radius:0 2px 2px 0;background:var(--acc);
+}
+.mi-teams{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.mi-team{display:flex;align-items:center;gap:8px}
+.mi-crest{
+  width:20px;height:20px;border-radius:4px;
+  background:var(--bg3);display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:var(--txt3);flex-shrink:0;letter-spacing:-.5px;
+}
+.mi-name{font-size:13px;font-weight:600;flex:1}
+.mi-name.away{color:var(--txt2);font-weight:500}
+.mi-odds-row{display:flex;gap:4px}
+.mi-odd{
+  flex:1;text-align:center;padding:3px 4px;border-radius:5px;
+  background:var(--bg3);
+  font-size:11px;font-weight:600;font-family:var(--mono);color:var(--txt2);
+}
+.mi-pred-badge{
+  position:absolute;top:10px;right:10px;
+  font-size:9px;font-weight:700;letter-spacing:.5px;
+  padding:2px 7px;border-radius:4px;
+}
+.mi-vb-dot{
+  position:absolute;top:8px;right:8px;
+  width:7px;height:7px;border-radius:50%;background:var(--amb);
+  box-shadow:0 0 6px var(--amb);
+}
+
+/* ─── CENTER DETAIL ─── */
+.match-detail{
+  flex:1;overflow-y:auto;background:var(--bg);
+  display:flex;flex-direction:column;
+}
+
+/* empty state */
+.detail-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;color:var(--txt3);text-align:center;padding:40px;
+}
+.de-icon{font-size:48px;opacity:.2}
+.de-title{font-size:16px;font-weight:600;color:var(--txt2)}
+.de-sub{font-size:13px;color:var(--txt3);max-width:280px}
+
+/* match hero */
+.match-hero{
+  background:var(--bg1);border-bottom:1px solid var(--line);
+  padding:24px 28px 20px;flex-shrink:0;
+}
+.hero-meta{
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;
+}
+.hero-league{font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase}
+.hero-dot{width:3px;height:3px;border-radius:50%;background:var(--txt4)}
+.hero-jornada{font-size:11px;color:var(--txt3)}
+
+.hero-matchup{
+  display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;gap:20px;
+}
+.hero-team{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.hero-crest{
+  width:64px;height:64px;border-radius:16px;
+  background:var(--bg2);display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;color:var(--txt3);letter-spacing:-1px;
+  border:1px solid var(--line);
+}
+.hero-team-name{font-size:16px;font-weight:700}
+.hero-team-role{font-size:11px;color:var(--txt3);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+
+.hero-center{display:flex;flex-direction:column;align-items:center;gap:6px}
+.hero-vs{font-size:13px;font-weight:700;color:var(--txt3)}
+.hero-status{
+  background:var(--grn-dim);border:1px solid var(--grn-bdr);
+  border-radius:6px;padding:3px 10px;
+  font-size:10px;font-weight:700;color:var(--grn);letter-spacing:.5px;text-transform:uppercase;
+}
+
+/* detail body */
+.detail-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* section label */
+.sec-lbl{
+  font-size:11px;font-weight:700;color:var(--txt3);
+  letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* ── ANALYSIS CARD (modelo vs mercado) ──────────────────── */
+.analysis-card{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;
+}
+.analysis-cols{display:grid;grid-template-columns:1fr 1fr 1fr}
+.ac{
+  padding:14px 16px;position:relative;
+  border-right:1px solid var(--line);
+  transition:background .15s;
+}
+.ac:last-child{border-right:none}
+.ac.has-value{background:rgba(245,166,35,.05)}
+.ac.no-bet{opacity:.7}
+.ac-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ac-name{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--txt3)}
+.ac-rec{
+  font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  padding:2px 7px;border-radius:4px;
+}
+.rec-value{background:var(--grn-dim);color:var(--grn);border:1px solid var(--grn-bdr)}
+.rec-nobet{background:var(--bg3);color:var(--txt3);border:1px solid var(--line)}
+.rec-over{background:var(--red-dim);color:var(--red);border:1px solid var(--red-bdr)}
+
+/* prob comparison rows */
+.ac-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.ac-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ac-row-lbl{font-size:10px;color:var(--txt3);font-weight:500;width:50px;flex-shrink:0}
+.ac-row-val{font-size:14px;font-weight:700;font-family:var(--mono)}
+.ac-row-val.model{color:var(--txt)}
+.ac-row-val.market{color:var(--txt3)}
+
+/* edge pill */
+.edge-pill{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;border-radius:6px;
+  border:1px solid var(--line);
+  background:var(--bg2);
+  margin-bottom:10px;
+}
+.edge-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.edge-val{font-size:16px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
+.edge-pos{color:var(--grn)}
+.edge-neg{color:var(--red)}
+.edge-nil{color:var(--txt3)}
+
+/* EV + stake row */
+.ac-ev-row{display:flex;align-items:center;justify-content:space-between}
+.ac-ev-lbl{font-size:10px;color:var(--txt3);font-weight:500}
+.ac-ev-val{font-size:13px;font-weight:700;font-family:var(--mono)}
+.ac-stake{
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  color:var(--amb);padding:2px 7px;border-radius:4px;
+  background:var(--amb-dim);border:1px solid var(--amb-bdr);
+}
+
+/* stacked comparison bar */
+.comp-bars{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:1px;height:3px;border-radius:2px;overflow:hidden;
+  margin-top:2px;
+}
+.cb-H{background:var(--grn)}
+.cb-D{background:var(--amb)}
+.cb-A{background:var(--acc)}
+
+/* ── DECISION BANNER ──────────────────────────────────── */
+.decision-banner{
+  border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;
+}
+.db-header{
+  padding:12px 16px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:8px;
+}
+.db-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--txt3)}
+.db-rows{display:flex;flex-direction:column;gap:0}
+.db-row{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 16px;border-bottom:1px solid var(--line);
+}
+.db-row:last-child{border-bottom:none}
+.db-row.best{background:rgba(45,198,107,.04)}
+.db-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.db-outcome{font-size:13px;font-weight:700;flex:1}
+.db-detail{font-family:var(--mono);font-size:11px;color:var(--txt3)}
+.db-stake{
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  padding:3px 8px;border-radius:5px;text-align:right;
+}
+.db-stake.vb{background:var(--amb-dim);color:var(--amb);border:1px solid var(--amb-bdr)}
+.db-stake.none{color:var(--txt4)}
+
+/* ── MARKET STATS BAR ────────────────────────────────── */
+.mkt-stats{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr 1px 1fr;overflow:hidden;
+}
+.mkt-stats-div{background:var(--line)}
+.mkt-stat-cell{padding:12px 14px;text-align:center}
+.msc-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.msc-val{font-size:16px;font-weight:700;font-family:var(--mono)}
+
+/* ── CONFIDENCE METER ───────────────────────────────── */
+.conf-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.conf-track{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.conf-label{font-size:11px;font-weight:600;width:52px;text-align:right;flex-shrink:0}
+
+/* ── VALUE RANKING TABLE ─────────────────────────────── */
+.rank-table{width:100%;border-collapse:collapse}
+.rank-table th{
+  font-size:10px;font-weight:700;color:var(--txt3);
+  letter-spacing:.5px;text-transform:uppercase;
+  padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;
+}
+.rank-table td{
+  padding:9px 12px;font-size:12px;border-bottom:1px solid var(--line);
+}
+.rank-table tr:last-child td{border-bottom:none}
+.rank-table tr:hover td{background:var(--bg2)}
+.rank-num{font-weight:700;color:var(--txt3);font-family:var(--mono)}
+
+/* ── insight grid (model source) ─────────────────────── */
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.insight-cell{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px 14px;
+}
+.ic-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.ic-val{font-size:16px;font-weight:700}
+.ic-sub{font-size:11px;color:var(--txt3);margin-top:2px}
+
+/* Edit form overlay (in detail) */
+.edit-form{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  padding:16px;
+}
+.ef-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.ef-field label{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+input[type="number"],select{
+  width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:8px;
+  color:var(--txt);font-family:var(--sans);font-size:13px;padding:8px 10px;
+  transition:border-color .15s;-webkit-appearance:none;appearance:none;
+}
+input[type="number"]:focus,select:focus{outline:none;border-color:var(--acc)}
+input.odds-inp{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--amb);text-align:center}
+.ef-teams{display:grid;grid-template-columns:1fr 28px 1fr;gap:8px;align-items:end;margin-bottom:12px}
+.ef-vs{text-align:center;font-size:13px;color:var(--txt3);padding-bottom:8px;font-weight:500}
+.ef-actions{display:flex;gap:8px}
+.btn-predict{
+  flex:1;background:var(--acc);border:none;cursor:pointer;
+  color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;
+  padding:10px;border-radius:8px;
+  transition:all .15s;box-shadow:0 2px 8px rgba(61,123,255,.3);
+}
+.btn-predict:hover{background:#5290ff;box-shadow:0 4px 16px rgba(61,123,255,.4);transform:translateY(-1px)}
+.btn-predict:disabled{background:var(--bg3);box-shadow:none;cursor:not-allowed;transform:none;color:var(--txt3)}
+.btn-del-match{
+  padding:10px 14px;border-radius:8px;
+  background:var(--red-dim);border:1px solid var(--red-bdr);
+  color:var(--red);cursor:pointer;font-size:13px;font-weight:600;
+  transition:all .15s;
+}
+.btn-del-match:hover{background:rgba(240,64,64,.18)}
+
+/* ═══════════ HISTORIAL PAGE ═══════════ */
+#pg-hist{flex-direction:column;overflow:hidden}
+.hist-shell{display:flex;flex:1;overflow:hidden}
+.hist-sidebar{
+  width:var(--side);flex-shrink:0;
+  background:var(--bg1);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.hist-kpi-list{padding:12px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.hkpi{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px;display:flex;align-items:center;gap:10px;
+}
+.hkpi-icon{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+}
+.hkpi-info{flex:1}
+.hkpi-val{font-size:18px;font-weight:700;line-height:1}
+.hkpi-lbl{font-size:11px;color:var(--txt3);margin-top:2px;font-weight:500}
+.hkpi-trend{font-size:11px;font-weight:600}
+
+.hist-main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.hist-toolbar{
+  background:var(--bg1);border-bottom:1px solid var(--line);
+  padding:10px 16px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;
+}
+.flt{
+  background:var(--bg2);border:1px solid var(--line);border-radius:20px;
+  color:var(--txt3);cursor:pointer;
+  font-family:var(--sans);font-size:11px;font-weight:600;
+  padding:5px 13px;transition:all .15s;
+}
+.flt:hover{border-color:var(--line2);color:var(--txt)}
+.flt.on{background:var(--acc);border-color:var(--acc);color:#fff}
+
+.hist-table-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.ht{width:100%;border-collapse:collapse}
+.ht thead{background:var(--bg1);position:sticky;top:0;z-index:10}
+.ht th{
+  padding:10px 14px;font-size:10px;font-weight:700;color:var(--txt3);
+  letter-spacing:.6px;text-transform:uppercase;text-align:left;
+  border-bottom:1px solid var(--line2);cursor:pointer;white-space:nowrap;
+}
+.ht th:hover{color:var(--txt)}
+.ht td{
+  padding:11px 14px;font-size:13px;border-bottom:1px solid var(--line);vertical-align:middle;
+}
+.ht tbody tr:hover{background:var(--bg1)}
+.ht tbody tr:last-child td{border-bottom:none}
+.pg{display:flex;gap:4px;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg1);justify-content:center;flex-shrink:0}
+.pgb{
+  background:var(--bg2);border:1px solid var(--line);border-radius:6px;
+  color:var(--txt3);cursor:pointer;
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  padding:5px 11px;transition:all .15s;
+}
+.pgb:hover{border-color:var(--line2);color:var(--txt)}
+.pgb.on{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* ═══════════ MODELO PAGE ═══════════ */
+#pg-mod{flex-direction:column;overflow-y:auto}
+.mod-wrap{padding:20px;max-width:1200px;width:100%}
+.mod-stat-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+.mstat{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  padding:16px;position:relative;overflow:hidden;transition:border-color .2s;
+}
+.mstat:hover{border-color:var(--line2)}
+.mstat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mstat.acc::before{background:var(--grn)}
+.mstat.blu::before{background:var(--acc)}
+.mstat.amb::before{background:var(--amb)}
+.mstat.red::before{background:var(--red)}
+.mstat.pur::before{background:var(--pur)}
+.ms-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ms-val{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1}
+.ms-sub{font-size:11px;color:var(--txt3);margin-top:5px}
+
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.mod-card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.mc-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.mc-title{font-size:13px;font-weight:700}
+.mc-sub{font-size:11px;color:var(--txt3)}
+.mc-body{padding:16px}
+
+/* WF table */
+.wft{width:100%;border-collapse:collapse}
+.wft th{padding:8px 12px;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--line)}
+.wft td{padding:9px 12px;font-size:12px;border-bottom:1px solid var(--line)}
+.wft tr:last-child td{border-bottom:none}
+.wft tfoot td{font-weight:700;color:var(--amb);border-top:1px solid var(--line2);border-bottom:none;background:var(--bg2)}
+.wf-bar{display:flex;align-items:center;gap:8px}
+.wf-track{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.wf-fill{height:100%;border-radius:2px}
+.wf-pos{background:var(--grn)}
+.wf-neg{background:var(--red)}
+
+/* Feat list */
+.fl{display:flex;flex-direction:column;gap:0}
+.fr{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+.fr:last-child{border-bottom:none}
+.fr-n{font-size:10px;color:var(--txt3);width:14px;text-align:right;flex-shrink:0}
+.fr-name{font-family:var(--mono);font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-cat{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;flex-shrink:0}
+.frc-c{background:var(--acc-dim);color:var(--acc);border:1px solid var(--acc-bdr)}
+.frc-p{background:var(--pur-dim);color:var(--pur);border:1px solid var(--pur-bdr)}
+.frc-a{background:var(--amb-dim);color:var(--amb);border:1px solid var(--amb-bdr)}
+.frc-e{background:var(--red-dim);color:var(--red);border:1px solid var(--red-bdr)}
+.fr-track{width:56px;height:3px;background:var(--bg3);border-radius:2px;flex-shrink:0;overflow:hidden}
+.fr-fill{height:100%;border-radius:2px;background:var(--acc)}
+.fr-pct{font-family:var(--mono);font-size:10px;color:var(--txt2);width:32px;text-align:right;flex-shrink:0}
+
+/* dist tiles */
+.dist-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.dist-tile{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px;text-align:center}
+.dt-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.dt-val{font-size:24px;font-weight:800;letter-spacing:-1px}
+
+/* ROI chart */
+canvas#roiChart{width:100%;height:180px;display:block}
+
+/* Loader */
+.ldr{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(15,17,23,.7);backdrop-filter:blur(4px);
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.ldr.on{display:flex}
+.ldr-ring{
+  width:38px;height:38px;border-radius:50%;
+  border:3px solid var(--bg3);border-top-color:var(--acc);
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldr-txt{font-size:12px;font-weight:600;color:var(--txt3);letter-spacing:.5px}
+
+/* badges */
+.bgt{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:5px}
+.bgt-H{background:var(--grn-dim);color:var(--grn);border:1px solid var(--grn-bdr)}
+.bgt-D{background:var(--amb-dim);color:var(--amb);border:1px solid var(--amb-bdr)}
+.bgt-A{background:var(--acc-dim);color:var(--acc);border:1px solid var(--acc-bdr)}
+.bgt-ok{background:var(--grn-dim);color:var(--grn);border:1px solid var(--grn-bdr)}
+.bgt-no{background:var(--red-dim);color:var(--red);border:1px solid var(--red-bdr)}
+.bgt-vb{background:var(--amb-dim);color:var(--amb);border:1px solid var(--amb-bdr)}
+
+@media(max-width:900px){
+  :root{--side:260px}
+  .mod-stat-row{grid-template-columns:repeat(3,1fr)}
+  .mod-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="ldr" id="ldr"><div class="ldr-ring"></div><div class="ldr-txt">Calculando predicciones…</div></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">PL</div>
+    <div class="logo-text">Predictor <span>ML</span></div>
+  </div>
+  <div class="nav-links">
+    <button class="nl on" onclick="goTo('pred',this)">Predictor</button>
+    <button class="nl" onclick="goTo('hist',this)">Historial</button>
+    <button class="nl" onclick="goTo('mod',this)">Modelo</button>
+  </div>
+  <div class="nav-right">
+    <div class="nav-stat"><span>ROI</span> <b style="color:var(--grn)">+24.2%</b></div>
+    <div class="nav-stat"><span>Acc.</span> <b>52.4%</b></div>
+    <div class="nav-model-pill" id="modelPill"><div class="pulse"></div>Conectando…</div>
+  </div>
+</nav>
+
+<div class="shell">
+
+<!-- ════════════════ PREDICTOR ════════════════ -->
+<div class="app-page on" id="pg-pred">
+
+  <!-- SIDEBAR -->
+  <div class="match-sidebar">
+    <div class="sb-hdr">
+      <div class="sb-hdr-top">
+        <div class="sb-title">Jornada</div>
+        <div class="jornada-badge">J <input type="number" id="jNum" value="30" min="1" max="38"> / 38</div>
+      </div>
+      <button class="btn-add-match" onclick="addMatch()">
+        <span style="font-size:16px;line-height:1">+</span> Agregar partido
+      </button>
+    </div>
+    <div class="match-list" id="matchList"></div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="match-detail" id="matchDetail">
+    <div class="detail-empty">
+      <div class="de-icon">⚽</div>
+      <div class="de-title">Selecciona un partido</div>
+      <div class="de-sub">Agrega partidos en el panel izquierdo, llena las cuotas y pulsa Predecir</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════ HISTORIAL ════════════════ -->
+<div class="app-page" id="pg-hist">
+  <div class="hist-shell">
+    <!-- sidebar KPIs -->
+    <div class="hist-sidebar">
+      <div class="sb-hdr" style="border-bottom:none;padding-bottom:0">
+        <div class="sb-title">Rendimiento</div>
+      </div>
+      <div class="hist-kpi-list" id="histKpiList"></div>
+    </div>
+    <!-- table -->
+    <div class="hist-main">
+      <div class="hist-toolbar" id="histToolbar">
+        <button class="flt on" onclick="flt('all',this)">Todos</button>
+        <button class="flt" onclick="flt('vb',this)">Value bets</button>
+        <button class="flt" onclick="flt('ok',this)">Correctos</button>
+        <button class="flt" onclick="flt('fail',this)">Incorrectos</button>
+        <button class="flt" onclick="flt('H',this)">Local</button>
+        <button class="flt" onclick="flt('D',this)">Empate</button>
+        <button class="flt" onclick="flt('A',this)">Visitante</button>
+      </div>
+      <div style="flex:1;overflow-y:auto">
+        <table class="ht">
+          <thead><tr>
+            <th onclick="srt('jornada')">J</th>
+            <th onclick="srt('home')">Local</th>
+            <th onclick="srt('away')">Visitante</th>
+            <th onclick="srt('pred')">Predicción</th>
+            <th onclick="srt('real')">Real</th>
+            <th onclick="srt('ok')">OK</th>
+            <th onclick="srt('prob')">Prob.</th>
+            <th onclick="srt('ev')">EV</th>
+            <th onclick="srt('vb')">VB</th>
+            <th onclick="srt('kelly')">Kelly</th>
+          </tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div class="pg" id="histPg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODELO ════════════════ -->
+<div class="app-page" id="pg-mod">
+  <div class="mod-wrap">
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Rendimiento del modelo</div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-.5px">XGBoost · 10 temporadas · 3,691 partidos</div>
+    </div>
+    <div class="mod-stat-row">
+      <div class="mstat acc"><div class="ms-lbl">ROI Test</div><div class="ms-val" style="color:var(--grn)">+24.2%</div><div class="ms-sub">Split 80/20 temporal</div></div>
+      <div class="mstat acc"><div class="ms-lbl">ROI Walk-Fwd</div><div class="ms-val" style="color:var(--grn)">+17.5%</div><div class="ms-sub">6 temporadas prom.</div></div>
+      <div class="mstat blu"><div class="ms-lbl">Accuracy</div><div class="ms-val" style="color:var(--acc)">52.4%</div><div class="ms-sub">Base aleatoria 33.3%</div></div>
+      <div class="mstat amb"><div class="ms-lbl">Log Loss</div><div class="ms-val">0.9829</div><div class="ms-sub">Test set</div></div>
+      <div class="mstat amb"><div class="ms-lbl">Brier Score</div><div class="ms-val">0.1952</div><div class="ms-sub">Test set</div></div>
+      <div class="mstat pur"><div class="ms-lbl">Features</div><div class="ms-val" style="color:var(--pur)">35</div><div class="ms-sub">Seleccionadas de 98</div></div>
+    </div>
+    <div class="mod-grid">
+      <div class="mod-card">
+        <div class="mc-head"><div class="mc-title">Walk-forward validation</div><div class="mc-sub">Temporada por temporada</div></div>
+        <div class="mc-body" style="padding:0">
+          <table class="wft">
+            <thead><tr><th>Temporada</th><th>Train</th><th>Log Loss</th><th style="min-width:160px">ROI</th></tr></thead>
+            <tbody id="wfBody"></tbody>
+            <tfoot><tr><td>Promedio</td><td>—</td><td>0.9843</td><td style="color:var(--grn)">+17.54%</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="mod-card">
+        <div class="mc-head"><div class="mc-title">Top 10 features</div><div class="mc-sub">Importancia XGBoost (gain)</div></div>
+        <div class="mc-body" id="featList" style="padding:8px 14px"></div>
+      </div>
+      <div class="mod-card">
+        <div class="mc-head"><div class="mc-title">Distribución resultados</div><div class="mc-sub">Test set · 739 partidos</div></div>
+        <div class="mc-body">
+          <div class="dist-row">
+            <div class="dist-tile"><div class="dt-lbl">Local</div><div class="dt-val" style="color:var(--grn)">41.8%</div></div>
+            <div class="dist-tile"><div class="dt-lbl">Empate</div><div class="dt-val" style="color:var(--amb)">25.0%</div></div>
+            <div class="dist-tile"><div class="dt-lbl">Visitante</div><div class="dt-val" style="color:var(--acc)">33.2%</div></div>
+          </div>
+          <div style="height:6px;display:grid;grid-template-columns:41.8fr 25fr 33.2fr;gap:2px;border-radius:3px;overflow:hidden;margin-bottom:16px">
+            <div style="background:var(--grn)"></div>
+            <div style="background:var(--amb)"></div>
+            <div style="background:var(--acc)"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">Total partidos</span><b>3,691</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">Rango</span><b>2016–2026</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">Train (80%)</span><b>2,952</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">Test (20%)</span><b>739</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">F1-weighted</span><b>0.4955</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="mod-card">
+        <div class="mc-head"><div class="mc-title">ROI por temporada</div><div class="mc-sub">Walk-forward</div></div>
+        <div class="mc-body" style="padding:12px 16px 8px"><canvas id="roiChart"></canvas></div>
+      </div>
+    </div>
+    <!-- Value betting system -->
+    <div class="mod-card" style="margin-bottom:14px">
+      <div class="mc-head"><div class="mc-title">Sistema de value betting — 3 capas</div></div>
+      <div class="mc-body" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+        <div style="background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px">
+          <div style="font-size:10px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">① Ajuste conservador</div>
+          <code style="font-family:var(--mono);font-size:12px;color:var(--txt2);display:block;margin-bottom:6px">p_adj = 0.60·p + 0.40·⅓</code>
+          <div style="font-size:12px;color:var(--txt3)">Regresión del 40% hacia la distribución uniforme para evitar overconfidence.</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px">
+          <div style="font-size:10px;font-weight:700;color:var(--grn);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">② Filtros de calidad</div>
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--txt2)">
+            <div>Edge mínimo: <b style="color:var(--grn)">10%</b> sobre prob. implícita</div>
+            <div>Cuota máxima: <b style="color:var(--grn)">5.00</b></div>
+            <div>Probabilidad mínima: <b style="color:var(--grn)">35%</b></div>
+          </div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px">
+          <div style="font-size:10px;font-weight:700;color:var(--amb);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">③ Kelly Criterion</div>
+          <code style="font-family:var(--mono);font-size:12px;color:var(--txt2);display:block;margin-bottom:6px">f* = (p·b − q) / b</code>
+          <div style="font-size:12px;color:var(--txt3)">Kelly fraccionario al <b style="color:var(--amb)">25%</b>, máx. <b style="color:var(--amb)">2.5% del bankroll</b>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /shell -->
+
+<script>
+/* ═══════════════════ DATA ═══════════════════ */
+const TEAMS=["Arsenal","Aston Villa","Bournemouth","Brentford","Brighton","Chelsea","Crystal Palace","Everton","Fulham","Ipswich","Leicester","Liverpool","Man City","Man United","Newcastle","Nottm Forest","Southampton","Tottenham","West Ham","Wolves"];
+const INITIALS=t=>t.split(' ').map(w=>w[0]).join('').slice(0,3);
+
+const WF=[{s:"2020–21",tr:1520,ll:1.0174,roi:16.62},{s:"2021–22",tr:1900,ll:0.9665,roi:37.00},{s:"2022–23",tr:2280,ll:0.9969,roi:-16.30},{s:"2023–24",tr:2660,ll:0.9318,roi:0.17},{s:"2024–25",tr:3040,ll:0.9747,roi:40.60},{s:"2025–26",tr:3420,ll:1.0183,roi:27.15}];
+const FEATS=[{r:1,n:"Home_Advantage_Prob",c:"c",i:.0827},{r:2,n:"Pinnacle_Open_H",c:"p",i:.0786},{r:3,n:"B365A",c:"c",i:.0645},{r:4,n:"Pinnacle_Open_A",c:"p",i:.0639},{r:5,n:"B365H",c:"c",i:.0636},{r:6,n:"Prob_A",c:"c",i:.0565},{r:7,n:"AH_Edge_Home",c:"a",i:.0515},{r:8,n:"Pinnacle_Conf",c:"p",i:.0297},{r:9,n:"Market_Confidence",c:"c",i:.0292},{r:10,n:"Prob_D",c:"c",i:.0262}];
+
+const mkRng=s=>{let x=s;return()=>{x=(x*1664525+1013904223)&0xffffffff;return(x>>>0)/0xffffffff;}};
+const HIST=(()=>{
+  const pairs=[["Arsenal","Chelsea"],["Man City","Liverpool"],["Tottenham","Newcastle"],["Man United","Everton"],["Brighton","Wolves"],["Aston Villa","Fulham"],["Brentford","Crystal Palace"],["West Ham","Southampton"],["Leicester","Nottm Forest"],["Bournemouth","Ipswich"],["Arsenal","Man City"],["Chelsea","Tottenham"],["Liverpool","Newcastle"],["Man United","Brighton"],["Wolves","Aston Villa"],["Fulham","Brentford"],["Crystal Palace","West Ham"],["Southampton","Leicester"],["Arsenal","Liverpool"],["Man City","Chelsea"],["Tottenham","Man United"],["Newcastle","Brighton"],["Aston Villa","Wolves"],["Fulham","Crystal Palace"],["Leicester","Southampton"],["Nottm Forest","Bournemouth"],["Ipswich","Everton"],["Arsenal","Tottenham"],["Man City","Man United"],["Liverpool","Chelsea"],["Newcastle","Aston Villa"],["Brighton","Fulham"],["Wolves","Brentford"],["Crystal Palace","Leicester"],["West Ham","Nottm Forest"],["Southampton","Bournemouth"],["Ipswich","Arsenal"],["Everton","Man City"],["Chelsea","Liverpool"],["Brentford","Brighton"],["Nottm Forest","Tottenham"],["Bournemouth","Newcastle"],["Fulham","Man United"],["Wolves","Crystal Palace"],["Leicester","West Ham"],["Southampton","Arsenal"],["Ipswich","Man City"],["Everton","Chelsea"]];
+  const rng=mkRng(42),outs=['H','H','H','D','A','A'];
+  return pairs.map(([ht,at],i)=>{
+    const j=21+Math.floor(i/5),pred=['H','D','A'][Math.floor(rng()*3)],real=outs[Math.floor(rng()*outs.length)],ok=pred===real,prob=38+Math.floor(rng()*22),b365h=+(1.5+rng()*2.5).toFixed(2),impl=1/b365h,edge=(prob/100)-impl,isVB=edge>=.10&&b365h<=5&&prob>=35,kelly=isVB?+(rng()*1.8+.3).toFixed(2):null,ev=+(prob/100*(b365h-1)-(1-prob/100)).toFixed(3);
+    return{jornada:j,ht,at,pred,real,ok,prob,b365h,ev,isVB,kelly};
+  });
+})();
+
+/* ═══════════════════ STATE ═══════════════════ */
+let matches=[]; // {id, home, away, bh, bd, ba, result}
+let activeId=null;
+let mc=0;
+
+/* ═══════════════════ NAV ═══════════════════ */
+function goTo(p,btn){
+  document.querySelectorAll('.app-page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.nl').forEach(x=>x.classList.remove('on'));
+  document.getElementById('pg-'+p).classList.add('on');
+  btn.classList.add('on');
+  if(p==='mod')renderModelo();
+  if(p==='hist')renderHistorial();
+}
+
+/* ═══════════════════ PREDICTOR ═══════════════════ */
+function addMatch(home='',away='',bh='',bd='',ba=''){
+  mc++;
+  const id=mc;
+  const h=home||TEAMS[(id-1)%TEAMS.length];
+  const a=away||TEAMS[(id+4)%TEAMS.length];
+  matches.push({id,home:h,away:a,bh:bh||'',bd:bd||'',ba:ba||'',result:null});
+  renderSidebar();
+  selectMatch(id);
+}
+
+function removeMatch(id){
+  matches=matches.filter(m=>m.id!==id);
+  if(activeId===id){
+    activeId=null;
+    const last=matches[matches.length-1];
+    if(last)selectMatch(last.id);
+    else showEmpty();
+  }
+  renderSidebar();
+}
+
+function renderSidebar(){
+  const list=document.getElementById('matchList');
+  if(!matches.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--txt3);font-size:12px">Agrega partidos para comenzar</div>';return;}
+  list.innerHTML=matches.map(m=>{
+    const res=m.result;
+    const hasVB=res&&res.vb;
+    const predKey=res?res.pred:null;
+    return`<div class="mi${activeId===m.id?' active':''}" onclick="selectMatch(${m.id})">
+      <div class="mi-teams">
+        <div class="mi-team">
+          <div class="mi-crest">${INITIALS(m.home)}</div>
+          <div class="mi-name">${m.home}</div>
+          ${predKey?`<span class="bgt bgt-${predKey}" style="font-size:9px;padding:2px 6px">${{H:'Local',D:'X',A:'Visit.'}[predKey]}</span>`:''}
+        </div>
+        <div class="mi-team">
+          <div class="mi-crest" style="opacity:.5">${INITIALS(m.away)}</div>
+          <div class="mi-name away">${m.away}</div>
+        </div>
+      </div>
+      ${(m.bh||m.bd||m.ba)?`<div class="mi-odds-row">
+        <div class="mi-odd">${m.bh||'—'}</div>
+        <div class="mi-odd">${m.bd||'—'}</div>
+        <div class="mi-odd">${m.ba||'—'}</div>
+      </div>`:''}
+      ${hasVB?'<div class="mi-vb-dot" title="Value bet detectado"></div>':''}
+    </div>`;
+  }).join('');
+}
+
+function showEmpty(){
+  document.getElementById('matchDetail').innerHTML=`<div class="detail-empty">
+    <div class="de-icon">⚽</div>
+    <div class="de-title">Selecciona un partido</div>
+    <div class="de-sub">Agrega partidos en el panel izquierdo, llena las cuotas y pulsa Predecir</div>
+  </div>`;
+}
+
+function selectMatch(id){
+  activeId=id;
+  renderSidebar();
+  const m=matches.find(x=>x.id===id);
+  if(!m)return;
+  renderDetail(m);
+}
+
+function renderDetail(m){
+  const res = m.result;
+  const detail = document.getElementById('matchDetail');
+  const tOpts = sel => TEAMS.map(t=>`<option${t===sel?' selected':''}>${t}</option>`).join('');
+
+  // ── edit form (always shown) ─────────────────────────────────────────
+  const editForm = `
+    <div class="sec-lbl">Configuración</div>
+    <div class="edit-form">
+      <div class="ef-teams">
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Local</label>
+          <select onchange="updateMatch(${m.id},'home',this.value)">${tOpts(m.home)}</select>
+        </div>
+        <div class="ef-vs">vs</div>
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Visitante</label>
+          <select onchange="updateMatch(${m.id},'away',this.value)">${tOpts(m.away)}</select>
+        </div>
+      </div>
+      <div class="ef-grid">
+        <div class="ef-field"><label>Cuota Local (1)</label>
+          <input type="number" class="odds-inp" step=".01" min="1.01" placeholder="2.10" value="${m.bh}" oninput="updateMatch(${m.id},'bh',this.value)">
+        </div>
+        <div class="ef-field"><label>Cuota Empate (X)</label>
+          <input type="number" class="odds-inp" step=".01" min="1.01" placeholder="3.40" value="${m.bd}" oninput="updateMatch(${m.id},'bd',this.value)">
+        </div>
+        <div class="ef-field"><label>Cuota Visitante (2)</label>
+          <input type="number" class="odds-inp" step=".01" min="1.01" placeholder="3.60" value="${m.ba}" oninput="updateMatch(${m.id},'ba',this.value)">
+        </div>
+      </div>
+      <div class="ef-actions">
+        <button class="btn-predict" onclick="predictOne(${m.id})">Predecir este partido →</button>
+        <button class="btn-del-match" onclick="removeMatch(${m.id})">Eliminar</button>
+      </div>
+    </div>`;
+
+  if(!res){
+    detail.innerHTML = `
+      <div class="match-hero">
+        <div class="hero-meta"><span class="hero-league">Premier League</span><div class="hero-dot"></div>
+        <span class="hero-jornada">Jornada ${document.getElementById('jNum').value} · 2025–26</span></div>
+        <div class="hero-matchup">
+          <div class="hero-team"><div class="hero-crest">${INITIALS(m.home)}</div><div class="hero-team-name">${m.home}</div><div class="hero-team-role">Local</div></div>
+          <div class="hero-center"><div class="hero-vs">vs</div><div class="hero-status">Pendiente</div></div>
+          <div class="hero-team"><div class="hero-crest" style="opacity:.7">${INITIALS(m.away)}</div><div class="hero-team-name">${m.away}</div><div class="hero-team-role">Visitante</div></div>
+        </div>
+      </div>
+      <div class="detail-body">${editForm}</div>`;
+    return;
+  }
+
+  // ── Calculations ─────────────────────────────────────────────────────
+  const bh = parseFloat(m.bh)||2.10, bd = parseFloat(m.bd)||3.40, ba = parseFloat(m.ba)||3.60;
+
+  // Market implied probs (with vig)
+  const rawH=1/bh, rawD=1/bd, rawA=1/ba;
+  const overround = rawH+rawD+rawA;
+  const vig = ((overround-1)*100).toFixed(1);
+  const mktH = (rawH/overround*100).toFixed(1);
+  const mktD = (rawD/overround*100).toFixed(1);
+  const mktA = (rawA/overround*100).toFixed(1);
+
+  // Edge = model prob - market implied (fair)
+  const edgeH = (res.ph - parseFloat(mktH)).toFixed(1);
+  const edgeD = (res.pd - parseFloat(mktD)).toFixed(1);
+  const edgeA = (res.pa - parseFloat(mktA)).toFixed(1);
+
+  // EV
+  const ev = (p,o)=>+(p/100*(o-1)-(1-p/100)).toFixed(3);
+  const evH=ev(res.ph,bh), evD=ev(res.pd,bd), evA=ev(res.pa,ba);
+
+  // Kelly stake per outcome
+  const kellyF=(p,o)=>{const b=o-1,k=(p/100*b-(1-p/100))/b;return+(Math.min(Math.max(0,k*.25),.025)*100).toFixed(2);};
+  const kH=kellyF(res.ph,bh), kD=kellyF(res.pd,bd), kA=kellyF(res.pa,ba);
+
+  // Recommendation per outcome
+  const recFor = (edge, ev_, kelly_, odds) => {
+    const e = parseFloat(edge);
+    if(e >= 10 && odds <= 5 && ev_ > 0) return {icon:'✅', label:'Value bet', cls:'rec-value', stake: kelly_};
+    if(e < -5)  return {icon:'❌', label:'Mercado sobrevalorado', cls:'rec-over', stake:0};
+    return {icon:'⚠️', label:'No bet', cls:'rec-nobet', stake:0};
+  };
+  const recH = recFor(edgeH, evH, kH, bh);
+  const recD = recFor(edgeD, evD, kD, bd);
+  const recA = recFor(edgeA, evA, kA, ba);
+
+  // Model confidence via entropy
+  const probs = [res.ph/100, res.pd/100, res.pa/100];
+  const entropy = -probs.reduce((s,p)=>s+(p>0?p*Math.log2(p):0),0);
+  const maxEnt = Math.log2(3); // 1.585
+  const confScore = Math.round((1-entropy/maxEnt)*100);
+  const confLabel = confScore>=65?'Alta':confScore>=40?'Media':'Baja';
+  const confColor = confScore>=65?'var(--grn)':confScore>=40?'var(--amb)':'var(--red)';
+
+  // Value ranking (sorted by EV desc)
+  const outcomes = [
+    {k:'H', name:'Local',    ev:evH, edge:edgeH, stake:kH, rec:recH, odds:bh},
+    {k:'D', name:'Empate',   ev:evD, edge:edgeD, stake:kD, rec:recD, odds:bd},
+    {k:'A', name:'Visitante',ev:evA, edge:edgeA, stake:kA, rec:recA, odds:ba},
+  ].sort((a,b)=>b.ev-a.ev);
+
+  // Outcome color map
+  const outcomeColor = {H:'var(--grn)', D:'var(--amb)', A:'var(--acc)'};
+  const outcomeName  = {H:'Local', D:'Empate', A:'Visitante'};
+
+  // ── Analysis card (model vs market) ─────────────────────────────────
+  const analysisCard = (key, modelP, mktP, edge_, ev_, stake_, rec_) => {
+    const eNum = parseFloat(edge_);
+    const edgeCls = eNum>0?'edge-pos':eNum<-5?'edge-neg':'edge-nil';
+    const edgeSign = eNum>0?'+':'';
+    const hasValue = rec_.cls==='rec-value';
+    return `<div class="ac${hasValue?' has-value':rec_.cls==='rec-over'?' no-bet':''}">
+      <div class="ac-header">
+        <span class="ac-name">${outcomeName[key]}</span>
+        <span class="ac-rec ${rec_.cls}">${rec_.icon} ${rec_.label}</span>
+      </div>
+      <div class="ac-rows">
+        <div class="ac-row">
+          <span class="ac-row-lbl">Modelo</span>
+          <span class="ac-row-val model" style="color:${outcomeColor[key]}">${modelP}%</span>
+        </div>
+        <div class="ac-row">
+          <span class="ac-row-lbl">Mercado</span>
+          <span class="ac-row-val market">${mktP}%</span>
+        </div>
+      </div>
+      <div class="edge-pill">
+        <span class="edge-lbl">Edge</span>
+        <span class="edge-val ${edgeCls}">${edgeSign}${edge_}%</span>
+      </div>
+      <div class="ac-ev-row">
+        <span class="ac-ev-lbl">EV: <span style="font-family:var(--mono);font-weight:700;color:${ev_>=0?'var(--grn)':'var(--red)'}">${ev_>=0?'+':''}${ev_}</span></span>
+        ${hasValue ? `<span class="ac-stake">${stake_}% bankroll</span>` : `<span style="font-family:var(--mono);font-size:11px;color:var(--txt4)">stake: 0</span>`}
+      </div>
+    </div>`;
+  };
+
+  // ── Decision table ───────────────────────────────────────────────────
+  const decisionRows = outcomes.map((o,i)=>`
+    <div class="db-row${i===0?' best':''}">
+      <div class="db-icon">${o.rec.icon}</div>
+      <div>
+        <div class="db-outcome">${o.name} <span style="font-family:var(--mono);font-size:11px;color:var(--txt3)">@ ${o.odds}</span></div>
+        <div class="db-detail">Edge ${parseFloat(o.edge)>=0?'+':''}${o.edge}%  ·  EV ${o.ev>=0?'+':''}${o.ev}</div>
+      </div>
+      <div class="db-stake ${o.rec.stake>0?'vb':'none'}">${o.rec.stake>0?o.rec.stake+'% bankroll':'—'}</div>
+    </div>`).join('');
+
+  // ── Value ranking table ──────────────────────────────────────────────
+  const rankRows = outcomes.map((o,i)=>`
+    <tr>
+      <td class="rank-num">${i+1}</td>
+      <td><span class="bgt bgt-${o.k}">${o.name}</span></td>
+      <td style="font-family:var(--mono);color:${parseFloat(o.edge)>=0?'var(--grn)':'var(--red)'}">${parseFloat(o.edge)>=0?'+':''}${o.edge}%</td>
+      <td style="font-family:var(--mono);color:${o.ev>=0?'var(--grn)':'var(--red)'}">${o.ev>=0?'+':''}${o.ev}</td>
+      <td style="font-family:var(--mono);color:var(--amb)">${o.rec.stake>0?o.rec.stake+'%':'—'}</td>
+    </tr>`).join('');
+
+  // ── Source badge ─────────────────────────────────────────────────────
+  const sourceBadge = res.modelUsed==='real'
+    ? `<span style="color:var(--grn);font-size:12px;font-weight:600">✓ XGBoost real</span>`
+    : `<span style="color:var(--txt3);font-size:12px">~ Demo visual</span>`;
+
+  // ── Assemble ─────────────────────────────────────────────────────────
+  detail.innerHTML = `
+    <div class="match-hero">
+      <div class="hero-meta">
+        <span class="hero-league">Premier League</span><div class="hero-dot"></div>
+        <span class="hero-jornada">Jornada ${document.getElementById('jNum').value} · 2025–26</span>
+        <div class="hero-dot"></div>${sourceBadge}
+      </div>
+      <div class="hero-matchup">
+        <div class="hero-team"><div class="hero-crest">${INITIALS(m.home)}</div>
+          <div class="hero-team-name">${m.home}</div><div class="hero-team-role">Local</div></div>
+        <div class="hero-center"><div class="hero-vs">vs</div>
+          <div class="hero-status" style="background:var(--grn-dim);border-color:var(--grn-bdr);color:var(--grn)">Predicho</div></div>
+        <div class="hero-team"><div class="hero-crest" style="opacity:.7">${INITIALS(m.away)}</div>
+          <div class="hero-team-name">${m.away}</div><div class="hero-team-role">Visitante</div></div>
+      </div>
+    </div>
+
+    <div class="detail-body">
+
+      ${editForm}
+
+      <!-- ① MARKET STATS -->
+      <div>
+        <div class="sec-lbl">Mercado</div>
+        <div class="mkt-stats">
+          <div class="mkt-stat-cell">
+            <div class="msc-lbl">Overround</div>
+            <div class="msc-val" style="color:${parseFloat(vig)>5?'var(--red)':parseFloat(vig)>3?'var(--amb)':'var(--grn)'}">${(parseFloat(vig)+100).toFixed(1)}%</div>
+          </div>
+          <div class="mkt-stats-div"></div>
+          <div class="mkt-stat-cell">
+            <div class="msc-lbl">Vig</div>
+            <div class="msc-val" style="color:var(--amb)">${vig}%</div>
+          </div>
+          <div class="mkt-stats-div"></div>
+          <div class="mkt-stat-cell">
+            <div class="msc-lbl">Mejor cuota</div>
+            <div class="msc-val">${Math.max(bh,bd,ba).toFixed(2)}</div>
+          </div>
+          <div class="mkt-stats-div"></div>
+          <div class="mkt-stat-cell">
+            <div class="msc-lbl">Confianza modelo</div>
+            <div class="msc-val" style="color:${confColor}">${confLabel}</div>
+            <div class="conf-row">
+              <div class="conf-track"><div class="conf-fill" style="width:${confScore}%;background:${confColor}"></div></div>
+              <span class="conf-label" style="color:${confColor}">${confScore}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② ANÁLISIS MODELO VS MERCADO -->
+      <div>
+        <div class="sec-lbl">Modelo vs Mercado — Edge por resultado</div>
+        <div class="analysis-card">
+          <div class="analysis-cols">
+            ${analysisCard('H', res.ph, mktH, edgeH, evH, kH, recH)}
+            ${analysisCard('D', res.pd, mktD, edgeD, evD, kD, recD)}
+            ${analysisCard('A', res.pa, mktA, edgeA, evA, kA, recA)}
+          </div>
+          <div class="comp-bars" style="grid-template-columns:${res.ph}fr ${res.pd}fr ${res.pa}fr;margin:0;border-radius:0;height:4px">
+            <div class="cb-H"></div><div class="cb-D"></div><div class="cb-A"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ RECOMENDACIÓN -->
+      <div>
+        <div class="sec-lbl">Recomendación</div>
+        <div class="decision-banner">
+          <div class="db-header">
+            <span style="font-size:14px">🎯</span>
+            <span class="db-title">Decisión automática del sistema</span>
+          </div>
+          <div class="db-rows">${decisionRows}</div>
+        </div>
+      </div>
+
+      <!-- ④ VALUE RANKING -->
+      <div>
+        <div class="sec-lbl">Ranking de valor</div>
+        <div style="background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden">
+          <table class="rank-table">
+            <thead><tr>
+              <th>#</th><th>Resultado</th><th>Edge</th><th>EV</th><th>Stake Kelly</th>
+            </tr></thead>
+            <tbody>${rankRows}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ⑤ MODEL META -->
+      <div>
+        <div class="sec-lbl">Parámetros del sistema</div>
+        <div class="insight-grid">
+          <div class="insight-cell">
+            <div class="ic-lbl">Predicción modelo</div>
+            <div class="ic-val"><span class="bgt bgt-${res.pred}">${{H:'Victoria Local',D:'Empate',A:'Victoria Visitante'}[res.pred]}</span></div>
+          </div>
+          <div class="insight-cell">
+            <div class="ic-lbl">Entropía → Confianza</div>
+            <div class="ic-val" style="color:${confColor}">${confLabel} · ${confScore}%</div>
+            <div class="ic-sub">Basado en distribución de probabilidades</div>
+          </div>
+          <div class="insight-cell">
+            <div class="ic-lbl">Ajuste conservador</div>
+            <div class="ic-val" style="font-size:13px;font-family:var(--mono)">60% modelo + 40%·⅓</div>
+          </div>
+          <div class="insight-cell">
+            <div class="ic-lbl">Fuente predicción</div>
+            <div class="ic-val" style="font-size:13px">${sourceBadge}</div>
+            <div class="ic-sub">Kelly frac. 25% · máx. 2.5% bankroll</div>
+          </div>
+        </div>
+      </div>
+
+    </div>`;
+}
+
+function updateMatch(id,field,val){
+  const m=matches.find(x=>x.id===id);
+  if(!m)return;
+  m[field]=val;
+  if(field==='home'||field==='away'){
+    m.result=null;
+    renderSidebar();
+    // update hero without full re-render
+    renderDetail(m);
+  }
+  renderSidebar();
+}
+
+/* ─── API ─────────────────────────────────────────────────────────────── */
+const API = 'http://localhost:8000';
+let apiOnline = false;
+
+async function checkAPI(){
+  try{
+    const r = await fetch(`${API}/api/status`, {signal: AbortSignal.timeout(2000)});
+    const d = await r.json();
+    apiOnline = true;
+    const pill = document.getElementById('modelPill');
+    if(pill){
+      if(d.model_loaded){
+        pill.textContent = `XGBoost · ${d.n_features}f · REAL`;
+        pill.style.background = 'var(--grn-dim)';
+        pill.style.borderColor = 'var(--grn-bdr)';
+        pill.style.color = 'var(--grn)';
+      } else {
+        pill.textContent = 'API conectada · modelo no encontrado';
+        pill.style.background = 'var(--amb-dim)';
+        pill.style.borderColor = 'var(--amb-bdr)';
+        pill.style.color = 'var(--amb)';
+      }
+    }
+    // Cargar equipos reales del dataset
+    const tr = await fetch(`${API}/api/teams`);
+    const td = await tr.json();
+    if(td.teams && td.teams.length > 0){
+      TEAMS.length = 0;
+      td.teams.forEach(t => TEAMS.push(t));
+    }
+  } catch(e){
+    apiOnline = false;
+    const pill = document.getElementById('modelPill');
+    if(pill){
+      pill.textContent = 'API offline · demo visual';
+      pill.style.background = 'var(--red-dim)';
+      pill.style.borderColor = 'var(--red-bdr)';
+      pill.style.color = 'var(--red)';
+    }
+  }
+}
+
+async function predictOne(id){
+  const m = matches.find(x => x.id === id);
+  if(!m) return;
+  const bh = parseFloat(m.bh)||2.10, bd = parseFloat(m.bd)||3.40, ba = parseFloat(m.ba)||3.60;
+  document.getElementById('ldr').classList.add('on');
+
+  // ── Intento con la API real ──────────────────────────────────────────
+  if(apiOnline){
+    try{
+      const body = {
+        jornada_num: parseInt(document.getElementById('jNum').value)||30,
+        partidos: [{
+          home_team: m.home, away_team: m.away,
+          b365h: bh, b365d: bd, b365a: ba,
+        }]
+      };
+      const resp = await fetch(`${API}/api/predict`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      });
+      if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      const r = data[0];
+
+      m.result = {
+        ph:   r.prob_home,
+        pd:   r.prob_draw,
+        pa:   r.prob_away,
+        pred: r.prediction,
+        evH:  r.ev_home,
+        evD:  r.ev_draw,
+        evA:  r.ev_away,
+        modelUsed: r.model_used,
+        vb: r.is_value_bet ? {
+          k:    r.vb_outcome,
+          p:    {H:r.prob_home,D:r.prob_draw,A:r.prob_away}[r.vb_outcome]/100,
+          o:    {H:bh,D:bd,A:ba}[r.vb_outcome],
+          edge: r.vb_edge,
+          ks:   r.vb_kelly,
+        } : null,
+      };
+      document.getElementById('ldr').classList.remove('on');
+      renderSidebar();
+      renderDetail(m);
+      return;
+    } catch(e){
+      console.warn('[API] Falló, usando fallback visual:', e.message);
+    }
+  }
+
+  // ── Fallback visual (sin API) ────────────────────────────────────────
+  setTimeout(()=>{
+    const rng = mkRng(id*1000+Date.now()%1000);
+    const ip = (h,d,a)=>{const r=[1/h,1/d,1/a],s=r.reduce((x,y)=>x+y,0);return r.map(p=>p/s);};
+    const[ih,id2,ia] = ip(bh,bd,ba);
+    const nr = ()=>(rng()-.5)*.055;
+    let ph=Math.max(.05,Math.min(.88,ih+nr())),pd=Math.max(.05,Math.min(.88,id2+nr())),pa=Math.max(.05,Math.min(.88,ia+nr()));
+    const s=ph+pd+pa; ph/=s; pd/=s; pa/=s;
+    const adj=.4, u=1/3;
+    const pha=.6*ph+adj*u, pda=.6*pd+adj*u, paa=.6*pa+adj*u;
+    const pred = pha>=pda&&pha>=paa?'H':pda>=paa?'D':'A';
+    const ev = (p,o)=>+(p*(o-1)-(1-p)).toFixed(4);
+    const kellyF = (p,o)=>{const b=o-1,k=(p*b-(1-p))/b;return Math.min(Math.max(0,k*.25),.025);};
+    let vb = null;
+    [{k:'H',p:pha,o:bh},{k:'D',p:pda,o:bd},{k:'A',p:paa,o:ba}].forEach(({k,p,o})=>{
+      const edge=p-1/o;
+      if(edge>=.10&&o<=5&&p>=.35){const ks=+(kellyF(p,o)*100).toFixed(2);if(!vb||edge>vb.edge)vb={k,p,o,edge:+(edge*100).toFixed(1),ks};}
+    });
+    m.result = {
+      ph:+(pha*100).toFixed(1), pd:+(pda*100).toFixed(1), pa:+(paa*100).toFixed(1),
+      pred, evH:ev(pha,bh), evD:ev(pda,bd), evA:ev(paa,ba),
+      modelUsed:'demo_visual', vb,
+    };
+    document.getElementById('ldr').classList.remove('on');
+    renderSidebar();
+    renderDetail(m);
+  }, 400);
+}
+
+// Init with sample matches
+checkAPI();
+addMatch('Arsenal','Chelsea',2.05,3.50,3.60);
+addMatch('Man City','Liverpool',1.80,3.75,4.20);
+addMatch('Tottenham','Newcastle',2.40,3.30,3.00);
+
+/* ═══════════════════ HISTORIAL ═══════════════════ */
+let hF='all',hP=1,hS={col:'jornada',asc:false};const PER=15;
+function flt(f,btn){hF=f;hP=1;document.querySelectorAll('.flt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderHistTable();}
+function srt(col){hS.col===col?hS.asc=!hS.asc:(hS={col,asc:false});renderHistTable();}
+
+function renderHistorial(){
+  const n=HIST.length,ok=HIST.filter(r=>r.ok).length,vbs=HIST.filter(r=>r.isVB);
+  const roi=(vbs.reduce((s,r)=>r.ok?s+(r.b365h-1)*r.kelly/100:s-r.kelly/100,0)*100/Math.max(1,vbs.length)).toFixed(1);
+  const roiPos=parseFloat(roi)>=0;
+
+  const kpis=[
+    {v:n,l:'Predicciones totales',icon:'📋',c:'var(--txt)',trend:null},
+    {v:ok,l:'Predicciones correctas',icon:'✅',c:'var(--grn)',trend:`${(ok/n*100).toFixed(0)}% accuracy`},
+    {v:vbs.length,l:'Value bets detectados',icon:'⭐',c:'var(--amb)',trend:null},
+    {v:`${roiPos?'+':''}${roi}%`,l:'ROI en value bets',icon:'📈',c:roiPos?'var(--grn)':'var(--red)',trend:roiPos?'Positivo':'Negativo'},
+    {v:`${(ok/n*100).toFixed(1)}%`,l:'Accuracy total',icon:'🎯',c:'var(--acc)',trend:'Base: 33.3%'},
+  ];
+  document.getElementById('histKpiList').innerHTML=kpis.map(k=>`
+    <div class="hkpi">
+      <div class="hkpi-icon" style="background:var(--bg3)">${k.icon}</div>
+      <div class="hkpi-info">
+        <div class="hkpi-val" style="color:${k.c}">${k.v}</div>
+        <div class="hkpi-lbl">${k.l}</div>
+        ${k.trend?`<div class="hkpi-trend" style="color:var(--txt3)">${k.trend}</div>`:''}
+      </div>
+    </div>`).join('');
+  renderHistTable();
+}
+
+function renderHistTable(){
+  let data=[...HIST];
+  const fm={all:()=>true,vb:r=>r.isVB,ok:r=>r.ok,fail:r=>!r.ok,H:r=>r.pred==='H',D:r=>r.pred==='D',A:r=>r.pred==='A'};
+  data=data.filter(fm[hF]||fm.all);
+  const km={jornada:'jornada',home:'ht',away:'at',pred:'pred',real:'real',ok:'ok',prob:'prob',ev:'ev',vb:'isVB',kelly:'kelly'};
+  data.sort((a,b)=>{const k=km[hS.col],av=a[k]??'',bv=b[k]??'';return hS.asc?(av>bv?1:-1):(av<bv?1:-1);});
+  const pgs=Math.ceil(data.length/PER),sl=data.slice((hP-1)*PER,hP*PER);
+  const pl={H:'Local',D:'Empate',A:'Visitante'};
+  document.getElementById('histBody').innerHTML=sl.map(r=>`
+    <tr>
+      <td style="color:var(--txt3);font-weight:600">J${r.jornada}</td>
+      <td style="font-weight:600">${r.ht}</td>
+      <td style="color:var(--txt2)">${r.at}</td>
+      <td><span class="bgt bgt-${r.pred}">${pl[r.pred]}</span></td>
+      <td><span class="bgt bgt-${r.real}">${pl[r.real]}</span></td>
+      <td><span class="bgt ${r.ok?'bgt-ok':'bgt-no'}">${r.ok?'✓':'✗'}</span></td>
+      <td style="font-family:var(--mono)">${r.prob}%</td>
+      <td style="font-family:var(--mono);color:${r.ev>=0?'var(--grn)':'var(--red)'}">${r.ev>=0?'+':''}${r.ev}</td>
+      <td>${r.isVB?'<span class="bgt bgt-vb">★ VB</span>':'<span style="color:var(--txt4)">—</span>'}</td>
+      <td style="font-family:var(--mono);color:${r.kelly?'var(--amb)':'var(--txt4)'}">${r.kelly?r.kelly+'%':'—'}</td>
+    </tr>`).join('');
+  document.getElementById('histPg').innerHTML=Array.from({length:pgs},(_,i)=>`<button class="pgb${i+1===hP?' on':''}" onclick="hP=${i+1};renderHistTable()">${i+1}</button>`).join('');
+}
+
+/* ═══════════════════ MODELO ═══════════════════ */
+function renderModelo(){
+  const maxR=Math.max(...WF.map(d=>Math.abs(d.roi)));
+  document.getElementById('wfBody').innerHTML=WF.map(d=>{
+    const pos=d.roi>=0,w=(Math.abs(d.roi)/maxR*100).toFixed(0);
+    return`<tr>
+      <td style="font-weight:600">${d.s}</td>
+      <td style="color:var(--txt3)">${d.tr.toLocaleString()}</td>
+      <td style="font-family:var(--mono)">${d.ll.toFixed(4)}</td>
+      <td><div class="wf-bar">
+        <span style="font-family:var(--mono);font-size:11px;font-weight:700;width:58px;color:${pos?'var(--grn)':'var(--red)'}">${pos?'+':''}${d.roi.toFixed(2)}%</span>
+        <div class="wf-track"><div class="wf-fill ${pos?'wf-pos':'wf-neg'}" style="width:${w}%"></div></div>
+      </div></td></tr>`;
+  }).join('');
+
+  const cmap={c:'frc-c',p:'frc-p',a:'frc-a',e:'frc-e'};
+  const clbl={c:'Cuotas',p:'Pinnacle',a:'Asian HCP',e:'Elo'};
+  const maxI=FEATS[0].i;
+  document.getElementById('featList').innerHTML=FEATS.map(f=>`
+    <div class="fr">
+      <div class="fr-n">${f.r}</div>
+      <div class="fr-name">${f.n}</div>
+      <div class="fr-cat ${cmap[f.c]}">${clbl[f.c]}</div>
+      <div class="fr-track"><div class="fr-fill" style="width:${(f.i/maxI*100).toFixed(0)}%"></div></div>
+      <div class="fr-pct">${(f.i*100).toFixed(2)}%</div>
+    </div>`).join('');
+
+  setTimeout(()=>{
+    const cv=document.getElementById('roiChart');if(!cv)return;
+    const dpr=window.devicePixelRatio||1,W=cv.offsetWidth||460,H=180;
+    cv.width=W*dpr;cv.height=H*dpr;
+    const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+    const pad={t:28,r:14,b:34,l:46},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+    const rois=WF.map(d=>d.roi),mn=Math.min(...rois,-22),mx=Math.max(...rois,44);
+    const tx=i=>pad.l+i*(cw/(WF.length-1)),ty=v=>pad.t+ch-(v-mn)/(mx-mn)*ch;
+
+    ctx.fillStyle='#1c2028';ctx.fillRect(0,0,W,H);
+
+    [-20,0,20,40].forEach(v=>{
+      if(v<mn||v>mx)return;
+      const y=ty(v);
+      ctx.strokeStyle=v===0?'rgba(255,255,255,.1)':'rgba(255,255,255,.04)';
+      ctx.lineWidth=1;ctx.setLineDash(v===0?[]:[4,4]);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#5c6070';ctx.font=`10px DM Mono,monospace`;ctx.textAlign='right';
+      ctx.fillText((v>=0?'+':'')+v+'%',pad.l-5,y+4);
+    });
+
+    const y0=ty(0);
+    // gradient fill
+    ctx.beginPath();ctx.moveTo(tx(0),y0);
+    WF.forEach((d,i)=>ctx.lineTo(tx(i),ty(d.roi)));
+    ctx.lineTo(tx(WF.length-1),y0);ctx.closePath();
+    const g=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+    g.addColorStop(0,'rgba(61,123,255,.2)');g.addColorStop(1,'rgba(61,123,255,.02)');
+    ctx.fillStyle=g;ctx.fill();
+
+    // smooth line
+    ctx.strokeStyle='#3d7bff';ctx.lineWidth=2;
+    ctx.beginPath();
+    WF.forEach((d,i)=>{
+      if(i===0){ctx.moveTo(tx(i),ty(d.roi));return;}
+      const px=tx(i-1),py=ty(WF[i-1].roi),cx_=(px+tx(i))/2;
+      ctx.bezierCurveTo(cx_,py,cx_,ty(d.roi),tx(i),ty(d.roi));
+    });
+    ctx.stroke();
+
+    // points
+    WF.forEach((d,i)=>{
+      const x=tx(i),y=ty(d.roi),pos=d.roi>=0,c=pos?'#2dc66b':'#f04040';
+      ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);
+      ctx.fillStyle='#1c2028';ctx.fill();
+      ctx.strokeStyle=c;ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=c;ctx.font=`bold 10px DM Mono,monospace`;ctx.textAlign='center';
+      ctx.fillText((pos?'+':'')+d.roi.toFixed(1)+'%',x,y-(pos?13:-3));
+      ctx.fillStyle='#5c6070';ctx.font=`10px DM Mono,monospace`;
+      ctx.fillText(d.s.slice(-5),x,H-pad.b+16);
+    });
+  },60);
+}
+</script>
+</body>
+</html>
