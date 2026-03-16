@@ -8,12 +8,13 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Copy only requirements first (better caching)
 COPY requirements.txt requeriments-api.txt ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir -r requeriments-api.txt
+# Install Python dependencies with more stable options
+RUN pip install --no-cache-dir --disable-pip-version-check -q -r requirements.txt
+
+RUN pip install --no-cache-dir --disable-pip-version-check -q -r requeriments-api.txt
 
 # Copy application code
 COPY . .
