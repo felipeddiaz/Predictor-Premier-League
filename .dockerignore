@@ -1,6 +1,9 @@
+# Git
 .git
 .gitignore
 .github
+
+# Python cache
 __pycache__
 *.pyc
 *.pyo
@@ -8,12 +11,54 @@ __pycache__
 .coverage
 htmlcov/
 dist/
+mi_predictor_pl.egg-info/
+
+# Node
 node_modules/
+
+# Environment
 .env
 .env.local
+
+# Unnecessary for production API
+frontend/
+backup/
+archive/
+PredictorPL/
+portafolio_imagenes/
 reportes/
-logs/
+resultados/
+docs/
+web/
+
+# Data files not needed for inference
+datos/raw/historicos/
+datos/raw/elo/
+datos/temporadas/
+datos/procesados/archive/
+datos/raw/*.backup*
+
+# Pipeline training scripts (not needed at runtime)
+pipeline/
+herramientas/
+jornada/
+
+# Documentation
+*.md
+*.pdf
 *.log
-.DS_Store
+*.txt
+!requirements.txt
+!requeriments-api.txt
+
+# IDE
 .vscode
 .idea
+.DS_Store
+
+# Misc
+null
+push_out.txt
+.git_out.txt
+.streamlit/
+.claude/

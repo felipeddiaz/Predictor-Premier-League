@@ -46,6 +46,47 @@ class TestHealthEndpoints:
         assert data["api"] == "online"
 
 
+class TestSimplePredictEndpoint:
+    """Test the new simple /predict and /teams endpoints."""
+
+    def test_teams_endpoint(self):
+        """Test GET /teams returns team list."""
+        response = client.get("/teams")
+        assert response.status_code == 200
+        teams = response.json()
+        assert isinstance(teams, list)
+        assert len(teams) == 20
+        assert "Arsenal" in teams
+        assert "Liverpool" in teams
+
+    def test_simple_predict(self):
+        """Test POST /predict with just team names."""
+        response = client.post("/predict", json={
+            "home_team": "Arsenal",
+            "away_team": "Chelsea"
+        })
+        assert response.status_code in [200, 503]
+
+        if response.status_code == 200:
+            data = response.json()
+            assert "home_team" in data
+            assert "away_team" in data
+            assert "home_win_probability" in data
+            assert "draw_probability" in data
+            assert "away_win_probability" in data
+            assert "predicted_outcome" in data
+            assert "confidence" in data
+            assert 0 <= data["home_win_probability"] <= 1
+            assert 0 <= data["draw_probability"] <= 1
+            assert 0 <= data["away_win_probability"] <= 1
+            assert data["predicted_outcome"] in ["Home Win", "Draw", "Away Win"]
+
+    def test_simple_predict_missing_fields(self):
+        """Test POST /predict with missing fields."""
+        response = client.post("/predict", json={"home_team": "Arsenal"})
+        assert response.status_code == 422
+
+
 class TestPredictionEndpoints:
     """Test prediction endpoints."""
 

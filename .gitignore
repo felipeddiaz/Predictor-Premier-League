@@ -3,13 +3,14 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+mi_predictor_pl.egg-info/
 
-# Entorno virtual
+# Virtual environments
 venv/
 env/
 .env
 
-# Archivos temporales del sistema
+# System files
 nul
 Thumbs.db
 .DS_Store
@@ -24,5 +25,13 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
-# Reportes generados
+# Generated reports
 reportes/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Logs and output
+*.log
+resultados/

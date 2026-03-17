@@ -11,20 +11,19 @@ RUN apt-get update && apt-get install -y \
 # Copy only requirements first (better caching)
 COPY requirements.txt requeriments-api.txt ./
 
-# Install Python dependencies with more stable options
-RUN pip install --no-cache-dir --disable-pip-version-check -q -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir --disable-pip-version-check -q -r requirements.txt && \
+    pip install --no-cache-dir --disable-pip-version-check -q -r requeriments-api.txt
 
-RUN pip install --no-cache-dir --disable-pip-version-check -q -r requeriments-api.txt
-
-# Copy application code
+# Copy application code (respects .dockerignore)
 COPY . .
 
 # Expose port
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run application
-CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Run application — no --reload in production
+CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

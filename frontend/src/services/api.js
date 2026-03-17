@@ -1,52 +1,41 @@
-import axios from 'axios'
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-// Crear instancia de axios
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para manejo de errores
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error)
-    throw error
+async function request(method, path, body = null) {
+  const options = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
   }
-)
+  if (body) {
+    options.body = JSON.stringify(body)
+  }
 
-// ==================== ENDPOINTS ====================
+  const response = await fetch(`${API_BASE_URL}${path}`, options)
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.detail || `Request failed: ${response.status}`)
+  }
+
+  return response.json()
+}
 
 export const api = {
   // Health check
-  health: () => apiClient.get('/health'),
+  health: () => request('GET', '/health'),
 
-  // Root info
-  root: () => apiClient.get('/'),
+  // List available teams
+  teams: () => request('GET', '/teams'),
 
-  // Status
-  status: () => apiClient.get('/status'),
+  // Simple prediction (only team names)
+  predict: (homeTeam, awayTeam) =>
+    request('POST', '/predict', {
+      home_team: homeTeam,
+      away_team: awayTeam,
+    }),
 
-  // Predicción simple
-  predict: (matchData) => apiClient.post('/predictions', matchData),
-
-  // Predicción detallada
-  predictDetail: (matchData) => apiClient.post('/predictions/detail', matchData),
-
-  // Jornada
-  gameweek: () => apiClient.get('/gameweek'),
-
-  // Equipos
-  teams: () => apiClient.get('/teams'),
-
-  // Historial
-  history: (team, limit = 10) =>
-    apiClient.get(`/history/${team}`, { params: { limit } }),
+  // Detailed prediction (with odds)
+  predictDetail: (matchData) =>
+    request('POST', '/predictions/detail', matchData),
 }
 
-export default apiClient
+export default api

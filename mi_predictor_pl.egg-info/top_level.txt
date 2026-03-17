@@ -1,4 +1,0 @@
-core
-herramientas
-jornada
-pipeline

@@ -11,6 +11,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.predictor import Predictor
 from core.models import Partido, ConfigJornada
 from api.schemas import (
+    SimpleMatchInput,
+    SimplePredictionResponse,
     PredictionResponse,
     PredictionDetailResponse,
     JornadaPredictionResponse,
@@ -85,6 +87,79 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return HealthResponse(status="healthy" if predictor else "degraded")
+
+# Premier League teams — canonical names matching the historical dataset
+PREMIER_LEAGUE_TEAMS = [
+    "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
+    "Chelsea", "Crystal Palace", "Everton", "Fulham", "Ipswich",
+    "Leicester", "Liverpool", "Man City", "Man United", "Newcastle",
+    "Nott'm Forest", "Southampton", "Tottenham", "West Ham", "Wolves",
+]
+
+@app.get("/teams", response_model=list[str])
+async def list_teams():
+    """List all available Premier League teams."""
+    return PREMIER_LEAGUE_TEAMS
+
+@app.post("/predict", response_model=SimplePredictionResponse)
+async def predict_simple(match: SimpleMatchInput):
+    """
+    Simple prediction endpoint — only requires team names.
+
+    Uses neutral odds (2.80 / 3.40 / 2.80) so the model relies
+    primarily on team stats, form, and historical data.
+
+    Input:
+        {"home_team": "Arsenal", "away_team": "Chelsea"}
+
+    Output:
+        {"home_win_probability": 0.52, "draw_probability": 0.23, ...}
+    """
+    if predictor is None:
+        raise HTTPException(status_code=503, detail="Predictor not loaded")
+
+    try:
+        from core.models import Partido
+
+        # Use neutral odds so the model focuses on team stats/form
+        partido = Partido(
+            local=match.home_team,
+            visitante=match.away_team,
+            cuota_h=2.80,
+            cuota_d=3.40,
+            cuota_a=2.80,
+        )
+
+        prediccion = predictor.predecir_partido(partido)
+
+        if prediccion is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Team not found in historical data. Use GET /teams to see available teams."
+            )
+
+        # Map internal labels to user-friendly English
+        outcome_map = {"Local": "Home Win", "Empate": "Draw", "Visitante": "Away Win"}
+
+        return SimplePredictionResponse(
+            home_team=match.home_team,
+            away_team=match.away_team,
+            home_win_probability=round(prediccion.prob_local, 4),
+            draw_probability=round(prediccion.prob_empate, 4),
+            away_win_probability=round(prediccion.prob_visitante, 4),
+            predicted_outcome=outcome_map.get(prediccion.resultado_predicho, prediccion.resultado_predicho),
+            confidence=round(prediccion.confianza, 4),
+            home_form=prediccion.forma_local,
+            away_form=prediccion.forma_visitante,
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in prediction: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.post("/predictions", response_model=list[PredictionResponse])
 async def predict_match(match: MatchInputSchema):
@@ -217,4 +292,4 @@ async def get_status():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

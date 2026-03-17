@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy application code
 COPY . .
@@ -14,9 +14,5 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:3000 || exit 1
-
-# Start development server
-CMD ["npm", "run", "dev"]
+# Start development server (accessible from Docker host)
+CMD ["npm", "run", "dev", "--", "--host"]

@@ -5,8 +5,21 @@ from typing import Optional
 # INPUT SCHEMAS
 # ============================================================================
 
+class SimpleMatchInput(BaseModel):
+    """Schema for simple match prediction — only team names required."""
+    home_team: str = Field(..., description="Home team name (e.g. 'Arsenal')")
+    away_team: str = Field(..., description="Away team name (e.g. 'Chelsea')")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "home_team": "Arsenal",
+                "away_team": "Chelsea"
+            }
+        }
+
 class MatchInputSchema(BaseModel):
-    """Schema for match prediction input."""
+    """Schema for detailed match prediction input (with betting odds)."""
     local: str = Field(..., description="Nombre del equipo local")
     visitante: str = Field(..., description="Nombre del equipo visitante")
     cuota_h: float = Field(..., gt=1.0, description="Cuota de victoria local (ej: 2.10)")
@@ -18,7 +31,7 @@ class MatchInputSchema(BaseModel):
     ah_cuota_a: Optional[float] = Field(None, gt=1.0, description="Cuota AH para visitante")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "local": "Manchester City",
                 "visitante": "Liverpool",
@@ -35,6 +48,33 @@ class MatchInputSchema(BaseModel):
 # OUTPUT SCHEMAS
 # ============================================================================
 
+class SimplePredictionResponse(BaseModel):
+    """Schema for the simple /predict endpoint — user-friendly output."""
+    home_team: str
+    away_team: str
+    home_win_probability: float = Field(..., ge=0, le=1)
+    draw_probability: float = Field(..., ge=0, le=1)
+    away_win_probability: float = Field(..., ge=0, le=1)
+    predicted_outcome: str = Field(..., description="'Home Win', 'Draw', or 'Away Win'")
+    confidence: float = Field(..., ge=0, le=1)
+    home_form: str = Field(..., description="Recent form e.g. '3W-1D-1L'")
+    away_form: str = Field(..., description="Recent form e.g. '2W-2D-1L'")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "home_team": "Arsenal",
+                "away_team": "Chelsea",
+                "home_win_probability": 0.52,
+                "draw_probability": 0.23,
+                "away_win_probability": 0.25,
+                "predicted_outcome": "Home Win",
+                "confidence": 0.52,
+                "home_form": "3W-1D-1L",
+                "away_form": "2W-2D-1L"
+            }
+        }
+
 class PredictionResponse(BaseModel):
     """Schema for basic prediction response."""
     match: str
@@ -48,7 +88,7 @@ class PredictionResponse(BaseModel):
     form_away: str = Field(..., description="Forma reciente del equipo visitante")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "match": "Manchester City vs Liverpool",
                 "prediction": "Local",
@@ -87,7 +127,7 @@ class PredictionDetailResponse(BaseModel):
     over95_corners_prob: Optional[float] = Field(None, ge=0, le=1, description="Probabilidad Over 9.5 corners")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "match": "Manchester City vs Liverpool",
                 "local": "Manchester City",
@@ -120,7 +160,7 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="Estado de la API: healthy o degraded")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "status": "healthy"
             }

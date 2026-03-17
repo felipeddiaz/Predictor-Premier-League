@@ -9,23 +9,16 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
-    volumes:
-      - ./api:/app/api
-      - ./core:/app/core
-      - ./pipeline:/app/pipeline
-      - ./config.py:/app/config.py
-      - ./utils.py:/app/utils.py
-    command: python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
     networks:
       - pl-network
 
-  # Frontend
+  # Frontend (development only — in production, deploy to Netlify)
   frontend:
     build:
       context: ./frontend
@@ -34,11 +27,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://localhost:8000/api
+      - VITE_API_URL=http://localhost:8000
     volumes:
-      - ./frontend:/app
+      - ./frontend/src:/app/src
       - /app/node_modules
-    command: npm run dev
+    command: npm run dev -- --host
     depends_on:
       api:
         condition: service_healthy

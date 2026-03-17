@@ -1,0 +1,11 @@
+# Render Blueprint — deploy with "New > Blueprint Instance" on render.com
+services:
+  - type: web
+    name: pl-predictor-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    plan: free
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /health
