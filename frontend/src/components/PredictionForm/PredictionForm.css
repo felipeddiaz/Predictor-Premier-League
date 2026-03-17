@@ -81,6 +81,47 @@
   gap: 1rem;
 }
 
+/* ODDS TOGGLE */
+.odds-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-toggle {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #64748b;
+  border: 1px dashed #475569;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-toggle:hover {
+  color: #0066ff;
+  border-color: #0066ff;
+}
+
+.btn-toggle.active {
+  color: #0066ff;
+  border-color: #0066ff;
+  border-style: solid;
+  background: rgba(0, 102, 255, 0.05);
+}
+
+.odds-hint {
+  color: #475569;
+  font-size: 0.8rem;
+}
+
+.odds-warning {
+  margin: 0.5rem 0 0;
+  color: #f59e0b;
+  font-size: 0.8rem;
+}
+
 .btn-submit {
   padding: 1rem;
   background: linear-gradient(135deg, #003399 0%, #0066ff 100%);

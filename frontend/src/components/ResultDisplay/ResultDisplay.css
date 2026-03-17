@@ -181,6 +181,77 @@
   color: #ef4444;
 }
 
+/* VALUE BETTING */
+.value-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.value-section h3 {
+  margin: 0 0 1.5rem 0;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.value-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.value-item.value-positive {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.value-item.value-negative {
+  border-color: #475569;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.value-item .label {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.value-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+
+.edge-value {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.value-positive .edge-value {
+  color: #10b981;
+}
+
+.value-negative .edge-value {
+  color: #64748b;
+}
+
 /* BINARY MARKETS */
 .binary-markets {
   background: #1e293b;
@@ -251,6 +322,10 @@
   }
 
   .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .value-grid {
     grid-template-columns: 1fr;
   }
 

@@ -11,10 +11,10 @@ export const Home = () => {
   const { prediction, loading, error, predict, reset } = usePrediction()
   const [dismissedError, setDismissedError] = useState(false)
 
-  const handlePredictionSubmit = async (homeTeam, awayTeam) => {
+  const handlePredictionSubmit = async (homeTeam, awayTeam, odds = null) => {
     setDismissedError(false)
     try {
-      await predict(homeTeam, awayTeam)
+      await predict(homeTeam, awayTeam, odds)
     } catch (err) {
       console.error('Prediction error:', err)
     }

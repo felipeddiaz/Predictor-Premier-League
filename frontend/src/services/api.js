@@ -33,9 +33,15 @@ export const api = {
       away_team: awayTeam,
     }),
 
-  // Detailed prediction (with odds)
-  predictDetail: (matchData) =>
-    request('POST', '/predictions/detail', matchData),
+  // Detailed prediction with odds (value betting analysis)
+  predictWithOdds: (homeTeam, awayTeam, odds) =>
+    request('POST', '/predictions/detail', {
+      local: homeTeam,
+      visitante: awayTeam,
+      cuota_h: odds.cuota_h,
+      cuota_d: odds.cuota_d,
+      cuota_a: odds.cuota_a,
+    }),
 }
 
 export default api

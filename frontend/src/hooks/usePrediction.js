@@ -6,11 +6,13 @@ export const usePrediction = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const predict = useCallback(async (homeTeam, awayTeam) => {
+  const predict = useCallback(async (homeTeam, awayTeam, odds = null) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await api.predict(homeTeam, awayTeam)
+      const data = odds
+        ? await api.predictWithOdds(homeTeam, awayTeam, odds)
+        : await api.predict(homeTeam, awayTeam)
       setPrediction(data)
       return data
     } catch (err) {
