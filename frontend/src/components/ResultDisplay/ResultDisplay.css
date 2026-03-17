@@ -1,0 +1,260 @@
+.result-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+}
+
+.team {
+  margin: 0;
+  font-size: 1.5rem;
+  text-align: center;
+  flex: 1;
+}
+
+.vs {
+  color: #cbd5e1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.prediction-card {
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(16, 185, 129, 0.1));
+  border: 2px solid #0066ff;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.prediction-result h3 {
+  margin: 0 0 0.5rem 0;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.prediction-value {
+  margin: 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0066ff;
+}
+
+.confidence {
+  margin: 1rem 0 0 0;
+  color: #cbd5e1;
+}
+
+.confidence strong {
+  color: #10b981;
+  font-size: 1.1rem;
+}
+
+/* PROBABILITIES */
+.probabilities-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.probabilities-section h3 {
+  margin: 0 0 1.5rem 0;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+.probability-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.probability-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.bar {
+  height: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.bar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0066ff, rgba(0, 102, 255, 0.5));
+  transition: width 0.5s ease;
+}
+
+.bar .fill.draw {
+  background: linear-gradient(90deg, #f59e0b, rgba(245, 158, 11, 0.5));
+}
+
+.bar .fill.away {
+  background: linear-gradient(90deg, #ef4444, rgba(239, 68, 68, 0.5));
+}
+
+/* ANALYSIS */
+.analysis-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.analysis-section h3 {
+  margin: 0 0 1.5rem 0;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.analysis-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.analysis-item .label {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.analysis-item p {
+  margin: 0;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.analysis-item p.positive {
+  color: #10b981;
+}
+
+.analysis-item p.negative {
+  color: #ef4444;
+}
+
+/* BINARY MARKETS */
+.binary-markets {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.binary-markets h3 {
+  margin: 0 0 1.5rem 0;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.binary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.binary-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.binary-item span {
+  display: block;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.binary-item strong {
+  color: #0066ff;
+  font-size: 1.1rem;
+}
+
+/* DISCLAIMER */
+.disclaimer {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 4px solid #0066ff;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.disclaimer p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .match-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .team {
+    font-size: 1.2rem;
+  }
+
+  .prediction-value {
+    font-size: 1.8rem;
+  }
+
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .binary-grid {
+    grid-template-columns: 1fr;
+  }
+}
