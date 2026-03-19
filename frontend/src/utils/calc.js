@@ -107,3 +107,15 @@ export function getHistory() {
 export function clearHistory() {
   localStorage.removeItem(HISTORY_KEY)
 }
+
+export function updateHistoryResult(id, actualResult) {
+  const hist = getHistory()
+  const idx = hist.findIndex(h => h.id === id)
+  if (idx === -1) return
+  if (actualResult === null) {
+    delete hist[idx].actual_result
+  } else {
+    hist[idx].actual_result = actualResult
+  }
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist))
+}

@@ -2,8 +2,29 @@ import { NavLink } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
 
+function useDarkMode() {
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+  }, [dark])
+
+  // Apply saved theme on first render
+  useEffect(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark')
+      setDark(true)
+    }
+  }, [])
+
+  return [dark, () => setDark(d => !d)]
+}
+
 export default function Nav() {
   const [status, setStatus] = useState({ text: 'Conectando\u2026', cls: '' })
+  const [dark, toggleDark] = useDarkMode()
 
   useEffect(() => {
     const check = async () => {
@@ -30,7 +51,6 @@ export default function Nav() {
   }
 
   const pulseStyle = {
-    ...pillStyle,
     width: 6, height: 6, borderRadius: '50%',
     background: pillStyle.color,
     animation: status.cls === 'grn' ? 'pulse 2s ease infinite' : 'none',
@@ -49,6 +69,9 @@ export default function Nav() {
         Historial
       </NavLink>
       <div className="nav-r">
+        <button className="dm-toggle" onClick={toggleDark} title={dark ? 'Modo claro' : 'Modo oscuro'}>
+          {dark ? '\u2600\uFE0F' : '\uD83C\uDF19'}
+        </button>
         <div className="nav-pill" style={pillStyle}>
           <div style={pulseStyle} />
           {status.text}

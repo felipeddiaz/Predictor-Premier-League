@@ -272,6 +272,76 @@ async def calculate_ev(prob_model: float, cuota: float):
         "recommendation": "BET" if expected_value > 0 else "SKIP"
     }
 
+@router_teams.get("/h2h")
+async def get_h2h(home: str, away: str):
+    """Get head-to-head history between two teams from historical CSV data."""
+    import csv as csv_mod
+    from pathlib import Path
+
+    data_dir = Path(__file__).parent.parent / "datos" / "temporadas"
+    if not data_dir.exists():
+        raise HTTPException(status_code=404, detail="Historical data not found")
+
+    meetings = []
+    for csv_file in sorted(data_dir.glob("*.csv")):
+        season = csv_file.stem
+        try:
+            with open(csv_file, newline='', encoding='utf-8-sig') as f:
+                reader = csv_mod.DictReader(f)
+                for row in reader:
+                    ht = (row.get('HomeTeam') or '').strip()
+                    at = (row.get('AwayTeam') or '').strip()
+                    if (ht == home and at == away) or (ht == away and at == home):
+                        try:
+                            fthg = int(float(row.get('FTHG') or 0))
+                            ftag = int(float(row.get('FTAG') or 0))
+                        except (ValueError, TypeError):
+                            fthg, ftag = 0, 0
+                        meetings.append({
+                            'season': season,
+                            'date': row.get('Date', ''),
+                            'home': ht,
+                            'away': at,
+                            'fthg': fthg,
+                            'ftag': ftag,
+                            'result': row.get('FTR', ''),
+                        })
+        except Exception as e:
+            logger.error(f"Error reading {csv_file}: {e}")
+
+    # Stats from team_a (home param) perspective
+    team_a_wins = sum(1 for m in meetings if
+        (m['home'] == home and m['result'] == 'H') or
+        (m['home'] == away and m['result'] == 'A'))
+    team_b_wins = sum(1 for m in meetings if
+        (m['home'] == away and m['result'] == 'H') or
+        (m['home'] == home and m['result'] == 'A'))
+    draws = sum(1 for m in meetings if m['result'] == 'D')
+
+    team_a_goals = sum(
+        m['fthg'] if m['home'] == home else m['ftag']
+        for m in meetings
+    )
+    team_b_goals = sum(
+        m['fthg'] if m['home'] == away else m['ftag']
+        for m in meetings
+    )
+
+    return {
+        'team_a': home,
+        'team_b': away,
+        'total': len(meetings),
+        'recent': meetings[-8:],
+        'stats': {
+            'team_a_wins': team_a_wins,
+            'draws': draws,
+            'team_b_wins': team_b_wins,
+            'team_a_goals': team_a_goals,
+            'team_b_goals': team_b_goals,
+        }
+    }
+
+
 def set_predictor_instance(pred_instance):
     """Set the global predictor instance for routers."""
     global predictor

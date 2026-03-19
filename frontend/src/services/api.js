@@ -48,4 +48,7 @@ export const api = {
 
   expectedValue: (prob, odds) =>
     request('GET', `/utils/expected-value?prob_model=${prob}&cuota=${odds}`),
+
+  h2h: (home, away) =>
+    request('GET', `/teams/h2h?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`),
 }

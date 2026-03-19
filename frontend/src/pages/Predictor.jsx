@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../services/api'
 import {
-  teamInitials, impliedProbs, calcEdge, calcEV, calcKelly,
+  impliedProbs, calcEdge, calcEV, calcKelly,
   entropyConfidence, recommendation, parseForm, saveToHistory,
 } from '../utils/calc'
+import { TeamBadge } from '../utils/teamLogos'
 import Loader from '../components/Loader'
 
 export default function Predictor() {
@@ -13,9 +14,7 @@ export default function Predictor() {
   const [error, setError] = useState(null)
   const [meta, setMeta] = useState(null)
 
-  useEffect(() => {
-    loadMatches()
-  }, [])
+  useEffect(() => { loadMatches() }, [])
 
   const loadMatches = async (forceRefresh = false) => {
     setLoading(true)
@@ -25,7 +24,6 @@ export default function Predictor() {
       const list = (data.matches || []).map((m, i) => ({
         ...m,
         id: i,
-        // Normalize prediction data for display
         pred: m.prediction ? {
           probH: +(m.prediction.prob_home * 100).toFixed(1),
           probD: +(m.prediction.prob_draw * 100).toFixed(1),
@@ -47,7 +45,6 @@ export default function Predictor() {
       setMeta(data.meta || {})
       if (list.length) setActiveIdx(0)
 
-      // Save all to history
       list.forEach(m => {
         if (m.pred) {
           saveToHistory({
@@ -78,9 +75,7 @@ export default function Predictor() {
           <div className="sb-top">
             <div className="sb-top-row">
               <span className="sb-heading">Partidos</span>
-              <span style={{ fontSize: 10, color: 'var(--ink4)' }}>
-                {matches.length} partidos
-              </span>
+              <span style={{ fontSize: 10, color: 'var(--ink4)' }}>{matches.length} partidos</span>
             </div>
             {meta?.last_updated && (
               <div style={{ fontSize: 10, color: 'var(--ink4)', marginBottom: 6 }}>
@@ -99,8 +94,7 @@ export default function Predictor() {
               </div>
             )}
             {matches.map((m, i) => (
-              <SidebarItem key={i} match={m} active={activeIdx === i}
-                onClick={() => setActiveIdx(i)} />
+              <SidebarItem key={i} match={m} active={activeIdx === i} onClick={() => setActiveIdx(i)} />
             ))}
           </div>
         </div>
@@ -138,14 +132,14 @@ function SidebarItem({ match: m, active, onClick }) {
     <div className={`mi${active ? ' on' : ''}`} onClick={onClick}>
       <div className="mi-teams">
         <div className="mi-team">
-          <div className="mi-badge">{teamInitials(m.home)}</div>
+          <TeamBadge name={m.home} size={22} />
           <span className="mi-name">{m.home}</span>
           {pred && <span className={`bgt bgt-${pred.prediction}`} style={{ fontSize: 8, padding: '1px 5px' }}>
             {predLabel[pred.prediction]}
           </span>}
         </div>
         <div className="mi-team">
-          <div className="mi-badge" style={{ opacity: .5 }}>{teamInitials(m.away)}</div>
+          <TeamBadge name={m.away} size={22} style={{ opacity: .6 }} />
           <span className="mi-name away">{m.away}</span>
         </div>
       </div>
@@ -154,12 +148,8 @@ function SidebarItem({ match: m, active, onClick }) {
           <div className="mi-odd">{m.odds.home}</div>
           <div className="mi-odd">{m.odds.draw}</div>
           <div className="mi-odd">{m.odds.away}</div>
-          {m.odds_changed && (
-            <span className="mi-status vb">UPD</span>
-          )}
-          {pred && !m.odds_changed && (
-            <span className="mi-status predicted">{'\u2713'}</span>
-          )}
+          {m.odds_changed && <span className="mi-status vb">UPD</span>}
+          {pred && !m.odds_changed && <span className="mi-status predicted">{'\u2713'}</span>}
         </div>
       )}
     </div>
@@ -173,14 +163,15 @@ function MatchDetail({ match: m }) {
   const bh = odds.home || 2.80
   const bd = odds.draw || 3.40
   const ba = odds.away || 2.80
+  const [statsTeam, setStatsTeam] = useState(null) // { name, isLocal }
 
   return (
     <>
       {/* HEADER CARD */}
       <div className="w-header">
-        <div className="wh-team">
-          <div className="wh-crest">{teamInitials(m.home)}</div>
-          <div className="wh-name">{m.home}</div>
+        <div className="wh-team" style={{ cursor: 'pointer' }} onClick={() => setStatsTeam({ name: m.home, isLocal: true })}>
+          <TeamBadge name={m.home} size={48} style={{ borderRadius: 12 }} />
+          <div className="wh-name" style={{ textDecoration: 'underline dotted', textUnderlineOffset: 3 }}>{m.home}</div>
           <div style={{ fontSize: 10, color: 'var(--ink4)' }}>Local</div>
         </div>
 
@@ -215,15 +206,18 @@ function MatchDetail({ match: m }) {
           )}
         </div>
 
-        <div className="wh-team">
-          <div className="wh-crest" style={{ opacity: .75 }}>{teamInitials(m.away)}</div>
-          <div className="wh-name">{m.away}</div>
+        <div className="wh-team" style={{ cursor: 'pointer' }} onClick={() => setStatsTeam({ name: m.away, isLocal: false })}>
+          <TeamBadge name={m.away} size={48} style={{ borderRadius: 12, opacity: .85 }} />
+          <div className="wh-name" style={{ textDecoration: 'underline dotted', textUnderlineOffset: 3 }}>{m.away}</div>
           <div style={{ fontSize: 10, color: 'var(--ink4)' }}>Visitante</div>
         </div>
       </div>
 
       {/* ANALYSIS WIDGETS */}
       {pred && <AnalysisWidgets pred={pred} match={m} bh={bh} bd={bd} ba={ba} />}
+
+      {/* H2H WIDGET */}
+      <H2HWidget home={m.home} away={m.away} />
 
       {!pred && (
         <div className="wcard">
@@ -232,6 +226,230 @@ function MatchDetail({ match: m }) {
           </div>
         </div>
       )}
+
+      {/* TEAM STATS MODAL */}
+      {statsTeam && (
+        <TeamStatsModal
+          name={statsTeam.name}
+          isLocal={statsTeam.isLocal}
+          onClose={() => setStatsTeam(null)}
+        />
+      )}
+    </>
+  )
+}
+
+/* ── Team Stats Modal ── */
+function TeamStatsModal({ name, isLocal, onClose }) {
+  const [tab, setTab] = useState(isLocal ? 'local' : 'visitante')
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const loadStats = useCallback(async (asLocal) => {
+    setLoading(true)
+    try {
+      const data = await api.teamStats(name, asLocal)
+      setStats(data.stats || {})
+    } catch {
+      setStats({})
+    } finally {
+      setLoading(false)
+    }
+  }, [name])
+
+  useEffect(() => { loadStats(tab === 'local') }, [tab, loadStats])
+
+  const fmt = (v, dec = 2) => v != null ? (+v).toFixed(dec) : '—'
+
+  const ATTACK = [
+    ['Goles prom.', 'AvgGoals', 1],
+    ['xG prom.', 'xG_Avg', 2],
+    ['xG global', 'xG_Global', 2],
+    ['Disparos a puerta', 'AvgShotsTarget', 1],
+    ['Goles (ult.5)', 'GoalsFor5', 1],
+    ['SoR (ult.5)', 'SoR5', 2],
+  ]
+  const DEFENSE = [
+    ['xGA prom.', 'xGA_Avg', 2],
+    ['xGA global', 'xGA_Global', 2],
+    ['Goles en contra (ult.5)', 'GoalsAgainst5', 1],
+  ]
+  const FORM = [
+    ['Posici\u00F3n', 'Position', 0],
+    ['Puntos', 'Points', 0],
+    ['Racha', 'Streak', 0],
+    ['Win Rate (ult.5)', 'WinRate5', 2],
+    ['Pts (ult.5)', 'Pts5', 1],
+    ['Momentum', 'Form_Momentum', 2],
+  ]
+
+  return (
+    <div className="ts-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="ts-panel">
+        <div className="ts-head">
+          <TeamBadge name={name} size={28} />
+          <span className="ts-title">{name}</span>
+          <button className="ts-close" onClick={onClose}>{'\u00D7'}</button>
+        </div>
+        <div className="ts-tabs">
+          {[['local', 'Como Local'], ['visitante', 'Como Visitante']].map(([key, lbl]) => (
+            <button key={key} className={`ts-tab${tab === key ? ' on' : ''}`} onClick={() => setTab(key)}>
+              {lbl}
+            </button>
+          ))}
+        </div>
+        <div className="ts-body">
+          {loading && <div style={{ color: 'var(--ink4)', textAlign: 'center', padding: 20 }}>Cargando...</div>}
+          {!loading && stats && (
+            <>
+              {/* Forma */}
+              <div className="ts-group">
+                <div className="ts-group-lbl">Forma reciente</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  {[['W', stats.Form_W, 'var(--grn)'], ['D', stats.Form_D, 'var(--amb)'], ['L', stats.Form_L, 'var(--red)']].map(([l, v, c]) => (
+                    <div key={l} style={{ flex: 1, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 0', textAlign: 'center' }}>
+                      <div style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--mono)', color: c }}>{fmt(v, 1)}</div>
+                      <div style={{ fontSize: 9, color: 'var(--ink4)', fontWeight: 600, marginTop: 2 }}>{l === 'W' ? 'Victorias' : l === 'D' ? 'Empates' : 'Derrotas'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ataque */}
+              <div className="ts-group">
+                <div className="ts-group-lbl">Ataque</div>
+                <div className="ts-stats-grid">
+                  {ATTACK.map(([lbl, key, dec]) => stats[key] != null && (
+                    <div key={key} className="ts-stat">
+                      <div className="ts-stat-lbl">{lbl}</div>
+                      <div className="ts-stat-val" style={{ color: 'var(--grn)', fontSize: 16 }}>{fmt(stats[key], dec)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Defensa */}
+              <div className="ts-group">
+                <div className="ts-group-lbl">Defensa</div>
+                <div className="ts-stats-grid">
+                  {DEFENSE.map(([lbl, key, dec]) => stats[key] != null && (
+                    <div key={key} className="ts-stat">
+                      <div className="ts-stat-lbl">{lbl}</div>
+                      <div className="ts-stat-val" style={{ color: 'var(--red)', fontSize: 16 }}>{fmt(stats[key], dec)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tabla y forma */}
+              <div className="ts-group">
+                <div className="ts-group-lbl">Tabla y tendencia</div>
+                <div className="ts-stats-grid">
+                  {FORM.map(([lbl, key, dec]) => stats[key] != null && (
+                    <div key={key} className="ts-stat">
+                      <div className="ts-stat-lbl">{lbl}</div>
+                      <div className="ts-stat-val" style={{ fontSize: 16 }}>{fmt(stats[key], dec)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── H2H Widget ── */
+function H2HWidget({ home, away }) {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    setData(null)
+    api.h2h(home, away)
+      .then(d => setData(d))
+      .catch(() => setData({ total: 0, recent: [], stats: {} }))
+      .finally(() => setLoading(false))
+  }, [home, away])
+
+  return (
+    <div className="wcard">
+      <div className="wc-head">
+        <span className="wc-title">Head to Head</span>
+        {data && <span className="wc-meta">{data.total} partidos hist\u00F3ricos</span>}
+      </div>
+      <div className="wc-body">
+        {loading && <div style={{ color: 'var(--ink4)', textAlign: 'center', padding: 12 }}>Cargando...</div>}
+        {!loading && data && data.total === 0 && (
+          <div className="h2h-empty">Sin enfrentamientos en el historial disponible</div>
+        )}
+        {!loading && data && data.total > 0 && (
+          <H2HContent data={data} home={home} away={away} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function H2HContent({ data, home, away }) {
+  const { stats, recent } = data
+  const total = stats.team_a_wins + stats.draws + stats.team_b_wins || 1
+  const pA = (stats.team_a_wins / total * 100).toFixed(0)
+  const pD = (stats.draws / total * 100).toFixed(0)
+  const pB = (stats.team_b_wins / total * 100).toFixed(0)
+
+  return (
+    <>
+      {/* Summary bar */}
+      <div className="h2h-summary">
+        <div className="h2h-sum-team">
+          <div className="h2h-sum-name">{home.split(' ')[0]}</div>
+          <div className="h2h-sum-wins">{stats.team_a_wins}</div>
+          <div className="h2h-sum-lbl">victorias</div>
+        </div>
+        <div className="h2h-sum-center">
+          <div className="h2h-sum-draws">{stats.draws}</div>
+          <div className="h2h-sum-lbl">empates</div>
+        </div>
+        <div className="h2h-sum-team">
+          <div className="h2h-sum-name">{away.split(' ')[0]}</div>
+          <div className="h2h-sum-wins" style={{ color: 'var(--blue)' }}>{stats.team_b_wins}</div>
+          <div className="h2h-sum-lbl">victorias</div>
+        </div>
+      </div>
+
+      {/* % bar */}
+      <div className="h2h-bar-wrap">
+        <div className="h2h-bar" style={{ gridTemplateColumns: `${pA}fr ${pD}fr ${pB}fr` }}>
+          <div className="h2h-bar-a" />
+          <div className="h2h-bar-d" />
+          <div className="h2h-bar-b" />
+        </div>
+        <div className="h2h-goals">
+          <span>{stats.team_a_goals} goles</span>
+          <span>{stats.team_b_goals} goles</span>
+        </div>
+      </div>
+
+      {/* Recent meetings */}
+      <div className="h2h-meetings">
+        {[...recent].reverse().map((m, i) => {
+          const isHomeWin = (m.home === home && m.result === 'H') || (m.home === away && m.result === 'A')
+          const isAwayWin = (m.home === away && m.result === 'H') || (m.home === home && m.result === 'A')
+          const cls = m.result === 'D' ? 'draw' : isHomeWin ? 'win-a' : 'win-b'
+          return (
+            <div key={i} className="h2h-row">
+              <span className="h2h-season">{m.season}</span>
+              <span className="h2h-home">{m.home}</span>
+              <span className={`h2h-score ${cls}`}>{m.fthg} - {m.ftag}</span>
+              <span className="h2h-away">{m.away}</span>
+            </div>
+          )
+        })}
+      </div>
     </>
   )
 }
