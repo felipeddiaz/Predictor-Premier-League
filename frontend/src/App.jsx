@@ -1,8 +1,19 @@
-import Home from './pages/Home'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Nav from './components/Nav'
+import Predictor from './pages/Predictor'
+import Historial from './pages/Historial'
+import './styles/global.css'
 
-function App() {
-  return <Home />
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Nav />
+      <div className="shell">
+        <Routes>
+          <Route path="/" element={<Predictor />} />
+          <Route path="/historial" element={<Historial />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  )
 }
-
-export default App

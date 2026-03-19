@@ -1,47 +1,47 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 async function request(method, path, body = null) {
-  const options = {
+  const opts = {
     method,
     headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(15000),
   }
-  if (body) {
-    options.body = JSON.stringify(body)
+  if (body) opts.body = JSON.stringify(body)
+
+  const res = await fetch(`${API_BASE}${path}`, opts)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || `Request failed: ${res.status}`)
   }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, options)
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.detail || `Request failed: ${response.status}`)
-  }
-
-  return response.json()
+  return res.json()
 }
 
 export const api = {
-  // Health check
   health: () => request('GET', '/health'),
-
-  // List available teams
   teams: () => request('GET', '/teams'),
+  status: () => request('GET', '/status'),
 
-  // Simple prediction (only team names)
-  predict: (homeTeam, awayTeam) =>
-    request('POST', '/predict', {
-      home_team: homeTeam,
-      away_team: awayTeam,
-    }),
-
-  // Detailed prediction with odds (value betting analysis)
-  predictWithOdds: (homeTeam, awayTeam, odds) =>
+  predictDetail: (home, away, oddsH, oddsD, oddsA) =>
     request('POST', '/predictions/detail', {
-      local: homeTeam,
-      visitante: awayTeam,
-      cuota_h: odds.cuota_h,
-      cuota_d: odds.cuota_d,
-      cuota_a: odds.cuota_a,
+      local: home,
+      visitante: away,
+      cuota_h: oddsH,
+      cuota_d: oddsD,
+      cuota_a: oddsA,
     }),
-}
 
-export default api
+  predictSimple: (home, away) =>
+    request('POST', '/predict', {
+      home_team: home,
+      away_team: away,
+    }),
+
+  teamStats: (team, isLocal = true) =>
+    request('GET', `/teams/${encodeURIComponent(team)}/stats?is_local=${isLocal}`),
+
+  validateOdds: (h, d, a) =>
+    request('POST', `/utils/validate-odds?cuota_h=${h}&cuota_d=${d}&cuota_a=${a}`),
+
+  expectedValue: (prob, odds) =>
+    request('GET', `/utils/expected-value?prob_model=${prob}&cuota=${odds}`),
+}
