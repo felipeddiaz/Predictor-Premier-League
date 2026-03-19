@@ -4,7 +4,7 @@ import {
   impliedProbs, calcEdge, calcEV, calcKelly,
   entropyConfidence, recommendation, parseForm, saveToHistory,
 } from '../utils/calc'
-import { TeamBadge } from '../utils/teamLogos'
+import { TeamBadge } from '../utils/teamLogos.jsx'
 import Loader from '../components/Loader'
 
 export default function Predictor() {
