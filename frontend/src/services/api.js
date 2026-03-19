@@ -21,6 +21,10 @@ export const api = {
   teams: () => request('GET', '/teams'),
   status: () => request('GET', '/status'),
 
+  // Main endpoint: get all matches with predictions pre-calculated
+  matches: (forceRefresh = false) =>
+    request('GET', `/matches${forceRefresh ? '?force_refresh=true' : ''}`),
+
   predictDetail: (home, away, oddsH, oddsD, oddsA) =>
     request('POST', '/predictions/detail', {
       local: home,

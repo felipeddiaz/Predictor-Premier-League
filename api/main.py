@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import sys
+import os
 import logging
+import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -26,6 +28,7 @@ from api.routers import (
     router_utils,
     set_predictor_instance
 )
+from api.odds_service import refresh as refresh_odds, get_cached_matches
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +74,59 @@ async def startup_event():
     except Exception as e:
         logger.error(f"✗ Error durante startup: {e}")
         predictor = None
+
+# Background task: refresh odds periodically
+REFRESH_INTERVAL_SECONDS = int(os.environ.get("ODDS_REFRESH_INTERVAL", 43200))  # default 12h
+
+async def _odds_refresh_loop():
+    """Background loop that refreshes odds + predictions periodically."""
+    await asyncio.sleep(5)  # wait for startup to finish
+    while True:
+        try:
+            logger.info("Auto-refreshing odds and predictions...")
+            refresh_odds(predictor)
+        except Exception as e:
+            logger.error(f"Error in odds refresh: {e}")
+        await asyncio.sleep(REFRESH_INTERVAL_SECONDS)
+
+@app.on_event("startup")
+async def start_odds_refresh():
+    """Start the background odds refresh loop."""
+    # Do initial refresh
+    try:
+        refresh_odds(predictor)
+    except Exception as e:
+        logger.error(f"Initial odds refresh failed: {e}")
+    # Start background loop
+    asyncio.create_task(_odds_refresh_loop())
+
+@app.get("/matches", response_model=dict)
+async def get_matches(force_refresh: bool = False):
+    """
+    Get all current matches with predictions pre-calculated.
+
+    This is THE main endpoint for the frontend.
+    Returns cached data (refreshed every 12h by background job).
+
+    Query params:
+        force_refresh: if true, fetches fresh odds from API (costs 1 API call)
+    """
+    if force_refresh:
+        data = refresh_odds(predictor)
+    else:
+        data = get_cached_matches()
+
+    if not data:
+        # No cache yet, try to generate
+        data = refresh_odds(predictor)
+
+    if not data or not data.get("matches"):
+        return {
+            "matches": [],
+            "meta": {"error": "No matches available. Set ODDS_API_KEY or configure jornada_config.py"}
+        }
+
+    return data
 
 @app.get("/", response_model=dict)
 async def root():
