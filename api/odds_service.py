@@ -96,21 +96,33 @@ def _fetch_from_odds_api() -> list[dict]:
         return []
 
 
-def _extract_best_odds(bookmakers: list[dict]) -> dict:
-    """Extract average odds from bookmakers for h2h market."""
+def _extract_best_odds(bookmakers: list[dict], home_team: str = "", away_team: str = "") -> dict:
+    """Extract average odds from bookmakers for h2h market.
+
+    The Odds API returns outcomes keyed by team name (not "Home"/"Away"),
+    plus "Draw". We identify home/away by matching against team names.
+    """
     all_h, all_d, all_a = [], [], []
 
     for bm in bookmakers:
         for market in bm.get("markets", []):
             if market["key"] != "h2h":
                 continue
-            outcomes = {o["name"]: o["price"] for o in market["outcomes"]}
-            if "Home" in outcomes:
-                all_h.append(outcomes["Home"])
-            if "Draw" in outcomes:
-                all_d.append(outcomes["Draw"])
-            if "Away" in outcomes:
-                all_a.append(outcomes["Away"])
+            for o in market["outcomes"]:
+                name = o["name"]
+                price = o["price"]
+                if name == "Draw":
+                    all_d.append(price)
+                elif name == home_team:
+                    all_h.append(price)
+                elif name == away_team:
+                    all_a.append(price)
+                # fallback: if team names don't match, try positional
+            if not all_h and not all_a:
+                outcomes = [o for o in market["outcomes"] if o["name"] != "Draw"]
+                if len(outcomes) >= 2:
+                    all_h.append(outcomes[0]["price"])
+                    all_a.append(outcomes[1]["price"])
 
     if not all_h or not all_d or not all_a:
         return {}
@@ -250,10 +262,13 @@ def refresh(predictor) -> dict:
         raw = _fetch_from_odds_api()
         matches = []
         for event in raw:
-            home = _map_team(event.get("home_team", ""))
-            away = _map_team(event.get("away_team", ""))
-            odds = _extract_best_odds(event.get("bookmakers", []))
+            raw_home = event.get("home_team", "")
+            raw_away = event.get("away_team", "")
+            home = _map_team(raw_home)
+            away = _map_team(raw_away)
+            odds = _extract_best_odds(event.get("bookmakers", []), raw_home, raw_away)
             if not odds:
+                logger.warning(f"No odds extracted for {raw_home} vs {raw_away}, skipping")
                 continue
             matches.append({
                 "home": home,

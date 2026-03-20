@@ -6,6 +6,10 @@ import logging
 import asyncio
 from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load .env from project root before anything else
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 # Add parent directory to path to import core modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
