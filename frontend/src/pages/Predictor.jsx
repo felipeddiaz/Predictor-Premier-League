@@ -183,9 +183,7 @@ function MatchDetail({ match: m }) {
       )}
 
       {/* BLOCK 3 */}
-      {pred && (pred.over25 != null || pred.over35cards != null || pred.over95corners != null) && (
-        <BinaryRow pred={pred} />
-      )}
+      {pred && <BinaryRow pred={pred} />}
 
       {/* H2H */}
       <H2HWidget home={m.home} away={m.away} />
@@ -554,12 +552,10 @@ function VBTab({ ranked }) {
 ───────────────────────────────────────── */
 function BinaryRow({ pred }) {
   const markets = [
-    { label: 'Over 2.5',       value: pred.over25,       threshold: 55 },
-    { label: '+3.5 Tarjetas',  value: pred.over35cards,  threshold: 55 },
+    { label: 'Over 2.5',          value: pred.over25,        threshold: 55 },
+    { label: '+3.5 Tarjetas',     value: pred.over35cards,   threshold: 55 },
     { label: '+9.5 C\u00F3rners', value: pred.over95corners, threshold: 55 },
-  ].filter(m => m.value != null)
-
-  if (!markets.length) return null
+  ]
 
   return (
     <div className="wcard">
@@ -570,11 +566,11 @@ function BinaryRow({ pred }) {
       <div className="wc-body">
         <div className="v2-binary-grid">
           {markets.map(({ label, value, threshold }) => (
-            <div key={label} className="v2-bin-card">
+            <div key={label} className={`v2-bin-card${value == null ? ' unavail' : ''}`}>
               <div className="v2-bin-lbl">{label}</div>
-              <div className="v2-bin-pct">{value}%</div>
-              <div className={`v2-bin-icon ${value >= threshold ? 'active' : 'idle'}`}>
-                {value >= threshold ? '\u2713' : '\u00B7'}
+              <div className="v2-bin-pct">{value != null ? `${value}%` : '\u2014'}</div>
+              <div className={`v2-bin-icon ${value == null ? 'idle' : value >= threshold ? 'active' : 'idle'}`}>
+                {value == null ? '\u2014' : value >= threshold ? '\u2713' : '\u00B7'}
               </div>
             </div>
           ))}

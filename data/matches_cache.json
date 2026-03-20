@@ -1,0 +1,570 @@
+{
+  "matches": [
+    {
+      "home": "Bournemouth",
+      "away": "Man United",
+      "odds": {
+        "home": 3.3,
+        "draw": 3.8,
+        "away": 2.1,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-20T20:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4051,
+        "prob_home": 0.4051,
+        "prob_draw": 0.2725,
+        "prob_away": 0.3224,
+        "market_prob_home": 0.303,
+        "market_prob_draw": 0.2632,
+        "market_prob_away": 0.4762,
+        "edge": 0.1021,
+        "form_home": "3W-2D-0L",
+        "form_away": "4W-1D-0L",
+        "over25_prob": 0.6808,
+        "over35_cards_prob": 0.5836,
+        "over95_corners_prob": 0.6483
+      }
+    },
+    {
+      "home": "Brighton",
+      "away": "Liverpool",
+      "odds": {
+        "home": 3.08,
+        "draw": 3.59,
+        "away": 2.25,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-21T12:30:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.4224,
+        "prob_home": 0.3446,
+        "prob_draw": 0.233,
+        "prob_away": 0.4224,
+        "market_prob_home": 0.3247,
+        "market_prob_draw": 0.2786,
+        "market_prob_away": 0.4444,
+        "edge": -0.022,
+        "form_home": "0W-2D-3L",
+        "form_away": "2W-1D-2L",
+        "over25_prob": 0.5997,
+        "over35_cards_prob": 0.4646,
+        "over95_corners_prob": 0.5061
+      }
+    },
+    {
+      "home": "Fulham",
+      "away": "Burnley",
+      "odds": {
+        "home": 1.55,
+        "draw": 4.16,
+        "away": 6.21,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-21T15:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4737,
+        "prob_home": 0.4737,
+        "prob_draw": 0.2406,
+        "prob_away": 0.2857,
+        "market_prob_home": 0.6452,
+        "market_prob_draw": 0.2404,
+        "market_prob_away": 0.161,
+        "edge": -0.1715,
+        "form_home": "1W-0D-4L",
+        "form_away": "1W-2D-2L",
+        "over25_prob": 0.4651,
+        "over35_cards_prob": 0.5559,
+        "over95_corners_prob": 0.6728
+      }
+    },
+    {
+      "home": "Everton",
+      "away": "Chelsea",
+      "odds": {
+        "home": 3.47,
+        "draw": 3.53,
+        "away": 2.1,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-21T17:30:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.3871,
+        "prob_home": 0.3756,
+        "prob_draw": 0.2373,
+        "prob_away": 0.3871,
+        "market_prob_home": 0.2882,
+        "market_prob_draw": 0.2833,
+        "market_prob_away": 0.4762,
+        "edge": -0.0891,
+        "form_home": "2W-2D-1L",
+        "form_away": "4W-1D-0L",
+        "over25_prob": 0.6359,
+        "over35_cards_prob": 0.5411,
+        "over95_corners_prob": 0.4662
+      }
+    },
+    {
+      "home": "Leeds United",
+      "away": "Brentford",
+      "odds": {
+        "home": 2.48,
+        "draw": 3.45,
+        "away": 2.83,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-21T20:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": null
+    },
+    {
+      "home": "Newcastle",
+      "away": "Sunderland",
+      "odds": {
+        "home": 1.67,
+        "draw": 3.94,
+        "away": 5.15,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-22T12:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4974,
+        "prob_home": 0.4974,
+        "prob_draw": 0.2284,
+        "prob_away": 0.2742,
+        "market_prob_home": 0.5988,
+        "market_prob_draw": 0.2538,
+        "market_prob_away": 0.1942,
+        "edge": -0.1014,
+        "form_home": "1W-1D-3L",
+        "form_away": "2W-0D-3L",
+        "over25_prob": 0.5308,
+        "over35_cards_prob": 0.5,
+        "over95_corners_prob": 0.6516
+      }
+    },
+    {
+      "home": "Aston Villa",
+      "away": "West Ham",
+      "odds": {
+        "home": 1.95,
+        "draw": 3.63,
+        "away": 3.89,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-22T14:15:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4957,
+        "prob_home": 0.4957,
+        "prob_draw": 0.2098,
+        "prob_away": 0.2945,
+        "market_prob_home": 0.5128,
+        "market_prob_draw": 0.2755,
+        "market_prob_away": 0.2571,
+        "edge": -0.0171,
+        "form_home": "2W-1D-2L",
+        "form_away": "3W-1D-1L",
+        "over25_prob": 0.5184,
+        "over35_cards_prob": 0.4352,
+        "over95_corners_prob": 0.5664
+      }
+    },
+    {
+      "home": "Tottenham",
+      "away": "Nott'm Forest",
+      "odds": {
+        "home": 2.26,
+        "draw": 3.41,
+        "away": 3.21,
+        "n_bookmakers": 25
+      },
+      "commence_time": "2026-03-22T14:15:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4253,
+        "prob_home": 0.4253,
+        "prob_draw": 0.2492,
+        "prob_away": 0.3255,
+        "market_prob_home": 0.4425,
+        "market_prob_draw": 0.2933,
+        "market_prob_away": 0.3115,
+        "edge": -0.0172,
+        "form_home": "0W-2D-3L",
+        "form_away": "1W-3D-1L",
+        "over25_prob": 0.5947,
+        "over35_cards_prob": 0.4919,
+        "over95_corners_prob": 0.6336
+      }
+    },
+    {
+      "home": "West Ham",
+      "away": "Wolves",
+      "odds": {
+        "home": 1.75,
+        "draw": 3.79,
+        "away": 4.25,
+        "n_bookmakers": 20
+      },
+      "commence_time": "2026-04-10T19:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.5391,
+        "prob_home": 0.5391,
+        "prob_draw": 0.2254,
+        "prob_away": 0.2355,
+        "market_prob_home": 0.5714,
+        "market_prob_draw": 0.2639,
+        "market_prob_away": 0.2353,
+        "edge": -0.0323,
+        "form_home": "3W-1D-1L",
+        "form_away": "0W-2D-3L",
+        "over25_prob": 0.4664,
+        "over35_cards_prob": 0.6011,
+        "over95_corners_prob": 0.5999
+      }
+    },
+    {
+      "home": "Arsenal",
+      "away": "Bournemouth",
+      "odds": {
+        "home": 1.34,
+        "draw": 5.09,
+        "away": 7.92,
+        "n_bookmakers": 20
+      },
+      "commence_time": "2026-04-11T11:30:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.5811,
+        "prob_home": 0.5811,
+        "prob_draw": 0.2146,
+        "prob_away": 0.2043,
+        "market_prob_home": 0.7463,
+        "market_prob_draw": 0.1965,
+        "market_prob_away": 0.1263,
+        "edge": -0.1652,
+        "form_home": "2W-2D-1L",
+        "form_away": "3W-2D-0L",
+        "over25_prob": 0.7391,
+        "over35_cards_prob": 0.4997,
+        "over95_corners_prob": 0.5225
+      }
+    },
+    {
+      "home": "Nott'm Forest",
+      "away": "Aston Villa",
+      "odds": {
+        "home": 2.55,
+        "draw": 3.07,
+        "away": 2.75,
+        "n_bookmakers": 10
+      },
+      "commence_time": "2026-04-11T14:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": true,
+      "odds_previous": {
+        "home": 2.47,
+        "draw": 3.26,
+        "away": 2.68
+      },
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.4323,
+        "prob_home": 0.3609,
+        "prob_draw": 0.2068,
+        "prob_away": 0.4323,
+        "market_prob_home": 0.3922,
+        "market_prob_draw": 0.3257,
+        "market_prob_away": 0.3636,
+        "edge": 0.0687,
+        "form_home": "1W-3D-1L",
+        "form_away": "2W-1D-2L",
+        "over25_prob": 0.6017,
+        "over35_cards_prob": 0.4219,
+        "over95_corners_prob": 0.5978
+      }
+    },
+    {
+      "home": "Brentford",
+      "away": "Everton",
+      "odds": {
+        "home": 2.12,
+        "draw": 3.28,
+        "away": 3.31,
+        "n_bookmakers": 19
+      },
+      "commence_time": "2026-04-11T14:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4568,
+        "prob_home": 0.4568,
+        "prob_draw": 0.2552,
+        "prob_away": 0.2881,
+        "market_prob_home": 0.4717,
+        "market_prob_draw": 0.3049,
+        "market_prob_away": 0.3021,
+        "edge": -0.0149,
+        "form_home": "2W-1D-2L",
+        "form_away": "2W-2D-1L",
+        "over25_prob": 0.4969,
+        "over35_cards_prob": 0.5557,
+        "over95_corners_prob": 0.5557
+      }
+    },
+    {
+      "home": "Burnley",
+      "away": "Brighton",
+      "odds": {
+        "home": 4.11,
+        "draw": 3.64,
+        "away": 1.77,
+        "n_bookmakers": 19
+      },
+      "commence_time": "2026-04-11T14:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.448,
+        "prob_home": 0.3295,
+        "prob_draw": 0.2225,
+        "prob_away": 0.448,
+        "market_prob_home": 0.2433,
+        "market_prob_draw": 0.2747,
+        "market_prob_away": 0.565,
+        "edge": -0.1169,
+        "form_home": "1W-2D-2L",
+        "form_away": "0W-2D-3L",
+        "over25_prob": 0.4658,
+        "over35_cards_prob": 0.5465,
+        "over95_corners_prob": 0.5726
+      }
+    },
+    {
+      "home": "Crystal Palace",
+      "away": "Newcastle",
+      "odds": {
+        "home": 2.78,
+        "draw": 3.43,
+        "away": 2.44,
+        "n_bookmakers": 11
+      },
+      "commence_time": "2026-04-11T14:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": true,
+      "odds_previous": {
+        "home": 2.68,
+        "draw": 3.37,
+        "away": 2.39
+      },
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.3855,
+        "prob_home": 0.3837,
+        "prob_draw": 0.2309,
+        "prob_away": 0.3855,
+        "market_prob_home": 0.3597,
+        "market_prob_draw": 0.2915,
+        "market_prob_away": 0.4098,
+        "edge": -0.0244,
+        "form_home": "1W-1D-3L",
+        "form_away": "1W-1D-3L",
+        "over25_prob": 0.5329,
+        "over35_cards_prob": 0.622,
+        "over95_corners_prob": 0.5904
+      }
+    },
+    {
+      "home": "Liverpool",
+      "away": "Fulham",
+      "odds": {
+        "home": 1.49,
+        "draw": 4.5,
+        "away": 5.32,
+        "n_bookmakers": 19
+      },
+      "commence_time": "2026-04-11T16:30:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.4822,
+        "prob_home": 0.4822,
+        "prob_draw": 0.2624,
+        "prob_away": 0.2554,
+        "market_prob_home": 0.6711,
+        "market_prob_draw": 0.2222,
+        "market_prob_away": 0.188,
+        "edge": -0.189,
+        "form_home": "2W-1D-2L",
+        "form_away": "1W-0D-4L",
+        "over25_prob": 0.5533,
+        "over35_cards_prob": 0.5531,
+        "over95_corners_prob": 0.6343
+      }
+    },
+    {
+      "home": "Nott'm Forest",
+      "away": "Aston Villa",
+      "odds": {
+        "home": 2.47,
+        "draw": 3.26,
+        "away": 2.68,
+        "n_bookmakers": 11
+      },
+      "commence_time": "2026-04-12T13:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.4285,
+        "prob_home": 0.359,
+        "prob_draw": 0.2125,
+        "prob_away": 0.4285,
+        "market_prob_home": 0.4049,
+        "market_prob_draw": 0.3067,
+        "market_prob_away": 0.3731,
+        "edge": 0.0554,
+        "form_home": "1W-3D-1L",
+        "form_away": "2W-1D-2L",
+        "over25_prob": 0.6017,
+        "over35_cards_prob": 0.4219,
+        "over95_corners_prob": 0.5978
+      }
+    },
+    {
+      "home": "Crystal Palace",
+      "away": "Newcastle",
+      "odds": {
+        "home": 2.68,
+        "draw": 3.37,
+        "away": 2.39,
+        "n_bookmakers": 11
+      },
+      "commence_time": "2026-04-12T13:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.3852,
+        "prob_home": 0.3843,
+        "prob_draw": 0.2305,
+        "prob_away": 0.3852,
+        "market_prob_home": 0.3731,
+        "market_prob_draw": 0.2967,
+        "market_prob_away": 0.4184,
+        "edge": -0.0332,
+        "form_home": "1W-1D-3L",
+        "form_away": "1W-1D-3L",
+        "over25_prob": 0.5329,
+        "over35_cards_prob": 0.622,
+        "over95_corners_prob": 0.5904
+      }
+    },
+    {
+      "home": "Sunderland",
+      "away": "Tottenham",
+      "odds": {
+        "home": 2.68,
+        "draw": 3.38,
+        "away": 2.52,
+        "n_bookmakers": 18
+      },
+      "commence_time": "2026-04-12T13:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Visitante",
+        "confidence": 0.3894,
+        "prob_home": 0.3555,
+        "prob_draw": 0.2551,
+        "prob_away": 0.3894,
+        "market_prob_home": 0.3731,
+        "market_prob_draw": 0.2959,
+        "market_prob_away": 0.3968,
+        "edge": -0.0075,
+        "form_home": "2W-0D-3L",
+        "form_away": "0W-2D-3L",
+        "over25_prob": 0.5274,
+        "over35_cards_prob": 0.5141,
+        "over95_corners_prob": 0.631
+      }
+    },
+    {
+      "home": "Chelsea",
+      "away": "Man City",
+      "odds": {
+        "home": 2.69,
+        "draw": 3.61,
+        "away": 2.34,
+        "n_bookmakers": 18
+      },
+      "commence_time": "2026-04-12T15:30:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": {
+        "result": "Local",
+        "confidence": 0.39,
+        "prob_home": 0.39,
+        "prob_draw": 0.2499,
+        "prob_away": 0.3602,
+        "market_prob_home": 0.3717,
+        "market_prob_draw": 0.277,
+        "market_prob_away": 0.4274,
+        "edge": 0.0182,
+        "form_home": "4W-1D-0L",
+        "form_away": "3W-1D-1L",
+        "over25_prob": 0.4951,
+        "over35_cards_prob": 0.6245,
+        "over95_corners_prob": 0.5234
+      }
+    },
+    {
+      "home": "Man United",
+      "away": "Leeds United",
+      "odds": {
+        "home": 1.59,
+        "draw": 4.15,
+        "away": 5.17,
+        "n_bookmakers": 18
+      },
+      "commence_time": "2026-04-13T19:00:00Z",
+      "source": "the_odds_api",
+      "odds_changed": false,
+      "prediction": null
+    }
+  ],
+  "meta": {
+    "last_updated": "2026-03-20T16:44:52.316041+00:00",
+    "source": "the_odds_api",
+    "total_matches": 20,
+    "has_predictions": true
+  }
+}

@@ -22,7 +22,6 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 CACHE_FILE = Path(__file__).parent.parent / "data" / "matches_cache.json"
-ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
 ODDS_API_URL = "https://api.the-odds-api.com/v4/sports/soccer_epl/odds"
 
 # Mapping from The Odds API team names → your canonical names
@@ -70,6 +69,7 @@ def _fetch_from_odds_api() -> list[dict]:
     import urllib.request
     import urllib.parse
 
+    ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
     if not ODDS_API_KEY:
         logger.warning("No ODDS_API_KEY set, cannot fetch from The Odds API")
         return []
@@ -258,7 +258,7 @@ def refresh(predictor) -> dict:
     old_matches = old_data.get("matches", []) if old_data else []
 
     # Fetch fresh data
-    if ODDS_API_KEY:
+    if os.environ.get("ODDS_API_KEY", ""):
         raw = _fetch_from_odds_api()
         matches = []
         for event in raw:
@@ -296,7 +296,7 @@ def refresh(predictor) -> dict:
         "matches": matches,
         "meta": {
             "last_updated": datetime.now(timezone.utc).isoformat(),
-            "source": "the_odds_api" if ODDS_API_KEY else "config_fallback",
+            "source": "the_odds_api" if os.environ.get("ODDS_API_KEY", "") else "config_fallback",
             "total_matches": len(matches),
             "has_predictions": predictor is not None,
         }

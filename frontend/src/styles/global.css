@@ -165,6 +165,7 @@ nav{
   flex:1;overflow-y:auto;background:var(--bg);padding:14px;
   display:flex;flex-direction:column;gap:10px;
 }
+.detail-panel > * { flex-shrink:0 }
 
 /* empty */
 .d-empty{
@@ -851,6 +852,8 @@ select:focus{outline:none;border-color:var(--blue);background:var(--white)}
 .v2-bin-icon.idle{
   background:var(--color-bg-base);color:var(--color-text-subtle);border:0.5px solid var(--color-border-base);
 }
+.v2-bin-card.unavail{opacity:0.45}
+.v2-bin-card.unavail .v2-bin-pct{font-size:16px;color:var(--color-text-subtle)}
 
 /* ── RESPONSIVE ── */
 @media(max-width:960px){

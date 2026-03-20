@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); m=d[''''matches''''][0]; p=m.get\\(''''prediction'''',{}\\); print\\(''''over25:'''', p.get\\(''''over25_prob''''\\)\\); print\\(''''over35_cards:'''', p.get\\(''''over35_cards_prob''''\\)\\); print\\(''''over95_corners:'''', p.get\\(''''over95_corners_prob''''\\)\\)\")",
+      "Bash(python:*)"
+    ]
+  }
+}
