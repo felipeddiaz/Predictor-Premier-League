@@ -1,29 +1,23 @@
 .error-message {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 2px solid #ef4444;
-  color: #ef4444;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  animation: slideIn 0.3s ease-out;
+  gap: 0.75rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  animation: errorSlide 0.3s ease;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes errorSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .error-icon {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
@@ -33,20 +27,22 @@
 
 .error-content p {
   margin: 0;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .error-close {
   background: none;
   border: none;
-  color: #ef4444;
-  font-size: 1.2rem;
+  color: #fca5a5;
+  font-size: 1rem;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
-  transition: opacity 0.2s ease;
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
 .error-close:hover {
-  opacity: 0.7;
+  opacity: 1;
 }

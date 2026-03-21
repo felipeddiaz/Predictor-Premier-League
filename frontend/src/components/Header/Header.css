@@ -1,94 +1,109 @@
 .header {
-  background: linear-gradient(135deg, #003399 0%, #0066ff 100%);
-  color: white;
-  padding: 2rem 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.header-container {
-  max-width: 1200px;
+.header-inner {
+  max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 2rem;
-  flex-wrap: wrap;
 }
 
-.header-brand h1 {
-  font-size: 2rem;
-  margin: 0;
-  font-weight: 700;
-}
-
-.header-brand .subtitle {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.95rem;
-  opacity: 0.95;
-}
-
-.status-badge {
+.header-logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  backdrop-filter: blur(10px);
+  gap: 0.75rem;
 }
 
-.status-dot {
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.header-logo h1 {
   font-size: 1.2rem;
-  display: inline-block;
-  animation: pulse 2s infinite;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
 }
 
-.status-badge.healthy .status-dot {
-  color: #10b981;
+.header-tagline {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 500;
 }
 
-.status-badge.offline .status-dot {
-  color: #ef4444;
-  animation: none;
+/* API Status */
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
 }
 
-.status-badge.checking .status-dot {
-  color: #f59e0b;
-  animation: spin 1s linear infinite;
+.api-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.api-status.healthy .api-dot {
+  background: var(--success);
+  box-shadow: 0 0 6px var(--glow-green);
+  animation: pulse-dot 2s infinite;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.api-status.offline .api-dot {
+  background: var(--danger);
+  box-shadow: 0 0 6px var(--glow-red);
 }
 
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.api-status.checking .api-dot {
+  background: var(--warning);
+  animation: pulse-dot 1s infinite;
+}
 
-  .header-brand h1 {
-    font-size: 1.5rem;
-  }
+.api-label {
+  color: var(--text-secondary);
+}
 
-  .status-badge {
-    align-self: flex-start;
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (max-width: 600px) {
+  .header-tagline {
+    display: none;
+  }
+  .header-logo h1 {
+    font-size: 1rem;
   }
 }

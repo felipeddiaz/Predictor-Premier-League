@@ -22,24 +22,20 @@ export const Header = () => {
 
   return (
     <header className="header">
-      <div className="header-container">
-        <div className="header-brand">
-          <h1>⚽ Premier League Predictor</h1>
-          <p className="subtitle">Predicciones IA para la Premier League</p>
+      <div className="header-inner">
+        <div className="header-logo">
+          <div className="logo-icon">PL</div>
+          <div>
+            <h1>Predictor</h1>
+            <span className="header-tagline">Premier League AI</span>
+          </div>
         </div>
 
-        <div className={`status-badge ${apiStatus}`}>
-          {apiStatus === 'healthy' ? (
-            <>
-              <span className="status-dot">●</span>
-              <span>API Conectada</span>
-            </>
-          ) : (
-            <>
-              <span className="status-dot">●</span>
-              <span>API Offline</span>
-            </>
-          )}
+        <div className={`api-status ${apiStatus}`}>
+          <span className="api-dot" />
+          <span className="api-label">
+            {apiStatus === 'healthy' ? 'Online' : apiStatus === 'checking' ? 'Conectando...' : 'Offline'}
+          </span>
         </div>
       </div>
     </header>

@@ -39,62 +39,69 @@ export const Home = () => {
             <ErrorMessage message={error} onDismiss={handleDismissError} />
           )}
 
-          {!prediction && (
-            <section className="form-section">
-              <h2>Ingresa los equipos para obtener una predicción</h2>
+          {!prediction && !loading && (
+            <>
+              <div className="hero-section">
+                <h2 className="hero-title">Predicciones inteligentes</h2>
+                <p className="hero-subtitle">
+                  Selecciona los equipos y obtiene predicciones basadas en Machine Learning
+                </p>
+              </div>
+
               <PredictionForm onSubmit={handlePredictionSubmit} loading={loading} />
-            </section>
+
+              <section className="how-it-works">
+                <div className="how-grid">
+                  <div className="how-item">
+                    <div className="how-number">1</div>
+                    <div>
+                      <h4>Selecciona equipos</h4>
+                      <p>Elige local y visitante de la Premier League</p>
+                    </div>
+                  </div>
+                  <div className="how-item">
+                    <div className="how-number">2</div>
+                    <div>
+                      <h4>Agrega cuotas</h4>
+                      <p>Opcionalmente ingresa las cuotas del mercado</p>
+                    </div>
+                  </div>
+                  <div className="how-item">
+                    <div className="how-number">3</div>
+                    <div>
+                      <h4>Analisis IA</h4>
+                      <p>El modelo analiza 56+ indicadores y 10 temporadas</p>
+                    </div>
+                  </div>
+                  <div className="how-item">
+                    <div className="how-number">4</div>
+                    <div>
+                      <h4>Resultado</h4>
+                      <p>Obtiene prediccion, probabilidades y edge vs mercado</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </>
           )}
 
           {loading && <Loading message="Analizando partido..." />}
 
           {prediction && !loading && (
-            <section className="results-section">
+            <>
               <ResultDisplay prediction={prediction} />
-
-              <div className="action-buttons">
-                <button className="btn-reset" onClick={handleReset}>
-                  ← Nueva Predicción
+              <div className="reset-area">
+                <button className="btn-new-prediction" onClick={handleReset}>
+                  Nueva prediccion
                 </button>
               </div>
-            </section>
-          )}
-
-          {!prediction && !loading && (
-            <section className="info-section">
-              <h2>¿Cómo funciona?</h2>
-              <div className="features-grid">
-                <div className="feature-card">
-                  <span className="feature-icon">🧠</span>
-                  <h3>Machine Learning</h3>
-                  <p>Modelos entrenados con 10+ temporadas de datos históricos</p>
-                </div>
-
-                <div className="feature-card">
-                  <span className="feature-icon">📊</span>
-                  <h3>56+ Indicadores</h3>
-                  <p>Análisis profundo de estadísticas de equipo y jugadores</p>
-                </div>
-
-                <div className="feature-card">
-                  <span className="feature-icon">💰</span>
-                  <h3>Cálculo de Edge</h3>
-                  <p>Comparación con cuotas del mercado para identificar valor</p>
-                </div>
-
-                <div className="feature-card">
-                  <span className="feature-icon">⚡</span>
-                  <h3>Predicción en Tiempo Real</h3>
-                  <p>Resultados instantáneos y actualizables</p>
-                </div>
-              </div>
-            </section>
+            </>
           )}
         </div>
       </main>
 
       <footer className="home-footer">
-        <p>© 2026 Premier League Predictor • Predicciones Educativas • ML Powered</p>
+        <p>Premier League Predictor &middot; ML Powered &middot; Uso educativo</p>
       </footer>
     </div>
   )
